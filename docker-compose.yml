@@ -1,0 +1,58 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app2
+    volumes:
+      # FIX APPLIED HERE: This now mounts your current directory correctly
+      - .:/var/www/html
+    ports:
+      - "8003:80"
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_DATABASE: knowledge_system
+      DB_USERNAME: laravel
+      DB_PASSWORD: secret 
+    depends_on:
+      - mysql
+      - phpmyadmin
+    networks:
+      - laravel
+
+  mysql:
+    image: mysql:8
+    container_name: laravel_mysql2
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: knowledge_system
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - laravel
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel_phpmyadmin2
+    restart: always
+    ports:
+      - "8005:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - mysql
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+volumes:
+  mysql-data:
