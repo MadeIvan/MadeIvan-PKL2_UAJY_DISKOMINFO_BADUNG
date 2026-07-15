@@ -42,21 +42,21 @@
             <div class="hidden items-center gap-8 md:flex">
                 <a
                     href="#beranda"
-                    class="font-medium text-blue-600"
+                    class="font-medium text-blue-900"
                 >
                     Beranda
                 </a>
 
                 <a
                     href="#kategori"
-                    class="font-medium text-slate-600 transition hover:text-blue-600"
+                    class="font-medium text-slate-600 transition hover:text-blue-900"
                 >
                     Kategori
                 </a>
 
                 <a
                     href="#tutorial"
-                    class="font-medium text-slate-600 transition hover:text-blue-600"
+                    class="font-medium text-slate-600 transition hover:text-blue-900"
                 >
                     Tutorial
                 </a>
@@ -70,17 +70,17 @@
             </div>
 
             {{-- Tombol Aksi --}}
-            <div class="hidden items-center gap-3 md:flex">
+            <div class="hidden items-center gap-3 md:flex" >
                 <a
-                    href="#"
+                    href="/content"
                     class="rounded-lg px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
                 >
                     Masuk
                 </a>
 
                 <a
-                    href="#"
-                    class="rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white transition hover:bg-blue-700"
+                    href="/content"
+                    class="rounded-lg bg-blue-900 px-5 py-2.5 font-semibold text-white transition hover:bg-blue-700"
                 >
                     Mulai Sekarang
                 </a>
@@ -163,18 +163,18 @@
 
             <div class="relative mx-auto max-w-5xl px-6 py-24 text-center lg:px-8 lg:py-32">
 
-                <span class="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+                <span class="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-900">
                     Pusat informasi dan pembelajaran terintegrasi
                 </span>
 
                 <h1 class="mx-auto mt-6 max-w-4xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
                     Pusat informasi dan dokumentasi untuk sistem informasi
-                    <span class="text-blue-600">
+                    <span class="text-blue-900">
                         Kabupaten Badung
                     </span>
                 </h1>
 
-                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-900">
                     Pusat bantuan, dokumentasi, video, untuk pengguna sistem informasi Kabupaten Badung.
                 </p>
 
@@ -209,7 +209,7 @@
 
                         <button
                             type="button"
-                            class="h-14 rounded-xl bg-blue-600 px-8 font-semibold text-white transition hover:bg-blue-700"
+                            class="h-14 rounded-xl bg-blue-900 px-8 font-semibold text-white transition hover:bg-blue-700"
                         >
                             Cari
                         </button>
@@ -224,21 +224,21 @@
 
                     <a
                         href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600 transition hover:bg-blue-100 hover:text-blue-700"
+                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
                     >
                         SAKIP
                     </a>
 
                     <a
                         href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600 transition hover:bg-blue-100 hover:text-blue-700"
+                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
                     >
                         Website Desa
                     </a>
 
                     <a
                         href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600 transition hover:bg-blue-100 hover:text-blue-700"
+                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
                     >
                         OPD
                     </a>
@@ -260,7 +260,7 @@
         >
             <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                 <div>
-                    <p class="font-semibold text-blue-600">
+                    <p class="font-semibold text-blue-900">
                         Jelajahi pengetahuan Aplikasi
                     </p>
 
@@ -268,14 +268,14 @@
                         Temukan berdasarkan kategori
                     </h2>
 
-                    <p class="mt-3 max-w-2xl text-slate-600">
+                    <p class="mt-3 max-w-2xl text-slate-900">
                         Temukan materi pembelajaran berdasarkan bidang dan topik yang tersedia.
                     </p>
                 </div>
 
                 <a
                     href="#"
-                    class="font-semibold text-blue-600 transition hover:text-blue-700"
+                    class="font-semibold text-blue-900 transition hover:text-blue-700"
                 >
                     Lihat semua kategori →
                 </a>
@@ -300,7 +300,7 @@
                         Pemrograman, framework, API, dan pengembangan perangkat lunak.
                     </p>
 
-                    <p class="mt-5 text-sm font-semibold text-blue-600">
+                    <p class="mt-5 text-sm font-semibold text-blue-900">
                         24 tutorial
                     </p>
                 </a>
@@ -322,7 +322,7 @@
                         Docker, server, jaringan, deployment, dan DevOps.
                     </p>
 
-                    <p class="mt-5 text-sm font-semibold text-blue-600">
+                    <p class="mt-5 text-sm font-semibold text-blue-900">
                         16 tutorial
                     </p>
                 </a>
@@ -344,7 +344,7 @@
                         MySQL, migrasi, relasi, query, dan pengelolaan data.
                     </p>
 
-                    <p class="mt-5 text-sm font-semibold text-blue-600">
+                    <p class="mt-5 text-sm font-semibold text-blue-900">
                         12 tutorial
                     </p>
                 </a>
@@ -366,7 +366,7 @@
                         Panduan, kebijakan, alur kerja, referensi, dan manual penggunaan.
                     </p>
 
-                    <p class="mt-5 text-sm font-semibold text-blue-600">
+                    <p class="mt-5 text-sm font-semibold text-blue-900">
                         18 tutorial
                     </p>
                 </a>
@@ -393,7 +393,7 @@
 
                     <a
                         href="#"
-                        class="font-semibold text-blue-600 transition hover:text-blue-700"
+                        class="font-semibold text-blue-900 transition hover:text-blue-900"
                     >
                         Lihat semua Aplikasi →
                     </a>
@@ -405,7 +405,7 @@
                     <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
 
                         <div class="flex h-44 items-center justify-center bg-gradient-to-br from-blue-100 via-white to-cyan-100">
-                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-700 shadow-sm backdrop-blur">
+                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-900 shadow-sm backdrop-blur">
                                 SAKIP
                             </div>
                         </div>
@@ -416,7 +416,7 @@
                             </span>
 
                             <h3 class="mt-4 text-xl font-bold leading-7">
-                                <a href="#" class="transition hover:text-blue-600">
+                                <a href="#" class="transition hover:text-blue-900">
                                     Cara Menginstal Laravel Menggunakan Docker
                                 </a>
                             </h3>
@@ -436,7 +436,7 @@
                     <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
 
                         <div class="flex h-44 items-center justify-center bg-gradient-to-br from-blue-100 via-white to-cyan-100">
-                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-700 shadow-sm backdrop-blur">
+                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-900 shadow-sm backdrop-blur">
                                 Website Desa
                             </div>
                         </div>
@@ -467,7 +467,7 @@
                     <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
 
                         <div class="flex h-44 items-center justify-center bg-gradient-to-br from-blue-100 via-white to-cyan-100">
-                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-700 shadow-sm backdrop-blur">
+                            <div class="rounded-2xl bg-white/80 px-5 py-3 text-sm font-bold text-blue-900 shadow-sm backdrop-blur">
                                 E-Lapor
                             </div>
                         </div>
