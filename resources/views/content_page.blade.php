@@ -16,82 +16,80 @@
 <body class="min-h-screen bg-slate-50 text-slate-900">
 
     {{-- Navbar --}}
-    <header class="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white">
-        <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-
-            <a href="/" class="flex items-center gap-3">
-                <img
-                    src="{{ asset('images/Logo.png') }}"
-                    alt="Logo Pusat Pengetahuan"
-                    class="h-20 w-20 object-contain"
-                >
-
-                <div>
-                    <p class="font-bold text-slate-900">
-                        Pusat Pengetahuan
-                    </p>
-
-                    <p class="text-xs text-slate-500">
-                        Belajar, berbagi, dan berkembang
-                    </p>
-                </div>
-            </a>
-
-            <div class="hidden items-center gap-7 md:flex">
-                <a href="#" class="font-medium text-slate-600 hover:text-blue-900">
-                    Beranda
-                </a>
-
-                <a href="#" class="font-medium text-blue-900">
-                    Pengetahuan
-                </a>
-
-                <a href="#" class="font-medium text-slate-600 hover:text-blue-900">
-                    Tentang
-                </a>
-            </div>
-
-            <a
-                href="{{ url('/input') }}"
-                class="inline-flex items-center rounded-xl bg-blue-900 px-5 py-2.5 font-semibold text-white transition hover:bg-blue-950"
-            >
-            Masuk
-        </a>
-        </nav>
-    </header>
-
-    <div class="mx-auto flex max-w-7xl pt-20">
+    @include('components.navbar')
+    <div id="knowledgeLayout" class="mx-auto flex max-w-7xl pt-20">
 
         {{-- Sidebar --}}
         <aside
             id="sidebar"
-            class="fixed bottom-0 left-0 top-20 z-40 w-72 -translate-x-full overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-300 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:translate-x-0"
+            class="fixed bottom-0 left-0 top-20 z-40 w-72 -translate-x-full overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-white transition-all duration-300 lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)] lg:translate-x-0"
         >
             <div class="p-5">
 
-                <div class="mb-5 flex items-center justify-between">
-                    <div>
+                <div class="mb-5 flex items-center justify-between gap-3">
+                    <div class="sidebar-heading min-w-0">
                         <p class="text-xs font-semibold uppercase tracking-wider text-blue-900">
                             Navigasi
                         </p>
 
-                        <h2 class="mt-1 text-lg font-bold">
+                        <h2 class="mt-1 truncate text-lg font-bold">
                             Daftar Pengetahuan
                         </h2>
                     </div>
 
-                    <button
-                        id="closeSidebar"
-                        type="button"
-                        class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
-                        aria-label="Tutup sidebar"
+                    <div class="flex items-center gap-2">
+                        <button
+                            id="toggleDesktopSidebar"
+                            type="button"
+                            class="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-100 lg:flex"
+                            aria-label="Ciutkan sidebar"
+                            aria-expanded="true"
+                        >
+                            <i id="desktopSidebarIcon" class="bi bi-layout-sidebar-inset"></i>
+                        </button>
+
+                        <button
+                            id="closeSidebar"
+                            type="button"
+                            class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
+                            aria-label="Tutup sidebar"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Application Version Switcher --}}
+                <div class="sidebar-detail mb-5">
+                    <label
+                        for="applicationVersion"
+                        class="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500"
                     >
-                        ✕
-                    </button>
+                        Versi Aplikasi
+                    </label>
+
+                    <div class="relative">
+                        <i class="bi bi-window-stack pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <select
+                            id="applicationVersion"
+                            class="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                        >
+                            <option value="v3">Aplikasi Versi 3.0</option>
+                            <option value="v2">Aplikasi Versi 2.0</option>
+                            <option value="v1">Aplikasi Versi 1.0</option>
+                        </select>
+
+                        <i class="bi bi-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    </div>
+
+                    <p id="versionDescription" class="mt-2 text-xs leading-5 text-slate-500">
+                        Versi terbaru dengan struktur kategori dan materi paling lengkap.
+                    </p>
                 </div>
 
                 {{-- Search --}}
-                <div class="relative mb-6">
+                <div class="sidebar-detail relative mb-6">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
@@ -121,7 +119,7 @@
                     <div class="tree-item">
                         <button
                             type="button"
-                            class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
+                            class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
                             aria-expanded="true"
                         >
                             <svg
@@ -143,13 +141,13 @@
                             <span>Kategori 1</span>
                         </button>
 
-                        <div class="tree-children ml-5 border-l border-slate-200 pl-3">
+                        <div class="sidebar-tree-children tree-children ml-5 border-l border-slate-200 pl-3">
 
                             {{-- Function 1 --}}
                             <div class="tree-item mt-1">
                                 <button
                                     type="button"
-                                    class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                                    class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                                     aria-expanded="true"
                                 >
                                     <svg
@@ -167,7 +165,7 @@
                                     <span>Fungsi 1</span>
                                 </button>
 
-                                <div class="tree-children ml-5 border-l border-slate-200 pl-3">
+                                <div class="sidebar-tree-children tree-children ml-5 border-l border-slate-200 pl-3">
                                     <a
                                         href="#fungsi-a"
                                         class="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-blue-50 hover:text-blue-900"
@@ -186,7 +184,7 @@
                                     <div class="tree-item">
                                         <button
                                             type="button"
-                                            class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-100"
+                                            class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-100"
                                             aria-expanded="false"
                                         >
                                             <svg
@@ -204,7 +202,7 @@
                                             <span>Fungsi C</span>
                                         </button>
 
-                                        <div class="tree-children hidden ml-5 border-l border-slate-200 pl-3">
+                                        <div class="sidebar-tree-children tree-children hidden ml-5 border-l border-slate-200 pl-3">
                                             <a
                                                 href="#sub-fungsi-c1"
                                                 class="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-900"
@@ -227,7 +225,7 @@
                             <div class="tree-item mt-1">
                                 <button
                                     type="button"
-                                    class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                                    class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
                                     aria-expanded="false"
                                 >
                                     <svg
@@ -245,7 +243,7 @@
                                     <span>Fungsi 2</span>
                                 </button>
 
-                                <div class="tree-children hidden ml-5 border-l border-slate-200 pl-3">
+                                <div class="sidebar-tree-children tree-children hidden ml-5 border-l border-slate-200 pl-3">
                                     <a
                                         href="#fungsi-d"
                                         class="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-900"
@@ -268,7 +266,7 @@
                     <div class="tree-item">
                         <button
                             type="button"
-                            class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
+                            class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
                             aria-expanded="false"
                         >
                             <svg
@@ -290,7 +288,7 @@
                             <span>Kategori 2</span>
                         </button>
 
-                        <div class="tree-children hidden ml-5 border-l border-slate-200 pl-3">
+                        <div class="sidebar-tree-children tree-children hidden ml-5 border-l border-slate-200 pl-3">
                             <a
                                 href="#materi-1"
                                 class="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-900"
@@ -311,7 +309,7 @@
                     <div class="tree-item">
                         <button
                             type="button"
-                            class="tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
+                            class="sidebar-tree-toggle tree-toggle flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-semibold text-slate-800 transition hover:bg-slate-100"
                             aria-expanded="false"
                         >
                             <svg
@@ -333,7 +331,7 @@
                             <span>Kategori 3</span>
                         </button>
 
-                        <div class="tree-children hidden ml-5 border-l border-slate-200 pl-3">
+                        <div class="sidebar-tree-children tree-children hidden ml-5 border-l border-slate-200 pl-3">
                             <a
                                 href="#panduan-1"
                                 class="mt-1 block rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-900"
@@ -353,7 +351,7 @@
         ></div>
 
         {{-- Main Content --}}
-        <main class="min-w-0 flex-1 px-6 py-8 lg:px-10">
+        <main id="knowledgeMain" class="min-w-0 flex-1 px-6 py-8 transition-all duration-300 lg:px-10">
 
             {{-- Mobile Sidebar Button --}}
             <button
@@ -574,6 +572,82 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const openSidebar = document.getElementById('openSidebar');
         const closeSidebar = document.getElementById('closeSidebar');
+        const toggleDesktopSidebar = document.getElementById('toggleDesktopSidebar');
+        const desktopSidebarIcon = document.getElementById('desktopSidebarIcon');
+        const applicationVersion = document.getElementById('applicationVersion');
+        const versionDescription = document.getElementById('versionDescription');
+
+        let desktopSidebarCollapsed = false;
+
+        function setDesktopSidebarCollapsed(collapsed) {
+            desktopSidebarCollapsed = collapsed;
+
+            sidebar?.classList.toggle('lg:w-20', collapsed);
+            sidebar?.classList.toggle('lg:w-72', !collapsed);
+
+            document
+                .querySelectorAll(
+                    '.sidebar-heading, .sidebar-detail, .sidebar-tree-children'
+                )
+                .forEach((element) => {
+                    element.classList.toggle('lg:hidden', collapsed);
+                });
+
+            document.querySelectorAll('.sidebar-tree-toggle').forEach((button) => {
+                button.classList.toggle('lg:justify-center', collapsed);
+                button.classList.toggle('lg:px-0', collapsed);
+
+                const labels = button.querySelectorAll('span:not(:first-of-type)');
+                labels.forEach((label) => {
+                    label.classList.toggle('lg:hidden', collapsed);
+                });
+            });
+
+            desktopSidebarIcon?.classList.toggle(
+                'bi-layout-sidebar-inset',
+                !collapsed
+            );
+
+            desktopSidebarIcon?.classList.toggle(
+                'bi-layout-sidebar-inset-reverse',
+                collapsed
+            );
+
+            toggleDesktopSidebar?.setAttribute(
+                'aria-expanded',
+                String(!collapsed)
+            );
+
+            toggleDesktopSidebar?.setAttribute(
+                'aria-label',
+                collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'
+            );
+        }
+
+        toggleDesktopSidebar?.addEventListener('click', () => {
+            setDesktopSidebarCollapsed(!desktopSidebarCollapsed);
+        });
+
+        const versionDescriptions = {
+            v3: 'Versi terbaru dengan struktur kategori dan materi paling lengkap.',
+            v2: 'Versi sebelumnya dengan alur dan tampilan materi lama.',
+            v1: 'Versi awal aplikasi untuk melihat dokumentasi dasar.',
+        };
+
+        applicationVersion?.addEventListener('change', () => {
+            const selectedVersion = applicationVersion.value;
+
+            if (versionDescription) {
+                versionDescription.textContent =
+                    versionDescriptions[selectedVersion] ?? '';
+            }
+
+            /*
+             * Frontend-only demo:
+             * replace this with a real route later, for example:
+             * window.location.href = `/pengetahuan?version=${selectedVersion}`;
+             */
+        });
 
         function showSidebar() {
             sidebar?.classList.remove('-translate-x-full');

@@ -19,7 +19,7 @@
 <body class="min-h-screen bg-slate-100 text-slate-900">
 
     {{-- Navbar --}}
-    <header class="fixed inset-x-0 top-0 z-50 h-20 border-b border-slate-200 bg-white">
+    <header class="sticky top-0 z-50 h-20 border-b border-slate-200 bg-white">
         <div class="flex h-full items-center justify-between px-4 lg:px-6">
 
             {{-- Left navbar --}}
@@ -31,6 +31,16 @@
                     aria-label="Buka sidebar"
                 >
                     <i class="bi bi-list text-xl"></i>
+                </button>
+
+                <button
+                    id="toggleDesktopSidebar"
+                    type="button"
+                    class="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-100 lg:flex"
+                    aria-label="Ciutkan sidebar"
+                    aria-expanded="true"
+                >
+                    <i id="desktopSidebarIcon" class="bi bi-layout-sidebar-inset text-lg"></i>
                 </button>
 
                 <a
@@ -82,7 +92,7 @@
 
                 <button
                     type="button"
-                    class="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-slate-100"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-slate-100"
                 >
                     <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-900">
                         AD
@@ -107,7 +117,7 @@
     {{-- Sidebar --}}
     <aside
         id="sidebar"
-        class="fixed bottom-0 left-0 top-20 z-40 w-72 -translate-x-full overflow-y-auto border-r border-slate-200 bg-white transition-transform duration-300 lg:translate-x-0"
+        class="fixed bottom-0 left-0 top-20 z-40 w-72 -translate-x-full overflow-x-hidden overflow-y-auto border-r border-slate-200 bg-white transition-all duration-300 lg:translate-x-0"
     >
         <div class="p-5">
 
@@ -125,54 +135,54 @@
                 </button>
             </div>
 
-            <p class="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <p class="sidebar-section-label mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Menu Utama
             </p>
 
             <nav class="space-y-1">
 
                 <a
-                    href="{{ url('/admin/dashboard') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    href="/admin_dashboard"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-grid text-lg"></i>
-                    Dashboard
+                    <i class="bi bi-grid shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Dashboard</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/pengetahuan') }}"
-                    class="flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900"
                 >
-                    <i class="bi bi-journal-text text-lg"></i>
-                    Daftar Pengetahuan
+                    <i class="bi bi-journal-text shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Daftar Pengetahuan</span>
 
-                    <span class="ml-auto rounded-full bg-blue-100 px-2 py-0.5 text-xs">
+                    <span class="sidebar-label ml-auto rounded-full bg-blue-100 px-2 py-0.5 text-xs">
                         24
                     </span>
                 </a>
 
                 <a
                     href="{{ url('/input') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-plus-square text-lg"></i>
-                    Tambah Pengetahuan
+                    <i class="bi bi-plus-square shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Tambah Pengetahuan</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/kategori') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-folder2-open text-lg"></i>
-                    Kategori
+                    <i class="bi bi-folder2-open shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Kategori</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/aplikasi') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-window-stack text-lg"></i>
-                    Daftar Aplikasi
+                    <i class="bi bi-window-stack shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Daftar Aplikasi</span>
                 </a>
             </nav>
 
@@ -184,34 +194,34 @@
 
                 <a
                     href="{{ url('/admin/pengguna') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-people text-lg"></i>
-                    Pengguna
+                    <i class="bi bi-people shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Pengguna</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/komentar') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-chat-left-text text-lg"></i>
-                    Komentar
+                    <i class="bi bi-chat-left-text shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Komentar</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/media') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-images text-lg"></i>
-                    Media
+                    <i class="bi bi-images shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Media</span>
                 </a>
 
                 <a
                     href="{{ url('/admin/log-aktivitas') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-clock-history text-lg"></i>
-                    Log Aktivitas
+                    <i class="bi bi-clock-history shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Log Aktivitas</span>
                 </a>
             </nav>
 
@@ -222,18 +232,18 @@
             <nav class="space-y-1">
                 <a
                     href="{{ url('/admin/pengaturan') }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
-                    <i class="bi bi-gear text-lg"></i>
-                    Pengaturan
+                    <i class="bi bi-gear shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Pengaturan</span>
                 </a>
 
                 <a
                     href="#"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                    class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50"
                 >
-                    <i class="bi bi-box-arrow-right text-lg"></i>
-                    Keluar
+                    <i class="bi bi-box-arrow-right shrink-0 text-lg"></i>
+                    <span class="sidebar-label whitespace-nowrap">Keluar</span>
                 </a>
             </nav>
         </div>
@@ -246,7 +256,7 @@
     ></div>
 
     {{-- Main content --}}
-    <main class="pt-20 lg:pl-72">
+    <main id="adminMain" class="transition-[padding] duration-300 lg:pl-72">
         <div class="p-5 lg:p-8">
 
             {{-- Breadcrumb --}}
@@ -290,7 +300,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-slate-500">
-                                Total Konten
+                                Total aplikasi
                             </p>
 
                             <p class="mt-2 text-3xl font-bold">
@@ -308,7 +318,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-slate-500">
-                                Tutorial
+                                Pengetahuan
                             </p>
 
                             <p class="mt-2 text-3xl font-bold">
@@ -326,7 +336,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-sm text-slate-500">
-                                Aplikasi
+                                Admin
                             </p>
 
                             <p class="mt-2 text-3xl font-bold">
@@ -819,6 +829,56 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const openSidebar = document.getElementById('openSidebar');
         const closeSidebar = document.getElementById('closeSidebar');
+        const toggleDesktopSidebar = document.getElementById('toggleDesktopSidebar');
+        const desktopSidebarIcon = document.getElementById('desktopSidebarIcon');
+        const adminMain = document.getElementById('adminMain');
+
+        let desktopSidebarCollapsed = false;
+
+        function setDesktopSidebarCollapsed(collapsed) {
+            desktopSidebarCollapsed = collapsed;
+
+            sidebar?.classList.toggle('lg:w-20', collapsed);
+            sidebar?.classList.toggle('lg:w-72', !collapsed);
+
+            adminMain?.classList.toggle('lg:pl-20', collapsed);
+            adminMain?.classList.toggle('lg:pl-72', !collapsed);
+
+            document
+                .querySelectorAll('.sidebar-label, .sidebar-section-label')
+                .forEach((element) => {
+                    element.classList.toggle('lg:hidden', collapsed);
+                });
+
+            document.querySelectorAll('.sidebar-link').forEach((link) => {
+                link.classList.toggle('lg:justify-center', collapsed);
+                link.classList.toggle('lg:px-0', collapsed);
+            });
+
+            desktopSidebarIcon?.classList.toggle(
+                'bi-layout-sidebar-inset',
+                !collapsed
+            );
+
+            desktopSidebarIcon?.classList.toggle(
+                'bi-layout-sidebar-inset-reverse',
+                collapsed
+            );
+
+            toggleDesktopSidebar?.setAttribute(
+                'aria-expanded',
+                String(!collapsed)
+            );
+
+            toggleDesktopSidebar?.setAttribute(
+                'aria-label',
+                collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'
+            );
+        }
+
+        toggleDesktopSidebar?.addEventListener('click', () => {
+            setDesktopSidebarCollapsed(!desktopSidebarCollapsed);
+        });
 
         function showSidebar() {
             sidebar?.classList.remove('-translate-x-full');
