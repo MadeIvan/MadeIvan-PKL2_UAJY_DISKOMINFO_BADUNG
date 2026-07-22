@@ -37,7 +37,7 @@
                 </a>
 
                 <a
-                    href="/content-index"
+                    href="admin/content-index"
                     class="font-medium text-slate-600 transition hover:text-blue-900 text-decoration-none"
                 >
                     Admin View

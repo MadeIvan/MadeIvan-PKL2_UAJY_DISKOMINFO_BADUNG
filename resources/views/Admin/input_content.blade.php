@@ -116,17 +116,17 @@
                 <p class="sidebar-section-label mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Menu Utama</p>
 
                 <nav class="space-y-1">
-                    <a href="/admin_dashboard" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900">
+                    <a href="admin_dashboard" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900">
                         <i class="bi bi-grid shrink-0 text-lg"></i>
                         <span class="sidebar-label whitespace-nowrap">Dashboard</span>
                     </a>
 
-                    <a href="/content-index" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900">
+                    <a href="admin/content-index" class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900">
                         <i class="bi bi-journal-text shrink-0 text-lg"></i>
                         <span class="sidebar-label whitespace-nowrap">Daftar Pengetahuan</span>
                     </a>
 
-                    <a href="/" class="sidebar-link flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900">
+                    <a href="admin/input" class="sidebar-link flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900">
                         <i class="bi bi-plus-square shrink-0 text-lg"></i>
                         <span class="sidebar-label whitespace-nowrap">Tambah Pengetahuan</span>
                     </a>
@@ -331,7 +331,7 @@
                                 </h2>
 
                                 <p class="mt-1 text-sm text-slate-500">
-                                    Blok akan tampil sesuai urutan di bawah.
+                                    Blok akan tampil sesuai urutan di bawah. Gunakan tombol panah untuk mengubah urutan.
                                 </p>
                             </div>
 
@@ -451,12 +451,32 @@
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                        Hapus
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="move-block-up flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke atas"
+                            aria-label="Pindahkan blok ke atas"
+                        >
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="move-block-down flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke bawah"
+                            aria-label="Pindahkan blok ke bawah"
+                        >
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                            Hapus
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mt-5">
@@ -508,12 +528,32 @@
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                        Hapus
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="move-block-up flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke atas"
+                            aria-label="Pindahkan blok ke atas"
+                        >
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="move-block-down flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke bawah"
+                            aria-label="Pindahkan blok ke bawah"
+                        >
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                            Hapus
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mt-5">
@@ -579,12 +619,32 @@
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                        Hapus
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="move-block-up flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke atas"
+                            aria-label="Pindahkan blok ke atas"
+                        >
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="move-block-down flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke bawah"
+                            aria-label="Pindahkan blok ke bawah"
+                        >
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                            Hapus
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mt-5">
@@ -637,12 +697,32 @@
                         </div>
                     </div>
 
-                    <button
-                        type="button"
-                        class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                    >
-                        Hapus
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="move-block-up flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke atas"
+                            aria-label="Pindahkan blok ke atas"
+                        >
+                            <i class="bi bi-arrow-up"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="move-block-down flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                            title="Pindahkan blok ke bawah"
+                            aria-label="Pindahkan blok ke bawah"
+                        >
+                            <i class="bi bi-arrow-down"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="remove-block rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                            Hapus
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mt-5">
@@ -766,10 +846,63 @@
 
                     initializeBlocks();
                     updateBlockCount();
+                    updateBlockOrderControls();
                 });
             });
 
             function initializeBlocks() {
+                document.querySelectorAll('.move-block-up').forEach((button) => {
+                    if (button.dataset.ready) {
+                        return;
+                    }
+
+                    button.dataset.ready = 'true';
+
+                    button.addEventListener('click', () => {
+                        const block = button.closest('.content-block');
+                        const previousBlock = block?.previousElementSibling;
+
+                        if (
+                            block &&
+                            previousBlock?.classList.contains('content-block')
+                        ) {
+                            contentBlocks.insertBefore(block, previousBlock);
+                            updateBlockOrderControls();
+
+                            block.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest',
+                            });
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.move-block-down').forEach((button) => {
+                    if (button.dataset.ready) {
+                        return;
+                    }
+
+                    button.dataset.ready = 'true';
+
+                    button.addEventListener('click', () => {
+                        const block = button.closest('.content-block');
+                        const nextBlock = block?.nextElementSibling;
+
+                        if (
+                            block &&
+                            nextBlock?.classList.contains('content-block')
+                        ) {
+                            contentBlocks.insertBefore(nextBlock, block);
+                            updateBlockOrderControls();
+
+                            block.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest',
+                            });
+                        }
+                    });
+                });
+
                 document.querySelectorAll('.remove-block').forEach((button) => {
                     if (button.dataset.ready) {
                         return;
@@ -780,6 +913,7 @@
                     button.addEventListener('click', () => {
                         button.closest('.content-block')?.remove();
                         updateBlockCount();
+                        updateBlockOrderControls();
                     });
                 });
 
@@ -895,6 +1029,25 @@
                 }
 
                 return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+            }
+
+            function updateBlockOrderControls() {
+                const blocks = Array.from(
+                    contentBlocks.querySelectorAll('.content-block')
+                );
+
+                blocks.forEach((block, index) => {
+                    const moveUpButton = block.querySelector('.move-block-up');
+                    const moveDownButton = block.querySelector('.move-block-down');
+
+                    if (moveUpButton) {
+                        moveUpButton.disabled = index === 0;
+                    }
+
+                    if (moveDownButton) {
+                        moveDownButton.disabled = index === blocks.length - 1;
+                    }
+                });
             }
 
             function updateBlockCount() {

@@ -9,20 +9,29 @@ Route::get('/', function () {
 Route::get('/content', function () {
     return view('content_page');
 });
-Route::get('/input', function () {
-    return view('input_content');
+Route::get('admin/input', function () {
+    return view('Admin.input_content');
 });
-Route::get('/content-index', function () {
-    return view('content_index');
+Route::get('admin/content-index', function () {
+    return view('Admin.content_index');
 });
 
-Route::get('/app_list', function () {
+Route::get('app_list', function () {
     return view('app_index');
 });
 
-Route::get('/admin_dashboard', function () {
-    return view('admin_dashboard');
+Route::get('admin/admin_dashboard', function () {
+    return view('Admin.admin_dashboard');
 });
+
+Route::get('admin/add_app', function () {
+    return view('Admin.add_app');
+});
+
+Route::get('admin/category/index', function () {
+    return view('Admin.category_index');
+});
+
 
 Route::get('/db-check', function () {
     return [

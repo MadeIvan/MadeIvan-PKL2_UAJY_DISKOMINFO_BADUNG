@@ -150,7 +150,7 @@
                 </a>
 
                 <a
-                    href="{{ url('/admin/pengetahuan') }}"
+                    href="{{ url('admin/content-index') }}"
                     class="sidebar-link flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900"
                 >
                     <i class="bi bi-journal-text shrink-0 text-lg"></i>
@@ -162,7 +162,7 @@
                 </a>
 
                 <a
-                    href="{{ url('/input') }}"
+                    href="{{ url('admin/input') }}"
                     class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
                     <i class="bi bi-plus-square shrink-0 text-lg"></i>
@@ -170,7 +170,7 @@
                 </a>
 
                 <a
-                    href="{{ url('/admin/kategori') }}"
+                    href="{{ url('admin/category/index') }}"
                     class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
                     <i class="bi bi-folder2-open shrink-0 text-lg"></i>
@@ -178,7 +178,7 @@
                 </a>
 
                 <a
-                    href="{{ url('/admin/aplikasi') }}"
+                    href="{{ url('admin/aplikasi') }}"
                     class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                 >
                     <i class="bi bi-window-stack shrink-0 text-lg"></i>
