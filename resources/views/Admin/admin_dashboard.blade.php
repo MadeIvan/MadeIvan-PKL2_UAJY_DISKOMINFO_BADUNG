@@ -65,7 +65,7 @@
             {{-- Right navbar --}}
             <div class="flex items-center gap-3">
                 <a
-                    href="{{ url('/input') }}"
+                    href="{{ url('admin/input') }}"
                     class="inline-flex items-center gap-2 rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-950"
                 >
                     <i class="bi bi-plus-lg"></i>
@@ -137,7 +137,7 @@
 
                 <nav class="space-y-1">
                     <a
-                        href="{{ url('/admin/dashboard') }}"
+                        href="{{ url('/admin/admin_dashboard') }}"
                         class="sidebar-link flex items-center gap-3 rounded-xl bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-900"
                     >
                         <i class="bi bi-grid shrink-0 text-lg"></i>
@@ -147,17 +147,17 @@
                     </a>
 
                     <a
-                        href="{{ url('/admin/pengetahuan') }}"
+                        href="{{ url('/admin/add_app') }}"
                         class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                     >
                         <i class="bi bi-journal-text shrink-0 text-lg"></i>
                         <span class="sidebar-label whitespace-nowrap">
-                            Daftar Pengetahuan
+                            Daftar Aplikasi
                         </span>
                     </a>
 
                     <a
-                        href="{{ url('/input') }}"
+                        href="{{ url('admin/input') }}"
                         class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                     >
                         <i class="bi bi-plus-square shrink-0 text-lg"></i>
@@ -167,7 +167,7 @@
                     </a>
 
                     <a
-                        href="{{ url('/admin/kategori') }}"
+                        href="{{ url('/admin/category/index') }}"
                         class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                     >
                         <i class="bi bi-folder2-open shrink-0 text-lg"></i>
@@ -266,7 +266,7 @@
 
                 {{-- Breadcrumb --}}
                 <nav class="mb-5 flex items-center gap-2 text-sm text-slate-500">
-                    <a href="/" class="hover:text-blue-900">
+                    <a href="/admin/admin_dashboard" class="hover:text-blue-900">
                         Admin
                     </a>
 
@@ -291,7 +291,7 @@
 
                     <div class="flex flex-wrap gap-3">
                         <a
-                            href="{{ url('/admin/aplikasi/tambah') }}"
+                            href="{{ url('/admin/add_app') }}"
                             class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                             <i class="bi bi-window-plus"></i>
@@ -299,7 +299,7 @@
                         </a>
 
                         <a
-                            href="{{ url('/input') }}"
+                            href="{{ url('admin/input') }}"
                             class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-950"
                         >
                             <i class="bi bi-plus-lg"></i>
