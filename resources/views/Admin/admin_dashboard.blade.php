@@ -177,7 +177,7 @@
                     </a>
 
                     <a
-                        href="{{ url('/admin/aplikasi') }}"
+                        href="{{ url('/admin/add_app') }}"
                         class="sidebar-link flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-blue-900"
                     >
                         <i class="bi bi-window-stack shrink-0 text-lg"></i>

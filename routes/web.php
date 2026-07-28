@@ -41,3 +41,9 @@ Route::get('/db-check', function () {
         'tables' => Schema::getTableListing(),
     ];
 });
+
+
+Route::view(
+    '/admin/applications-demo',
+    'admin.applications.index'
+)->name('admin.applications.index');
