@@ -11,16 +11,16 @@ class Application extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'category_name',
-        'logo_path',
-        'cover_path',
-        'status',
-        'is_public',
-    ];
+protected $fillable = [
+    'name',
+    'slug',
+    'description',
+    'category_name',
+    'logo_path',
+    'cover_path',
+    'status',
+    'is_public',
+];
 
     protected function casts(): array
     {

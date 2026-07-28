@@ -26,7 +26,7 @@ class UpdateApplicationRequest extends FormRequest
 
             'slug' => [
                 'sometimes',
-                'required',
+                'nullable',
                 'string',
                 'max:200',
                 Rule::unique('applications', 'slug')
@@ -57,6 +57,32 @@ class UpdateApplicationRequest extends FormRequest
             ],
 
             'is_public' => [
+                'sometimes',
+                'boolean',
+            ],
+
+            'logo' => [
+                'sometimes',
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
+
+            'cover' => [
+                'sometimes',
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:4096',
+            ],
+
+            'remove_logo' => [
+                'sometimes',
+                'boolean',
+            ],
+
+            'remove_cover' => [
                 'sometimes',
                 'boolean',
             ],

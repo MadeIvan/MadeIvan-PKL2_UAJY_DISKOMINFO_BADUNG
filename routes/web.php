@@ -43,7 +43,6 @@ Route::get('/db-check', function () {
 });
 
 
-Route::view(
-    '/admin/applications-demo',
-    'admin.applications.index'
-)->name('admin.applications.index');
+Route::view('/admin/applications-demo','admin.applications.index')->name('admin.applications.index');
+
+Route::view('/applications-demo', 'Public_View.showApp')->name('applications.index');
