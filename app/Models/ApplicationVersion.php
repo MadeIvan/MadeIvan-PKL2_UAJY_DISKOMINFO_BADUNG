@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ApplicationVersion extends Model
 {
@@ -27,5 +28,12 @@ class ApplicationVersion extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+    public function tutorialNodes(): HasMany
+    {
+        return $this
+            ->hasMany(TutorialNode::class)
+            ->orderBy('sort_order')
+            ->orderBy('title');
     }
 }

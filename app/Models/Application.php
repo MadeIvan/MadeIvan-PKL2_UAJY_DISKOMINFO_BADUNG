@@ -39,4 +39,20 @@ public function currentVersion(): HasOne
     return $this->hasOne(ApplicationVersion::class)
         ->where('is_current', true);
 }
+
+    public function tutorialNodes(): HasMany
+    {
+        return $this
+            ->hasMany(TutorialNode::class)
+            ->orderBy('sort_order')
+            ->orderBy('title');
+    }
+    public function rootTutorialNodes(): HasMany
+    {
+        return $this
+            ->hasMany(TutorialNode::class)
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->orderBy('title');
+    }
 }
