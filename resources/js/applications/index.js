@@ -436,4 +436,4 @@ elements.retry.addEventListener(
     }
 );
 
-fetchApplications();
+fetchApplications();   
