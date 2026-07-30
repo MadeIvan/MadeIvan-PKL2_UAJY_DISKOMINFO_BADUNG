@@ -153,4 +153,34 @@ public function getAllWithVersions(Request $request): JsonResponse
         ],
     ]);
 }
+
+
+public function options(): JsonResponse
+{
+    $applications = Application::query()
+        ->select([
+            'id',
+            'name',
+            'description',
+        ])
+        ->with([
+            'versions' => function ($query): void {
+                $query
+                    ->select([
+                        'id',
+                        'application_id',
+                        'version_number',
+                    ])
+                    ->orderByDesc('id');
+            },
+        ])
+        ->orderBy('name')
+        ->get();
+
+    return response()->json([
+        'message' => 'Pilihan aplikasi berhasil diambil.',
+        'data' => $applications,
+    ]);
+}
+
 }

@@ -41,8 +41,8 @@ Route::get('/db-check', function () {
         'tables' => Schema::getTableListing(),
     ];
 });
+Route::view('/admin/Materi-demo','Admin.materi-demo.index')->name('Admin.materi-demo.index');
 
-
-Route::view('/admin/applications-demo','admin.applications.index')->name('admin.applications.index');
+Route::view('/admin/applications-demo','Admin.applications.index')->name('Admin.applications.index');
 
 Route::view('/applications-demo', 'Public_View.showApp')->name('applications.index');
