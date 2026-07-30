@@ -1,372 +1,533 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
+@extends('components.admin.layouts.admin')
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+@section('title', 'Kelola Aplikasi')
+@section('page-title', 'Kelola Aplikasi')
 
-    <title>Kelola Aplikasi</title>
+@push('scripts')
+    @vite('resources/js/admin/applications/index.js')
+@endpush
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/admin/applications/index.js'
-    ])
-</head>
+@section('content')
+    <div class="space-y-6">
 
-<body class="min-h-screen bg-slate-100 text-slate-900">
-    @include('components.navbar')
+        {{-- Notifikasi --}}
+        <div
+            id="notification"
+            class="hidden border px-4 py-3 text-sm"
+            role="alert"
+        ></div>
 
-    <main class="min-h-screen pb-12 pt-28">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {{-- Header halaman --}}
+        <section class="border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                        Manajemen Aplikasi
+                    </p>
 
-            {{-- Notifikasi --}}
-            <div
-                id="notification"
-                class="mb-6 hidden rounded-xl border px-4 py-3 text-sm"
-                role="alert"
-            ></div>
+                    <h2 class="mt-2 text-2xl font-bold text-slate-950">
+                        Daftar Aplikasi
+                    </h2>
 
-            {{-- Form aplikasi --}}
-            <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-200 px-5 py-5 sm:px-6">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                            <h1
-                                id="application-form-title"
-                                class="text-xl font-bold text-slate-900"
-                            >
-                                Tambah Aplikasi
-                            </h1>
-
-                            <p class="mt-1 text-sm text-slate-500">
-                                Daftarkan aplikasi beserta informasi dan logonya.
-                            </p>
-                        </div>
-
-                        <button
-                            id="application-cancel-button"
-                            type="button"
-                            class="hidden items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                        >
-                            <i class="bi bi-x-lg"></i>
-                            Batal Mengubah
-                        </button>
-                    </div>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                        Kelola informasi aplikasi, logo, status publik, serta versi
+                        aplikasi yang tersedia pada sistem.
+                    </p>
                 </div>
 
-                <form
-                    id="application-form"
-                    class="space-y-6 p-5 sm:p-6"
-                    enctype="multipart/form-data"
+                <button
+                    id="open-application-form"
+                    type="button"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900"
                 >
-                    <input
-                        id="application-id"
-                        type="hidden"
-                    >
+                    <i class="bi bi-plus-lg"></i>
+                    Tambah Aplikasi
+                </button>
+            </div>
+        </section>
 
-                    <div class="grid gap-5 md:grid-cols-2">
-                        <div>
-                            <label
-                                for="application-name"
-                                class="mb-2 block text-sm font-semibold text-slate-700"
-                            >
-                                Nama Aplikasi
-                                <span class="text-red-500">*</span>
-                            </label>
+        {{-- Statistik --}}
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <article class="border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Total Aplikasi
+                        </p>
 
-                            <input
-                                id="application-name"
-                                type="text"
-                                required
-                                maxlength="200"
-                                placeholder="Contoh: Sistem Manajemen Pengetahuan"
-                                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                            >
-                        </div>
+                        <p
+                            id="stat-total-applications"
+                            class="mt-2 text-3xl font-bold text-slate-950"
+                        >
+                            0
+                        </p>
+                    </div>
 
-                        <div>
-                            <label
-                                for="application-slug"
-                                class="mb-2 block text-sm font-semibold text-slate-700"
-                            >
-                                Slug
-                            </label>
+                    <div class="flex h-12 w-12 items-center justify-center bg-blue-100 text-blue-900">
+                        <i class="bi bi-window-stack text-xl"></i>
+                    </div>
+                </div>
+            </article>
 
-                            <input
-                                id="application-slug"
-                                type="text"
-                                maxlength="200"
-                                placeholder="Dibuat otomatis jika dikosongkan"
-                                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                            >
+            <article class="border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Aplikasi Aktif
+                        </p>
 
-                            <p class="mt-1 text-xs text-slate-500">
-                                Digunakan sebagai alamat URL aplikasi.
-                            </p>
-                        </div>
+                        <p
+                            id="stat-active-applications"
+                            class="mt-2 text-3xl font-bold text-slate-950"
+                        >
+                            0
+                        </p>
+                    </div>
 
-                        <div>
-                            <label
-                                for="application-category"
-                                class="mb-2 block text-sm font-semibold text-slate-700"
-                            >
+                    <div class="flex h-12 w-12 items-center justify-center bg-emerald-100 text-emerald-700">
+                        <i class="bi bi-check-circle text-xl"></i>
+                    </div>
+                </div>
+            </article>
+
+            <article class="border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Aplikasi Publik
+                        </p>
+
+                        <p
+                            id="stat-public-applications"
+                            class="mt-2 text-3xl font-bold text-slate-950"
+                        >
+                            0
+                        </p>
+                    </div>
+
+                    <div class="flex h-12 w-12 items-center justify-center bg-violet-100 text-violet-700">
+                        <i class="bi bi-globe text-xl"></i>
+                    </div>
+                </div>
+            </article>
+
+            <article class="border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Total Versi
+                        </p>
+
+                        <p
+                            id="stat-total-versions"
+                            class="mt-2 text-3xl font-bold text-slate-950"
+                        >
+                            0
+                        </p>
+                    </div>
+
+                    <div class="flex h-12 w-12 items-center justify-center bg-amber-100 text-amber-700">
+                        <i class="bi bi-tags text-xl"></i>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        {{-- Tabel aplikasi --}}
+        <section class="border border-slate-200 bg-white shadow-sm">
+            <div class="border-b border-slate-200 p-5 sm:p-6">
+                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-950">
+                            Data Aplikasi
+                        </h3>
+
+                        <p
+                            id="application-count"
+                            class="mt-1 text-sm text-slate-500"
+                        >
+                            Memuat data aplikasi...
+                        </p>
+                    </div>
+
+                    <div class="relative w-full md:w-80">
+                        <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                        <input
+                            id="application-search"
+                            type="search"
+                            placeholder="Cari aplikasi..."
+                            autocomplete="off"
+                            class="w-full border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            {{-- Loading --}}
+            <div
+                id="application-loading"
+                class="py-16 text-center text-sm text-slate-500"
+            >
+                <i class="bi bi-arrow-repeat mr-2 inline-block animate-spin text-xl"></i>
+                Memuat data aplikasi...
+            </div>
+
+            {{-- Empty --}}
+            <div
+                id="application-empty"
+                class="hidden px-5 py-16 text-center"
+            >
+                <div class="mx-auto flex h-14 w-14 items-center justify-center bg-slate-100 text-slate-400">
+                    <i class="bi bi-window-stack text-2xl"></i>
+                </div>
+
+                <h3 class="mt-4 text-lg font-bold text-slate-950">
+                    Aplikasi tidak ditemukan
+                </h3>
+
+                <p class="mt-2 text-sm text-slate-500">
+                    Tambahkan aplikasi baru atau gunakan kata pencarian lain.
+                </p>
+            </div>
+
+            {{-- Error --}}
+            <div
+                id="application-error"
+                class="hidden px-5 py-16 text-center"
+            >
+                <div class="mx-auto flex h-14 w-14 items-center justify-center bg-red-50 text-red-500">
+                    <i class="bi bi-exclamation-triangle text-2xl"></i>
+                </div>
+
+                <h3 class="mt-4 text-lg font-bold text-slate-950">
+                    Gagal memuat aplikasi
+                </h3>
+
+                <p
+                    id="application-error-message"
+                    class="mt-2 text-sm text-slate-500"
+                ></p>
+
+                <button
+                    id="application-retry-button"
+                    type="button"
+                    class="mt-5 inline-flex items-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Coba Lagi
+                </button>
+            </div>
+
+            {{-- Table --}}
+            <div
+                id="application-table-wrapper"
+                class="hidden overflow-x-auto"
+            >
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="w-20 px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Logo
+                            </th>
+
+                            <th class="min-w-64 px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Aplikasi
+                            </th>
+
+                            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                                 Kategori
-                            </label>
+                            </th>
 
-                            <input
-                                id="application-category"
-                                type="text"
-                                maxlength="150"
-                                placeholder="Contoh: Sistem Internal"
-                                class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                            >
-                        </div>
-
-                        <div>
-                            <label
-                                for="application-status"
-                                class="mb-2 block text-sm font-semibold text-slate-700"
-                            >
+                            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
                                 Status
-                                <span class="text-red-500">*</span>
-                            </label>
+                            </th>
 
-                            <select
-                                id="application-status"
-                                required
-                                class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                            >
-                                <option value="active">Aktif</option>
-                                <option value="inactive">Tidak Aktif</option>
-                                <option value="archived">Diarsipkan</option>
-                            </select>
-                        </div>
+                            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Visibilitas
+                            </th>
+
+                            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Versi
+                            </th>
+
+                            <th class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody
+                        id="application-table-body"
+                        class="divide-y divide-slate-200 bg-white"
+                    ></tbody>
+                </table>
+            </div>
+
+            {{-- Pagination --}}
+            <div
+                id="application-pagination-wrapper"
+                class="hidden border-t border-slate-200 px-5 py-5 sm:px-6"
+            >
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p
+                        id="application-page-info"
+                        class="text-sm text-slate-500"
+                    >
+                        Menampilkan data aplikasi
+                    </p>
+
+                    <div
+                        id="application-pagination"
+                        class="flex flex-wrap items-center justify-center gap-2"
+                    ></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    {{-- Modal tambah atau ubah aplikasi --}}
+    <div
+        id="application-form-modal"
+        class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4"
+        aria-hidden="true"
+    >
+        <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+            <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                        Form Aplikasi
+                    </p>
+
+                    <h2
+                        id="application-form-title"
+                        class="mt-1 text-xl font-bold text-slate-950"
+                    >
+                        Tambah Aplikasi
+                    </h2>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                        Isi informasi aplikasi dan unggah logo aplikasi.
+                    </p>
+                </div>
+
+                <button
+                    id="application-form-modal-close"
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
+                    aria-label="Tutup form"
+                >
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form
+                id="application-form"
+                class="space-y-6 p-5 sm:p-6"
+                enctype="multipart/form-data"
+            >
+                <input
+                    id="application-id"
+                    type="hidden"
+                >
+
+                <div class="grid gap-5 md:grid-cols-2">
+                    <div>
+                        <label
+                            for="application-name"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Nama Aplikasi
+                            <span class="text-red-500">*</span>
+                        </label>
+
+                        <input
+                            id="application-name"
+                            type="text"
+                            required
+                            maxlength="200"
+                            placeholder="Contoh: Sistem Manajemen Pengetahuan"
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                        >
                     </div>
 
                     <div>
                         <label
-                            for="application-description"
+                            for="application-slug"
                             class="mb-2 block text-sm font-semibold text-slate-700"
                         >
-                            Deskripsi
+                            Slug
                         </label>
 
-                        <textarea
-                            id="application-description"
-                            rows="4"
-                            placeholder="Jelaskan fungsi dan tujuan aplikasi."
-                            class="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                        ></textarea>
+                        <input
+                            id="application-slug"
+                            type="text"
+                            maxlength="200"
+                            placeholder="Dibuat otomatis jika kosong"
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                        >
+
+                        <p class="mt-1 text-xs text-slate-500">
+                            Digunakan sebagai alamat URL aplikasi.
+                        </p>
                     </div>
 
-                    {{-- Logo aplikasi --}}
-                    <div class="max-w-2xl rounded-2xl border border-slate-200 p-5">
-                        <div class="mb-4">
-                            <h2 class="font-semibold text-slate-900">
-                                Logo Aplikasi
-                            </h2>
-
-                            <p class="mt-1 text-xs leading-5 text-slate-500">
-                                Disarankan menggunakan gambar persegi. Format JPG,
-                                PNG, atau WebP dengan ukuran maksimal 2 MB.
-                            </p>
-                        </div>
-
-                        <input
-                            id="application-logo"
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp"
-                            class="block w-full rounded-xl border border-slate-300 bg-white text-sm text-slate-600 file:mr-4 file:border-0 file:bg-blue-50 file:px-4 file:py-3 file:font-semibold file:text-blue-900 hover:file:bg-blue-100"
-                        >
-
-                        <div
-                            id="application-logo-preview-wrapper"
-                            class="mt-5 hidden"
-                        >
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-                                <div class="flex h-36 w-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                                    <img
-                                        id="application-logo-preview"
-                                        src=""
-                                        alt="Pratinjau logo aplikasi"
-                                        class="h-full w-full object-contain p-3"
-                                    >
-                                </div>
-
-                                <div>
-                                    <p class="text-sm font-medium text-slate-700">
-                                        Pratinjau logo
-                                    </p>
-
-                                    <label class="mt-3 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-red-600">
-                                        <input
-                                            id="application-remove-logo"
-                                            type="checkbox"
-                                            class="h-4 w-4 rounded border-slate-300 text-red-600"
-                                        >
-
-                                        Hapus logo saat ini
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <input
-                            id="application-is-public"
-                            type="checkbox"
-                            class="h-5 w-5 rounded border-slate-300 text-blue-900 focus:ring-blue-900"
-                        >
-
+                    <div>
                         <label
-                            for="application-is-public"
-                            class="text-sm font-medium text-slate-700"
+                            for="application-category"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
                         >
-                            Tampilkan aplikasi ini pada halaman publik
+                            Kategori
                         </label>
-                    </div>
 
-                    <div class="flex justify-end">
-                        <button
-                            id="application-submit-button"
-                            type="submit"
-                            class="inline-flex min-w-44 items-center justify-center gap-2 rounded-xl bg-blue-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-60"
+                        <input
+                            id="application-category"
+                            type="text"
+                            maxlength="150"
+                            placeholder="Contoh: Sistem Internal"
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <i class="bi bi-plus-lg"></i>
-                            <span>Simpan Aplikasi</span>
-                        </button>
                     </div>
-                </form>
-            </section>
 
-            {{-- Daftar aplikasi --}}
-            <section class="mt-7 rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-200 px-5 py-5 sm:px-6">
-                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900">
-                                Daftar Aplikasi
-                            </h2>
+                    <div>
+                        <label
+                            for="application-status"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Status
+                            <span class="text-red-500">*</span>
+                        </label>
 
-                            <p
-                                id="application-count"
-                                class="mt-1 text-sm text-slate-500"
-                            >
-                                Memuat data aplikasi...
-                            </p>
+                        <select
+                            id="application-status"
+                            required
+                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                        >
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                            <option value="archived">Diarsipkan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        for="application-description"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Deskripsi
+                    </label>
+
+                    <textarea
+                        id="application-description"
+                        rows="4"
+                        placeholder="Jelaskan fungsi dan tujuan aplikasi."
+                        class="w-full resize-y border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                    ></textarea>
+                </div>
+
+                {{-- Logo --}}
+                <div class="border border-slate-200 bg-slate-50 p-5">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-slate-950">
+                            Logo Aplikasi
+                        </h3>
+
+                        <p class="mt-1 text-xs leading-5 text-slate-500">
+                            Gunakan JPG, PNG, atau WebP. Ukuran maksimal 2 MB.
+                        </p>
+                    </div>
+
+                    <input
+                        id="application-logo"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="block w-full border border-slate-300 bg-white text-sm text-slate-600 file:mr-4 file:border-0 file:bg-blue-100 file:px-4 file:py-3 file:font-semibold file:text-blue-900 hover:file:bg-blue-200"
+                    >
+
+                    <div
+                        id="application-logo-preview-wrapper"
+                        class="mt-5 hidden"
+                    >
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <div class="flex h-28 w-28 shrink-0 items-center justify-center border border-slate-200 bg-white">
+                                <img
+                                    id="application-logo-preview"
+                                    src=""
+                                    alt="Pratinjau logo aplikasi"
+                                    class="h-full w-full object-contain p-3"
+                                >
+                            </div>
+
+                            <label class="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-red-600">
+                                <input
+                                    id="application-remove-logo"
+                                    type="checkbox"
+                                    class="h-4 w-4 border-slate-300 text-red-600"
+                                >
+
+                                Hapus logo saat ini
+                            </label>
                         </div>
-
-                        <div class="relative w-full md:w-80">
-                            <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-
-                            <input
-                                id="application-search"
-                                type="search"
-                                placeholder="Cari aplikasi..."
-                                autocomplete="off"
-                                class="w-full rounded-xl border border-slate-300 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                            >
-                        </div>
                     </div>
                 </div>
 
-                {{-- Loading --}}
-                <div
-                    id="application-loading"
-                    class="py-16 text-center text-sm text-slate-500"
-                >
-                    <i class="bi bi-arrow-repeat mr-2 inline-block animate-spin text-xl"></i>
-                    Memuat data aplikasi...
-                </div>
+                {{-- Visibilitas --}}
+                <label class="flex cursor-pointer items-center gap-3 border border-slate-200 p-4">
+                    <input
+                        id="application-is-public"
+                        type="checkbox"
+                        class="h-5 w-5 border-slate-300 text-blue-900 focus:ring-blue-900"
+                    >
 
-                {{-- Empty --}}
-                <div
-                    id="application-empty"
-                    class="hidden py-16 text-center"
-                >
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                        <i class="bi bi-window-stack text-2xl"></i>
-                    </div>
+                    <span>
+                        <span class="block text-sm font-semibold text-slate-800">
+                            Tampilkan pada halaman publik
+                        </span>
 
-                    <h3 class="mt-4 text-lg font-semibold text-slate-900">
-                        Aplikasi tidak ditemukan
-                    </h3>
+                        <span class="mt-1 block text-xs text-slate-500">
+                            Aplikasi aktif dan publik akan tampil pada halaman daftar aplikasi.
+                        </span>
+                    </span>
+                </label>
 
-                    <p class="mt-1 text-sm text-slate-500">
-                        Tambahkan aplikasi baru atau gunakan kata pencarian lain.
-                    </p>
-                </div>
-
-                {{-- Error --}}
-                <div
-                    id="application-error"
-                    class="hidden py-16 text-center"
-                >
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
-                        <i class="bi bi-exclamation-triangle text-2xl"></i>
-                    </div>
-
-                    <h3 class="mt-4 text-lg font-semibold text-slate-900">
-                        Gagal memuat aplikasi
-                    </h3>
-
-                    <p
-                        id="application-error-message"
-                        class="mt-1 text-sm text-slate-500"
-                    ></p>
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+                    <button
+                        id="application-cancel-button"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                        <i class="bi bi-x-lg"></i>
+                        Batal
+                    </button>
 
                     <button
-                        id="application-retry-button"
-                        type="button"
-                        class="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        id="application-submit-button"
+                        type="submit"
+                        class="inline-flex min-w-44 items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        <i class="bi bi-arrow-clockwise"></i>
-                        Coba Lagi
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Simpan Aplikasi</span>
                     </button>
                 </div>
-
-                {{-- Grid aplikasi --}}
-                <div
-                    id="application-grid"
-                    class="hidden grid gap-5 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-3"
-                ></div>
-                {{-- Pagination --}}
-<div
-    id="application-pagination-wrapper"
-    class="hidden border-t border-slate-200 px-5 py-5 sm:px-6"
->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p
-            id="application-page-info"
-            class="text-sm text-slate-500"
-        >
-            Menampilkan data aplikasi
-        </p>
-
-        <div
-            id="application-pagination"
-            class="flex flex-wrap items-center justify-center gap-2"
-        ></div>
-    </div>
-</div>
-            </section>
+            </form>
         </div>
-    </main>
+    </div>
 
     {{-- Modal versi --}}
     <div
         id="version-modal"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 p-4"
+        class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/60 p-4"
         aria-hidden="true"
     >
-        <div class="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        <div class="max-h-[92vh] w-full max-w-5xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
             <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6">
                 <div>
-                    <h2 class="text-xl font-bold text-slate-900">
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
+                        Versi Aplikasi
+                    </p>
+
+                    <h2 class="mt-1 text-xl font-bold text-slate-950">
                         Kelola Versi Aplikasi
                     </h2>
 
@@ -379,7 +540,7 @@
                 <button
                     id="version-modal-close"
                     type="button"
-                    class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                    class="flex h-10 w-10 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-slate-950"
                     aria-label="Tutup modal"
                 >
                     <i class="bi bi-x-lg"></i>
@@ -387,31 +548,23 @@
             </div>
 
             <div class="grid gap-6 p-5 sm:p-6 lg:grid-cols-[360px_1fr]">
-                {{-- Form versi --}}
                 <form
                     id="version-form"
-                    class="h-fit space-y-4 rounded-2xl border border-slate-200 p-4"
+                    class="h-fit space-y-4 border border-slate-200 bg-slate-50 p-5"
                 >
-                    <input
-                        id="version-id"
-                        type="hidden"
-                    >
-
-                    <input
-                        id="version-application-id"
-                        type="hidden"
-                    >
+                    <input id="version-id" type="hidden">
+                    <input id="version-application-id" type="hidden">
 
                     <div>
                         <h3
                             id="version-form-title"
-                            class="font-bold text-slate-900"
+                            class="font-bold text-slate-950"
                         >
                             Tambah Versi
                         </h3>
 
                         <p class="mt-1 text-xs text-slate-500">
-                            Tambahkan versi atau rilis baru dari aplikasi.
+                            Tambahkan versi atau rilis baru.
                         </p>
                     </div>
 
@@ -430,7 +583,7 @@
                             required
                             maxlength="50"
                             placeholder="Contoh: 1.0.0"
-                            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
                     </div>
 
@@ -445,7 +598,7 @@
                         <input
                             id="version-release-date"
                             type="date"
-                            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
                     </div>
 
@@ -459,7 +612,7 @@
 
                         <select
                             id="version-status"
-                            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
                             <option value="draft">Draf</option>
                             <option value="beta">Beta</option>
@@ -480,7 +633,7 @@
                             id="version-release-notes"
                             rows="4"
                             placeholder="Jelaskan perubahan pada versi ini."
-                            class="w-full resize-y rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                            class="w-full resize-y border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         ></textarea>
                     </div>
 
@@ -488,11 +641,11 @@
                         <input
                             id="version-is-current"
                             type="checkbox"
-                            class="h-5 w-5 rounded border-slate-300 text-blue-900 focus:ring-blue-900"
+                            class="h-5 w-5 border-slate-300 text-blue-900 focus:ring-blue-900"
                         >
 
                         <span class="text-sm font-medium text-slate-700">
-                            Jadikan sebagai versi saat ini
+                            Jadikan versi saat ini
                         </span>
                     </label>
 
@@ -500,7 +653,7 @@
                         <button
                             id="version-submit-button"
                             type="submit"
-                            class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-950 disabled:opacity-60"
+                            class="inline-flex flex-1 items-center justify-center gap-2 bg-blue-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:opacity-60"
                         >
                             <i class="bi bi-plus-lg"></i>
                             <span>Simpan Versi</span>
@@ -509,18 +662,17 @@
                         <button
                             id="version-cancel-button"
                             type="button"
-                            class="hidden items-center justify-center rounded-xl border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            class="hidden items-center justify-center border border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-white"
                         >
                             Batal
                         </button>
                     </div>
                 </form>
 
-                {{-- Daftar versi --}}
                 <div>
                     <div
                         id="version-empty"
-                        class="hidden rounded-2xl border border-dashed border-slate-300 py-12 text-center"
+                        class="hidden border border-dashed border-slate-300 py-12 text-center"
                     >
                         <i class="bi bi-tags text-3xl text-slate-400"></i>
 
@@ -537,5 +689,4 @@
             </div>
         </div>
     </div>
-</body>
-</html>
+@endsection
