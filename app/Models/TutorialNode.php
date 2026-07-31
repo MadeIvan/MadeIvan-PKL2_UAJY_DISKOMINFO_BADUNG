@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
 class TutorialNode extends Model
 {
     use HasFactory;
@@ -25,6 +26,7 @@ class TutorialNode extends Model
         'sort_order',
         'status',
         'is_public',
+        'title',
     ];
 
     protected function casts(): array
@@ -97,5 +99,14 @@ class TutorialNode extends Model
     {
         return $this->parent_id === null;
     }
+
+
+    public function contentBlocks(): HasMany
+{
+    return $this
+        ->hasMany(TutorialContentBlock::class)
+        ->orderBy('sort_order')
+        ->orderBy('id');
+}
     
 }

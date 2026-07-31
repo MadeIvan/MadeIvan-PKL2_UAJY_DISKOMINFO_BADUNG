@@ -46,3 +46,10 @@ Route::view('/admin/Materi-demo','Admin.materi-demo.index')->name('Admin.materi-
 Route::view('/admin/applications-demo','Admin.applications.index')->name('Admin.applications.index');
 
 Route::view('/applications-demo', 'Public_View.showApp')->name('applications.index');
+
+
+Route::get('/admin/Materi-demo/{tutorialNode}/content', function (int $tutorialNode) {
+    return view('Admin.materi-demo.content', compact('tutorialNode'));
+})
+    ->whereNumber('tutorialNode')
+    ->name('admin.materi-demo.content');

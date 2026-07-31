@@ -582,6 +582,22 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <i class="bi bi-plus-lg"></i>
                                 Child
                             </button>
+                            
+
+                            ${
+                                ['tutorial', 'step'].includes(node.node_type)
+                                    ? `
+                                        <a
+                                            href="/admin/Materi-demo/${node.id}/content"
+                                            class="inline-flex items-center gap-2 border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50"
+                                        >
+                                            <i class="bi bi-journal-richtext"></i>
+                                            Kelola Isi
+                                        </a>
+                                    `
+                                    : ''
+                            }
+
 
                             <button
                                 type="button"
