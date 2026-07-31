@@ -1,0 +1,472 @@
+@extends('components.admin.layouts.admin')
+
+@section('title', 'Kelola Isi Materi')
+@section('page-title', 'Kelola Isi Materi')
+
+@push('scripts')
+    @vite('resources/js/admin/materi-demo/content.js')
+@endpush
+
+@section('content')
+    <div
+        id="content-page"
+        data-node-id="{{ $tutorialNode }}"
+        class="space-y-6"
+    >
+        {{-- Notification --}}
+        <div
+            id="notification"
+            class="hidden border px-4 py-3 text-sm"
+            role="alert"
+        ></div>
+
+        {{-- Page header --}}
+        <section class="border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+                <div class="min-w-0">
+                    <a
+                        href="{{ url('/admin/Materi-demo') }}"
+                        class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-950"
+                    >
+                        <i class="bi bi-arrow-left"></i>
+                        Kembali ke Struktur Materi
+                    </a>
+
+                    <p class="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                        Editor Konten
+                    </p>
+
+                    <h2
+                        id="node-title"
+                        class="mt-2 text-2xl font-bold text-slate-950"
+                    >
+                        Memuat materi...
+                    </h2>
+
+                    <p
+                        id="node-meta"
+                        class="mt-2 text-sm leading-6 text-slate-500"
+                    >
+                        Mohon tunggu.
+                    </p>
+                </div>
+
+                <button
+                    id="refresh-button"
+                    type="button"
+                    class="inline-flex shrink-0 items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Muat Ulang
+                </button>
+            </div>
+        </section>
+
+        {{-- Add block toolbar --}}
+        <section class="border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div>
+                <h3 class="text-lg font-bold text-slate-950">
+                    Tambahkan Blok Konten
+                </h3>
+
+                <p class="mt-1 text-sm text-slate-500">
+                    Susun materi menggunakan teks, gambar, video YouTube, dan dokumen PDF.
+                </p>
+            </div>
+
+            <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <button
+                    type="button"
+                    data-add-type="text"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                    <i class="bi bi-type text-xl text-blue-900"></i>
+
+                    <span class="mt-3 block font-semibold text-slate-900">
+                        Teks
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Teks dengan format seperti Microsoft Word.
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    data-add-type="image"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                    <i class="bi bi-image text-xl text-emerald-700"></i>
+
+                    <span class="mt-3 block font-semibold text-slate-900">
+                        Gambar
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Upload JPG, PNG, atau WEBP.
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    data-add-type="youtube"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                    <i class="bi bi-youtube text-xl text-red-600"></i>
+
+                    <span class="mt-3 block font-semibold text-slate-900">
+                        YouTube
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Tambahkan judul dan tautan video.
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    data-add-type="pdf"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                    <i class="bi bi-file-earmark-pdf text-xl text-red-600"></i>
+
+                    <span class="mt-3 block font-semibold text-slate-900">
+                        PDF
+                    </span>
+
+                    <span class="mt-1 block text-xs text-slate-500">
+                        Upload dokumen panduan PDF.
+                    </span>
+                </button>
+            </div>
+        </section>
+
+        {{-- Content block list --}}
+        <section class="border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-950">
+                        Isi Materi
+                    </h3>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                        Gunakan tombol panah untuk mengubah urutan blok.
+                    </p>
+                </div>
+
+                <span
+                    id="block-count"
+                    class="w-fit border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-900"
+                >
+                    0 blok
+                </span>
+            </div>
+
+            {{-- Loading --}}
+            <div
+                id="loading-state"
+                class="px-5 py-16 text-center text-sm text-slate-500"
+            >
+                <i class="bi bi-arrow-repeat mr-2 inline-block animate-spin text-xl"></i>
+                Memuat konten...
+            </div>
+
+            {{-- Error --}}
+            <div
+                id="error-state"
+                class="hidden px-5 py-16 text-center"
+            >
+                <i class="bi bi-exclamation-triangle text-4xl text-red-400"></i>
+
+                <h3 class="mt-4 text-lg font-bold text-slate-950">
+                    Gagal Memuat Konten
+                </h3>
+
+                <p
+                    id="error-message"
+                    class="mt-2 text-sm text-slate-500"
+                ></p>
+
+                <button
+                    id="retry-button"
+                    type="button"
+                    class="mt-5 inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Coba Lagi
+                </button>
+            </div>
+
+            {{-- Empty --}}
+            <div
+                id="empty-state"
+                class="hidden px-5 py-16 text-center"
+            >
+                <i class="bi bi-file-earmark-plus text-4xl text-slate-300"></i>
+
+                <h3 class="mt-4 text-lg font-bold text-slate-950">
+                    Belum Ada Blok Konten
+                </h3>
+
+                <p class="mt-2 text-sm text-slate-500">
+                    Tambahkan blok pertama melalui pilihan di atas.
+                </p>
+            </div>
+
+            {{-- Blocks --}}
+            <div
+                id="blocks-container"
+                class="hidden space-y-4 p-5 sm:p-6"
+            ></div>
+        </section>
+    </div>
+
+    {{-- Block form modal --}}
+    <div
+        id="block-modal"
+        class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/60 p-4"
+        aria-hidden="true"
+    >
+        <div class="max-h-[92vh] w-full max-w-4xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+            <div class="sticky top-0 z-20 flex items-start justify-between gap-4 border-b border-slate-200 bg-white p-5 sm:p-6">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                        Form Blok
+                    </p>
+
+                    <h2
+                        id="form-title"
+                        class="mt-1 text-xl font-bold text-slate-950"
+                    >
+                        Tambah Blok
+                    </h2>
+
+                    <p
+                        id="form-description"
+                        class="mt-1 text-sm text-slate-500"
+                    >
+                        Isi informasi blok konten.
+                    </p>
+                </div>
+
+                <button
+                    id="modal-close"
+                    type="button"
+                    class="flex h-10 w-10 items-center justify-center text-slate-500 hover:bg-slate-100"
+                    aria-label="Tutup modal"
+                >
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form
+                id="block-form"
+                class="space-y-6 p-5 sm:p-6"
+                enctype="multipart/form-data"
+            >
+                <input
+                    id="block-id"
+                    type="hidden"
+                >
+
+                <input
+                    id="block-type"
+                    type="hidden"
+                >
+
+                {{-- Text fields --}}
+                <div
+                    id="text-fields"
+                    class="hidden"
+                >
+                    <label
+                        for="block-content"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Isi Teks
+                    </label>
+
+                    <textarea
+                        id="block-content"
+                        rows="14"
+                        placeholder="Tuliskan isi materi..."
+                        class="w-full border border-slate-300 px-4 py-3 leading-7 outline-none focus:border-blue-900"
+                    ></textarea>
+
+                    <p class="mt-2 text-xs text-slate-500">
+                        Gunakan toolbar untuk mengatur heading, teks tebal, daftar, tautan, tabel, dan perataan.
+                    </p>
+                </div>
+
+                {{-- YouTube fields --}}
+                <div
+                    id="youtube-fields"
+                    class="hidden space-y-5"
+                >
+                    <div>
+                        <label
+                            for="block-title"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Judul Video
+                        </label>
+
+                        <input
+                            id="block-title"
+                            type="text"
+                            maxlength="255"
+                            placeholder="Contoh: Cara Menginstal Laravel"
+                            class="w-full border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+                        >
+                    </div>
+
+                    <div>
+                        <label
+                            for="block-url"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Tautan YouTube
+                        </label>
+
+                        <input
+                            id="block-url"
+                            type="url"
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            class="w-full border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+                        >
+
+                        <p class="mt-2 text-xs text-slate-500">
+                            Mendukung youtube.com/watch, youtu.be, embed, dan YouTube Shorts.
+                        </p>
+                    </div>
+
+                    <button
+                        id="youtube-preview-button"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                        <i class="bi bi-play-btn"></i>
+                        Tampilkan Preview
+                    </button>
+
+                    <div
+                        id="youtube-preview"
+                        class="hidden aspect-video overflow-hidden bg-slate-950"
+                    >
+                        <iframe
+                            id="youtube-iframe"
+                            class="h-full w-full"
+                            src=""
+                            title="Preview YouTube"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+
+                {{-- Image and PDF fields --}}
+                <div
+                    id="file-fields"
+                    class="hidden space-y-4"
+                >
+                    <div>
+                        <label
+                            for="block-file"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            File
+                        </label>
+
+                        <input
+                            id="block-file"
+                            type="file"
+                            class="block w-full border border-slate-300 bg-white p-3 text-sm"
+                        >
+
+                        <p
+                            id="file-help"
+                            class="mt-2 text-xs text-slate-500"
+                        ></p>
+
+                        <p
+                            id="existing-file"
+                            class="mt-2 hidden text-xs font-semibold text-blue-800"
+                        ></p>
+                    </div>
+
+                    <div
+                        id="image-preview"
+                        class="hidden overflow-hidden border border-slate-200 bg-slate-50 p-3"
+                    >
+                        <img
+                            id="image-preview-element"
+                            src=""
+                            alt="Preview gambar"
+                            class="max-h-80 w-full object-contain"
+                        >
+                    </div>
+                </div>
+
+                {{-- Caption --}}
+                <div
+                    id="caption-fields"
+                    class="hidden grid gap-5 md:grid-cols-2"
+                >
+                    <div>
+                        <label
+                            for="block-caption"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Keterangan
+                        </label>
+
+                        <input
+                            id="block-caption"
+                            type="text"
+                            maxlength="255"
+                            placeholder="Keterangan file"
+                            class="w-full border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+                        >
+                    </div>
+
+                    <div id="alt-wrapper">
+                        <label
+                            for="block-alt"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Teks Alternatif
+                        </label>
+
+                        <input
+                            id="block-alt"
+                            type="text"
+                            maxlength="255"
+                            placeholder="Deskripsi gambar untuk aksesibilitas"
+                            class="w-full border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
+                        >
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+                    <button
+                        id="cancel-button"
+                        type="button"
+                        class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        id="submit-button"
+                        type="submit"
+                        class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        <i class="bi bi-floppy"></i>
+                        <span>Simpan Blok</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
