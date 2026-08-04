@@ -9,7 +9,6 @@
 
 @section('content')
     <div class="space-y-6">
-
         {{-- Notification --}}
         <div
             id="notification"
@@ -17,7 +16,7 @@
             role="alert"
         ></div>
 
-        {{-- Header --}}
+        {{-- Page Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
@@ -30,8 +29,9 @@
                     </h2>
 
                     <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                        Kelola kategori, bagian, tutorial, dan langkah materi
-                        berdasarkan aplikasi.
+                        Kelola struktur materi berdasarkan aplikasi dan versi aplikasi.
+                        Setiap versi memiliki struktur Kategori, Bagian, dan Materi
+                        yang berbeda.
                     </p>
                 </div>
 
@@ -47,10 +47,10 @@
             </div>
         </section>
 
-        {{-- Search application --}}
+        {{-- Application and Version Filter --}}
         <section class="border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-end">
-
+            <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_auto] xl:items-start">
+                {{-- Application Search --}}
                 <div>
                     <label
                         for="application-search"
@@ -107,11 +107,8 @@
                         </div>
                     </div>
 
-                    <p
-                        id="application-search-help"
-                        class="mt-2 text-xs text-slate-500"
-                    >
-                        Ketik nama aplikasi lalu pilih dari daftar.
+                    <p class="mt-2 text-xs text-slate-500">
+                        Pilih aplikasi terlebih dahulu untuk menampilkan daftar versinya.
                     </p>
 
                     <p
@@ -122,15 +119,73 @@
                     </p>
                 </div>
 
-                <button
-                    id="refresh-tree-button"
-                    type="button"
-                    disabled
-                    class="inline-flex items-center justify-center gap-2 border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Muat Ulang
-                </button>
+                {{-- Application Version --}}
+                <div>
+                    <label
+                        for="application-version-select"
+                        class="mb-2 block text-sm font-semibold text-slate-700"
+                    >
+                        Pilih Versi Aplikasi
+                    </label>
+
+                    <select
+                        id="application-version-select"
+                        disabled
+                        class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                    >
+                        <option value="">
+                            Pilih aplikasi terlebih dahulu
+                        </option>
+                    </select>
+
+                    <p
+                        id="application-version-help"
+                        class="mt-2 text-xs text-slate-500"
+                    >
+                        Struktur materi akan dibedakan berdasarkan versi.
+                    </p>
+
+                    <p
+                        id="application-version-error"
+                        class="mt-2 hidden text-xs font-semibold text-red-600"
+                    >
+                        Pilih versi aplikasi terlebih dahulu.
+                    </p>
+                </div>
+
+                {{-- Refresh Button --}}
+                <div>
+                    <span
+                        aria-hidden="true"
+                        class="mb-2 block select-none text-sm font-semibold text-transparent"
+                    >
+                        Aksi
+                    </span>
+
+                    <button
+                        id="refresh-tree-button"
+                        type="button"
+                        disabled
+                        class="inline-flex w-full items-center justify-center gap-2 whitespace-nowrap border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 xl:w-auto"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Selected Application Context --}}
+            <div
+                id="selected-context"
+                class="mt-5 hidden border border-blue-200 bg-blue-50 p-4"
+            >
+                <p class="text-xs font-bold uppercase tracking-wide text-blue-700">
+                    Struktur yang sedang dikelola
+                </p>
+
+                <p
+                    id="selected-context-text"
+                    class="mt-1 text-sm font-semibold text-blue-950"
+                ></p>
             </div>
         </section>
 
@@ -138,7 +193,7 @@
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <article class="border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-500">
-                    Total Materi
+                    Total Node
                 </p>
 
                 <p
@@ -151,7 +206,7 @@
 
             <article class="border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-500">
-                    Materi Publik
+                    Node Publik
                 </p>
 
                 <p
@@ -177,11 +232,11 @@
 
             <article class="border border-slate-200 bg-white p-5 shadow-sm">
                 <p class="text-sm font-medium text-slate-500">
-                    Tutorial
+                    Materi
                 </p>
 
                 <p
-                    id="stat-tutorial-nodes"
+                    id="stat-material-nodes"
                     class="mt-2 text-3xl font-bold text-slate-950"
                 >
                     0
@@ -189,7 +244,7 @@
             </article>
         </section>
 
-        {{-- Tree --}}
+        {{-- Material Tree --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
@@ -201,7 +256,7 @@
                         id="tree-description"
                         class="mt-1 text-sm text-slate-500"
                     >
-                        Pilih aplikasi untuk menampilkan materi.
+                        Pilih aplikasi dan versi untuk menampilkan materi.
                     </p>
                 </div>
 
@@ -228,6 +283,7 @@
                 </div>
             </div>
 
+            {{-- Initial State --}}
             <div
                 id="tree-initial"
                 class="px-5 py-16 text-center"
@@ -235,14 +291,15 @@
                 <i class="bi bi-diagram-3 text-4xl text-slate-300"></i>
 
                 <h3 class="mt-4 text-lg font-bold text-slate-950">
-                    Belum ada aplikasi dipilih
+                    Belum ada versi dipilih
                 </h3>
 
                 <p class="mt-2 text-sm text-slate-500">
-                    Cari dan pilih aplikasi terlebih dahulu.
+                    Pilih aplikasi dan versi aplikasi terlebih dahulu.
                 </p>
             </div>
 
+            {{-- Loading State --}}
             <div
                 id="tree-loading"
                 class="hidden px-5 py-16 text-center text-sm text-slate-500"
@@ -251,6 +308,7 @@
                 Memuat struktur materi...
             </div>
 
+            {{-- Empty State --}}
             <div
                 id="tree-empty"
                 class="hidden px-5 py-16 text-center"
@@ -262,7 +320,7 @@
                 </h3>
 
                 <p class="mt-2 text-sm text-slate-500">
-                    Tambahkan materi utama untuk aplikasi ini.
+                    Belum ada struktur materi untuk versi aplikasi ini.
                 </p>
 
                 <button
@@ -275,6 +333,7 @@
                 </button>
             </div>
 
+            {{-- Error State --}}
             <div
                 id="tree-error"
                 class="hidden px-5 py-16 text-center"
@@ -300,6 +359,7 @@
                 </button>
             </div>
 
+            {{-- Tree Container --}}
             <div
                 id="tutorial-tree"
                 class="hidden space-y-3 p-5 sm:p-6"
@@ -307,13 +367,14 @@
         </section>
     </div>
 
-    {{-- Form modal --}}
+    {{-- Node Form Modal --}}
     <div
         id="node-form-modal"
         class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/60 p-4"
         aria-hidden="true"
     >
         <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+            {{-- Modal Header --}}
             <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white p-5 sm:p-6">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
@@ -345,13 +406,47 @@
                 </button>
             </div>
 
+            {{-- Node Form --}}
             <form
                 id="node-form"
                 class="space-y-6 p-5 sm:p-6"
             >
-                <input id="node-id" type="hidden">
-                <input id="node-parent-id" type="hidden">
+                <input
+                    id="node-id"
+                    type="hidden"
+                >
 
+                <input
+                    id="node-parent-id"
+                    type="hidden"
+                >
+
+                {{-- Application Information --}}
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs font-bold uppercase text-slate-500">
+                            Aplikasi
+                        </p>
+
+                        <p
+                            id="form-application-name"
+                            class="mt-1 text-sm font-semibold text-slate-900"
+                        ></p>
+                    </div>
+
+                    <div class="border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs font-bold uppercase text-slate-500">
+                            Versi Aplikasi
+                        </p>
+
+                        <p
+                            id="form-version-name"
+                            class="mt-1 text-sm font-semibold text-slate-900"
+                        ></p>
+                    </div>
+                </div>
+
+                {{-- Parent Information --}}
                 <div
                     id="parent-information"
                     class="hidden border border-blue-200 bg-blue-50 p-4"
@@ -366,6 +461,7 @@
                     ></p>
                 </div>
 
+                {{-- Main Fields --}}
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
                         <label
@@ -412,30 +508,58 @@
                         <select
                             id="node-type"
                             required
-                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900"
+                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
                         >
-                            <option value="category">Kategori</option>
-                            <option value="section">Bagian</option>
-                            <option value="tutorial">Tutorial</option>
-                            <option value="step">Langkah</option>
+                            <option value="kategori">
+                                Kategori
+                            </option>
+
+                            <option value="bagian">
+                                Bagian
+                            </option>
+
+                            <option value="materi">
+                                Materi
+                            </option>
                         </select>
+
+                        <p
+                            id="node-type-help"
+                            class="mt-2 text-xs text-slate-500"
+                        >
+                            Pilih jenis materi sesuai posisi dalam struktur.
+                        </p>
+
+                        <div
+                            id="node-type-notice"
+                            class="mt-3 hidden border border-slate-200 bg-slate-100 p-4"
+                        >
+                            <div class="flex items-start gap-3">
+                                <i class="bi bi-info-circle mt-0.5 text-slate-500"></i>
+
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-700">
+                                        Jenis materi dibatasi
+                                    </p>
+
+                                    <p
+                                        id="node-type-notice-text"
+                                        class="mt-1 text-xs leading-5 text-slate-500"
+                                    ></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label
-                            for="node-sort-order"
-                            class="mb-2 block text-sm font-semibold text-slate-700"
-                        >
-                            Urutan
-                        </label>
+                    <div class="border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-semibold text-slate-700">
+                            Pengaturan Urutan
+                        </p>
 
-                        <input
-                            id="node-sort-order"
-                            type="number"
-                            min="0"
-                            value="0"
-                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none focus:border-blue-900"
-                        >
+                        <p class="mt-2 text-xs leading-5 text-slate-500">
+                            Urutan materi diatur melalui tombol caret atas dan bawah
+                            pada daftar struktur materi.
+                        </p>
                     </div>
 
                     <div>
@@ -450,31 +574,22 @@
                             id="node-status"
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900"
                         >
-                            <option value="draft">Draf</option>
-                            <option value="published">Dipublikasikan</option>
-                            <option value="archived">Diarsipkan</option>
-                        </select>
-                    </div>
+                            <option value="draft">
+                                Draf
+                            </option>
 
-                    <div>
-                        <label
-                            for="node-application-version"
-                            class="mb-2 block text-sm font-semibold text-slate-700"
-                        >
-                            Versi Aplikasi
-                        </label>
+                            <option value="published">
+                                Dipublikasikan
+                            </option>
 
-                        <select
-                            id="node-application-version"
-                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900"
-                        >
-                            <option value="">
-                                Semua versi
+                            <option value="archived">
+                                Diarsipkan
                             </option>
                         </select>
                     </div>
                 </div>
 
+                {{-- Description --}}
                 <div>
                     <label
                         for="node-description"
@@ -490,6 +605,7 @@
                     ></textarea>
                 </div>
 
+                {{-- Public Setting --}}
                 <label class="flex items-center gap-3 border border-slate-200 p-4">
                     <input
                         id="node-is-public"
@@ -508,6 +624,7 @@
                     </span>
                 </label>
 
+                {{-- Modal Footer --}}
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
                     <button
                         id="node-cancel-button"

@@ -22,7 +22,8 @@ import 'tinymce/skins/ui/oxide/skin.css';
 import DOMPurify from 'dompurify';
 
 document.addEventListener('DOMContentLoaded', () => {
-    const API = '/api/admin';
+    const API_BASE_URL = '/api/admin';
+
     const page = document.getElementById('content-page');
 
     if (!page) {
@@ -34,195 +35,156 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         node: null,
         blocks: [],
-        editing: null,
+        editingBlock: null,
         dirty: false,
         objectUrl: null,
         textEditor: null,
+        loadingContent: false,
+        reordering: false,
+        deletingBlockId: null,
     };
 
     let notificationTimer = null;
-    let reordering = false;
 
-    const el = {
-        notification: document.getElementById(
-            'notification'
-        ),
+    const elements = {
+        notification:
+            document.getElementById('notification'),
 
-        nodeTitle: document.getElementById(
-            'node-title'
-        ),
+        nodeTitle:
+            document.getElementById('node-title'),
 
-        nodeMeta: document.getElementById(
-            'node-meta'
-        ),
+        nodeMeta:
+            document.getElementById('node-meta'),
 
-        refresh: document.getElementById(
-            'refresh-button'
-        ),
+        refreshButton:
+            document.getElementById('refresh-button'),
 
-        count: document.getElementById(
-            'block-count'
-        ),
+        retryButton:
+            document.getElementById('retry-button'),
 
-        loading: document.getElementById(
-            'loading-state'
-        ),
+        blockCount:
+            document.getElementById('block-count'),
 
-        error: document.getElementById(
-            'error-state'
-        ),
+        reorderStatus:
+            document.getElementById('reorder-status'),
 
-        errorMessage: document.getElementById(
-            'error-message'
-        ),
+        loadingState:
+            document.getElementById('loading-state'),
 
-        retry: document.getElementById(
-            'retry-button'
-        ),
+        errorState:
+            document.getElementById('error-state'),
 
-        empty: document.getElementById(
-            'empty-state'
-        ),
+        errorMessage:
+            document.getElementById('error-message'),
 
-        container: document.getElementById(
-            'blocks-container'
-        ),
+        emptyState:
+            document.getElementById('empty-state'),
 
-        addButtons: document.querySelectorAll(
-            '.add-block-button'
-        ),
+        blocksContainer:
+            document.getElementById('blocks-container'),
 
-        modal: document.getElementById(
-            'block-modal'
-        ),
+        addBlockButtons:
+            document.querySelectorAll('.add-block-button'),
 
-        form: document.getElementById(
-            'block-form'
-        ),
+        blockModal:
+            document.getElementById('block-modal'),
 
-        formTitle: document.getElementById(
-            'form-title'
-        ),
+        blockForm:
+            document.getElementById('block-form'),
 
-        formDescription: document.getElementById(
-            'form-description'
-        ),
+        formTitle:
+            document.getElementById('form-title'),
 
-        close: document.getElementById(
-            'modal-close'
-        ),
+        formDescription:
+            document.getElementById('form-description'),
 
-        cancel: document.getElementById(
-            'cancel-button'
-        ),
+        modalClose:
+            document.getElementById('modal-close'),
 
-        submit: document.getElementById(
-            'submit-button'
-        ),
+        cancelButton:
+            document.getElementById('cancel-button'),
 
-        id: document.getElementById(
-            'block-id'
-        ),
+        submitButton:
+            document.getElementById('submit-button'),
 
-        type: document.getElementById(
-            'block-type'
-        ),
+        blockId:
+            document.getElementById('block-id'),
 
-        title: document.getElementById(
-            'block-title'
-        ),
+        blockType:
+            document.getElementById('block-type'),
 
-        content: document.getElementById(
-            'block-content'
-        ),
+        blockTitle:
+            document.getElementById('block-title'),
 
-        url: document.getElementById(
-            'block-url'
-        ),
+        blockContent:
+            document.getElementById('block-content'),
 
-        file: document.getElementById(
-            'block-file'
-        ),
+        blockUrl:
+            document.getElementById('block-url'),
 
-        fileHelp: document.getElementById(
-            'file-help'
-        ),
+        blockFile:
+            document.getElementById('block-file'),
 
-        caption: document.getElementById(
-            'block-caption'
-        ),
+        blockCaption:
+            document.getElementById('block-caption'),
 
-        alt: document.getElementById(
-            'block-alt'
-        ),
+        blockAlt:
+            document.getElementById('block-alt'),
 
-        textFields: document.getElementById(
-            'text-fields'
-        ),
+        textFields:
+            document.getElementById('text-fields'),
 
-        youtubeFields: document.getElementById(
-            'youtube-fields'
-        ),
+        youtubeFields:
+            document.getElementById('youtube-fields'),
 
-        fileFields: document.getElementById(
-            'file-fields'
-        ),
+        fileFields:
+            document.getElementById('file-fields'),
 
-        captionFields: document.getElementById(
-            'caption-fields'
-        ),
+        captionFields:
+            document.getElementById('caption-fields'),
 
-        altWrapper: document.getElementById(
-            'alt-wrapper'
-        ),
+        altWrapper:
+            document.getElementById('alt-wrapper'),
 
-        existingFile: document.getElementById(
-            'existing-file'
-        ),
+        fileHelp:
+            document.getElementById('file-help'),
 
-        imagePreview: document.getElementById(
-            'image-preview'
-        ),
+        existingFile:
+            document.getElementById('existing-file'),
 
-        imagePreviewElement: document.getElementById(
-            'image-preview-element'
-        ),
+        imagePreview:
+            document.getElementById('image-preview'),
 
-        youtubePreview: document.getElementById(
-            'youtube-preview'
-        ),
+        imagePreviewElement:
+            document.getElementById('image-preview-element'),
 
-        youtubeIframe: document.getElementById(
-            'youtube-iframe'
-        ),
+        youtubePreview:
+            document.getElementById('youtube-preview'),
 
-        youtubePreviewButton: document.getElementById(
-            'youtube-preview-button'
-        ),
+        youtubeIframe:
+            document.getElementById('youtube-iframe'),
+
+        youtubePreviewButton:
+            document.getElementById('youtube-preview-button'),
     };
 
-    const missingElements = Object.entries(el)
+    const missingElements = Object.entries(elements)
         .filter(([key, value]) => {
-            return key !== 'addButtons' && !value;
+            return key !== 'addBlockButtons' && !value;
         })
         .map(([key]) => key);
 
     if (missingElements.length > 0) {
         console.error(
-            'Elemen Blade tidak ditemukan:',
+            'Editor materi: elemen Blade tidak ditemukan:',
             missingElements
         );
 
         return;
     }
 
-    if (
-        !Number.isInteger(nodeId) ||
-        nodeId <= 0
-    ) {
-        console.error(
-            'Tutorial node ID tidak valid.'
-        );
+    if (!Number.isInteger(nodeId) || nodeId <= 0) {
+        console.error('Tutorial node ID tidak valid.');
 
         return;
     }
@@ -231,7 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initializePage() {
         bindEvents();
+
         await initializeTinyMce();
+
         await loadContent();
     }
 
@@ -312,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     h4 {
                         color: #0f172a;
                         line-height: 1.3;
+                        font-weight: 700;
                     }
 
                     h1 {
@@ -330,6 +295,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         font-size: 1.1rem;
                     }
 
+                    p {
+                        margin-top: 0;
+                        margin-bottom: 1rem;
+                    }
+
                     blockquote {
                         border-left: 4px solid #1e3a8a;
                         margin-left: 0;
@@ -346,6 +316,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     td {
                         border: 1px solid #cbd5e1;
                         padding: 8px;
+                        vertical-align: top;
+                    }
+
+                    th {
+                        background: #f1f5f9;
+                        color: #0f172a;
                     }
 
                     pre {
@@ -357,6 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     a {
                         color: #1d4ed8;
+                        text-decoration: underline;
+                    }
+
+                    img {
+                        max-width: 100%;
+                        height: auto;
                     }
                 `,
 
@@ -371,8 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
             });
 
-            state.textEditor =
-                editors?.[0] ?? null;
+            state.textEditor = editors?.[0] ?? null;
         } catch (error) {
             console.error(
                 'TinyMCE gagal dimuat:',
@@ -387,76 +368,76 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function bindEvents() {
-        el.refresh.addEventListener(
+        elements.refreshButton.addEventListener(
             'click',
             loadContent
         );
 
-        el.retry.addEventListener(
+        elements.retryButton.addEventListener(
             'click',
             loadContent
         );
 
-        el.addButtons.forEach((button) => {
-            button.addEventListener(
-                'click',
-                () => {
-                    openCreate(
-                        button.dataset.addType
-                    );
-                }
-            );
+        elements.addBlockButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                openCreateBlock(
+                    button.dataset.addType
+                );
+            });
         });
 
-        el.container.addEventListener(
+        elements.blocksContainer.addEventListener(
             'click',
-            handleAction
+            handleBlockAction
         );
 
-        el.form.addEventListener(
+        elements.blockForm.addEventListener(
             'submit',
             saveBlock
         );
 
-        el.form.addEventListener(
+        elements.blockForm.addEventListener(
             'input',
             () => {
                 state.dirty = true;
             }
         );
 
-        el.form.addEventListener(
+        elements.blockForm.addEventListener(
             'change',
             () => {
                 state.dirty = true;
             }
         );
 
-        el.close.addEventListener(
+        elements.modalClose.addEventListener(
             'click',
-            requestClose
+            requestCloseBlockModal
         );
 
-        el.cancel.addEventListener(
+        elements.cancelButton.addEventListener(
             'click',
-            requestClose
+            requestCloseBlockModal
         );
 
-        el.file.addEventListener(
+        elements.blockFile.addEventListener(
             'change',
-            previewFile
+            previewSelectedFile
         );
 
-        el.youtubePreviewButton.addEventListener(
+        elements.youtubePreviewButton.addEventListener(
             'click',
-            previewYoutube
+            previewYoutubeInForm
         );
 
-        el.modal.addEventListener(
+        elements.blockModal.addEventListener(
             'click',
             (event) => {
-                if (event.target === el.modal) {
-                    requestClose();
+                if (
+                    event.target ===
+                    elements.blockModal
+                ) {
+                    requestCloseBlockModal();
                 }
             }
         );
@@ -464,13 +445,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener(
             'keydown',
             (event) => {
+                if (event.key !== 'Escape') {
+                    return;
+                }
+
                 if (
-                    event.key === 'Escape' &&
-                    !el.modal.classList.contains(
+                    !elements.blockModal.classList.contains(
                         'hidden'
                     )
                 ) {
-                    requestClose();
+                    requestCloseBlockModal();
                 }
             }
         );
@@ -489,11 +473,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function loadContent() {
-        showState('loading');
+        if (state.loadingContent) {
+            return;
+        }
+
+        state.loadingContent = true;
+
+        setPageLoading(true);
+        showPageState('loading');
 
         try {
             const response = await fetch(
-                `${API}/tutorial-nodes/${nodeId}/content-blocks`,
+                `${API_BASE_URL}/tutorial-nodes/${nodeId}/content-blocks`,
                 {
                     headers: {
                         Accept: 'application/json',
@@ -501,31 +492,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             );
 
-            const result =
-                await parseResponse(response);
+            const result = await parseResponse(
+                response
+            );
 
             state.node =
                 result?.data?.tutorial_node ??
                 null;
 
-            state.blocks = Array.isArray(
-                result?.data?.blocks
-            )
-                ? result.data.blocks
-                : [];
+            state.blocks =
+                Array.isArray(
+                    result?.data?.blocks
+                )
+                    ? sortBlocks(
+                        result.data.blocks
+                    )
+                    : [];
 
             renderHeader();
             renderBlocks();
         } catch (error) {
-            el.errorMessage.textContent =
+            elements.errorMessage.textContent =
                 error.message;
 
-            showState('error');
+            showPageState('error');
+
+            notify(
+                error.message,
+                'error'
+            );
+        } finally {
+            state.loadingContent = false;
+
+            setPageLoading(false);
         }
     }
 
+    function sortBlocks(blocks) {
+        return [...blocks].sort(
+            (first, second) => {
+                const sortDifference =
+                    Number(
+                        first.sort_order ?? 0
+                    ) -
+                    Number(
+                        second.sort_order ?? 0
+                    );
+
+                if (sortDifference !== 0) {
+                    return sortDifference;
+                }
+
+                return (
+                    Number(first.id) -
+                    Number(second.id)
+                );
+            }
+        );
+    }
+
     function renderHeader() {
-        el.nodeTitle.textContent =
+        elements.nodeTitle.textContent =
             state.node?.title ??
             'Materi tidak ditemukan';
 
@@ -537,296 +564,490 @@ document.addEventListener('DOMContentLoaded', () => {
             state.node?.parent?.title ??
             'Tanpa parent';
 
-        el.nodeMeta.textContent =
-            `${applicationName} • ${parentTitle} • ${nodeTypeLabel(
+        const nodeType =
+            nodeTypeLabel(
                 state.node?.node_type
-            )}`;
+            );
+
+        elements.nodeMeta.textContent =
+            `${applicationName} • ${parentTitle} • ${nodeType}`;
     }
 
     function renderBlocks() {
-        el.count.textContent =
+        elements.blockCount.textContent =
             `${state.blocks.length} blok`;
 
-        if (!state.blocks.length) {
-            el.container.innerHTML = '';
+        if (state.blocks.length === 0) {
+            elements.blocksContainer.innerHTML =
+                '';
 
-            showState('empty');
+            showPageState('empty');
 
             return;
         }
 
-        el.container.innerHTML =
+        elements.blocksContainer.innerHTML =
             state.blocks
                 .map((block, index) => {
-                    return blockHtml(
+                    return blockCardHtml(
                         block,
                         index
                     );
                 })
                 .join('');
 
-        showState('blocks');
+        showPageState('blocks');
+
+        updateReorderButtonAvailability();
     }
 
-    function blockHtml(block, index) {
-        const isFirst = index === 0;
+    function blockCardHtml(
+        block,
+        index
+    ) {
+        const isFirst =
+            index === 0;
 
         const isLast =
             index ===
             state.blocks.length - 1;
 
+        const isDeleting =
+            Number(
+                state.deletingBlockId
+            ) === Number(block.id);
+
         return `
             <article
-                class="border border-slate-200 bg-white p-5"
+                class="content-block-card overflow-hidden border border-slate-200 bg-white transition hover:border-slate-300 hover:shadow-sm"
                 data-id="${block.id}"
             >
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="border px-2 py-1 text-xs font-semibold ${typeClass(
-                                block.block_type
-                            )}">
+                <div class="flex flex-col xl:flex-row xl:items-stretch">
+                    <div class="min-w-0 flex-1 p-4 sm:p-5">
+                        <div class="mb-4 flex flex-wrap items-center gap-2">
+                            <span
+                                class="border px-2 py-1 text-xs font-semibold ${blockTypeClass(
+                                    block.block_type
+                                )}"
+                            >
                                 ${escapeHtml(
-                                    typeLabel(
+                                    blockTypeLabel(
                                         block.block_type
                                     )
                                 )}
                             </span>
 
-                            <span class="text-xs text-slate-400">
+                            <span
+                                class="border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-500"
+                            >
                                 Urutan ${index + 1}
                             </span>
                         </div>
 
-                        <div class="mt-4">
-                            ${previewHtml(block)}
-                        </div>
+                        ${renderBlockContent(block)}
                     </div>
 
-                    <div class="flex shrink-0 flex-wrap gap-2">
-                        <button
-                            type="button"
-                            class="move-up flex h-9 w-9 items-center justify-center border border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            data-id="${block.id}"
-                            ${isFirst ? 'disabled' : ''}
-                            aria-label="Pindahkan ke atas"
-                        >
-                            <i class="bi bi-arrow-up"></i>
-                        </button>
+                    <div class="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-4 py-3 xl:w-36 xl:flex-col xl:justify-center xl:border-l xl:border-t-0">
+                        <div class="flex overflow-hidden border border-slate-300 bg-white">
+                            <button
+                                type="button"
+                                class="move-block-up flex h-9 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
+                                data-id="${block.id}"
+                                data-boundary-disabled="${
+                                    isFirst
+                                        ? 'true'
+                                        : 'false'
+                                }"
+                                ${
+                                    isFirst ||
+                                    state.reordering
+                                        ? 'disabled'
+                                        : ''
+                                }
+                                aria-label="Pindahkan blok ke atas"
+                                title="Pindahkan ke atas"
+                            >
+                                <i class="bi bi-caret-up-fill"></i>
+                            </button>
 
-                        <button
-                            type="button"
-                            class="move-down flex h-9 w-9 items-center justify-center border border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
-                            data-id="${block.id}"
-                            ${isLast ? 'disabled' : ''}
-                            aria-label="Pindahkan ke bawah"
-                        >
-                            <i class="bi bi-arrow-down"></i>
-                        </button>
+                            <button
+                                type="button"
+                                class="move-block-down flex h-9 w-9 items-center justify-center border-l border-slate-300 text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
+                                data-id="${block.id}"
+                                data-boundary-disabled="${
+                                    isLast
+                                        ? 'true'
+                                        : 'false'
+                                }"
+                                ${
+                                    isLast ||
+                                    state.reordering
+                                        ? 'disabled'
+                                        : ''
+                                }
+                                aria-label="Pindahkan blok ke bawah"
+                                title="Pindahkan ke bawah"
+                            >
+                                <i class="bi bi-caret-down-fill"></i>
+                            </button>
+                        </div>
 
-                        <button
-                            type="button"
-                            class="edit-block flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-900 hover:bg-blue-50"
-                            data-id="${block.id}"
-                            aria-label="Ubah blok"
-                        >
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                class="edit-block-button flex h-9 w-9 items-center justify-center border border-blue-200 bg-white text-blue-900 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                data-id="${block.id}"
+                                ${
+                                    state.reordering ||
+                                    isDeleting
+                                        ? 'disabled'
+                                        : ''
+                                }
+                                aria-label="Ubah blok"
+                                title="Ubah blok"
+                            >
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
 
-                        <button
-                            type="button"
-                            class="delete-block flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 hover:bg-red-50"
-                            data-id="${block.id}"
-                            aria-label="Hapus blok"
-                        >
-                            <i class="bi bi-trash3"></i>
-                        </button>
+                            <button
+                                type="button"
+                                class="delete-block-button flex h-9 w-9 items-center justify-center border border-red-200 bg-white text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                data-id="${block.id}"
+                                ${
+                                    state.reordering ||
+                                    isDeleting
+                                        ? 'disabled'
+                                        : ''
+                                }
+                                aria-label="Hapus blok"
+                                title="Hapus blok"
+                            >
+                                ${
+                                    isDeleting
+                                        ? `
+                                            <i class="bi bi-arrow-repeat animate-spin"></i>
+                                        `
+                                        : `
+                                            <i class="bi bi-trash3"></i>
+                                        `
+                                }
+                            </button>
+                        </div>
                     </div>
                 </div>
             </article>
         `;
     }
 
-    function previewHtml(block) {
+    function renderBlockContent(block) {
         if (block.block_type === 'text') {
-            const safeContent =
-                DOMPurify.sanitize(
-                    block.content ||
-                    '<p>Teks kosong.</p>'
+            const plainText =
+                htmlToPlainText(
+                    block.content || ''
                 );
 
             return `
-                <div class="tutorial-rich-content text-sm leading-7 text-slate-700">
-                    ${safeContent}
-                </div>
-            `;
-        }
+                <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-stretch">
+                    <div class="flex h-40 w-full shrink-0 items-center justify-center border border-blue-200 bg-blue-50 text-blue-900 sm:h-28 sm:w-40">
+                        <div class="text-center">
+                            <i class="bi bi-type text-3xl"></i>
 
-        if (block.block_type === 'image') {
-            const url = storageUrl(
-                block.file_path
-            );
+                            <p class="mt-2 text-xs font-semibold">
+                                Konten Teks
+                            </p>
+                        </div>
+                    </div>
 
-            return `
-                <div class="space-y-3">
-                    ${
-                        url
-                            ? `
-                                <img
-                                    src="${escapeHtml(url)}"
-                                    alt="${escapeHtml(
-                                        block.alt_text ||
-                                        block.caption ||
-                                        'Gambar materi'
-                                    )}"
-                                    class="max-h-[420px] w-full border border-slate-200 bg-slate-50 object-contain"
-                                >
-                            `
-                            : `
-                                <p class="text-sm text-red-600">
-                                    File gambar tidak tersedia.
-                                </p>
-                            `
-                    }
+                    <div class="min-w-0 flex-1 py-1">
+                        <h4 class="font-semibold text-slate-900">
+                            Blok Teks
+                        </h4>
 
-                    ${
-                        block.caption
-                            ? `
-                                <p class="text-sm text-slate-500">
-                                    ${escapeHtml(
-                                        block.caption
-                                    )}
-                                </p>
-                            `
-                            : ''
-                    }
-                </div>
-            `;
-        }
+                        <p class="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">
+                            ${escapeHtml(
+                                plainText ||
+                                'Teks kosong.'
+                            )}
+                        </p>
 
-        if (block.block_type === 'youtube') {
-            const videoId = youtubeId(
-                block.external_url
-            );
-
-            if (!videoId) {
-                return `
-                    <p class="text-sm text-red-600">
-                        Tautan YouTube tidak valid.
-                    </p>
-                `;
-            }
-
-            return `
-                <div class="space-y-3">
-                    <h4 class="text-base font-bold text-slate-950">
-                        ${escapeHtml(
-                            block.title ||
-                            'Video YouTube'
-                        )}
-                    </h4>
-
-                    <div class="aspect-video max-w-3xl overflow-hidden bg-slate-950">
-                        <iframe
-                            class="h-full w-full"
-                            src="https://www.youtube.com/embed/${escapeHtml(
-                                videoId
-                            )}"
-                            title="${escapeHtml(
-                                block.title ||
-                                'Video YouTube'
-                            )}"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowfullscreen
-                        ></iframe>
+                        <p class="mt-3 text-xs text-slate-400">
+                            Klik tombol edit untuk melihat atau mengubah seluruh isi teks.
+                        </p>
                     </div>
                 </div>
             `;
         }
 
-        if (block.block_type === 'pdf') {
-            const url = storageUrl(
-                block.file_path
-            );
+        if (block.block_type === 'image') {
+            const url =
+                storageUrl(
+                    block.file_path
+                );
+
+            const title =
+                block.caption ||
+                block.original_file_name ||
+                'Gambar Materi';
+
+            const description =
+                block.alt_text ||
+                block.caption ||
+                'Tidak ada keterangan gambar.';
 
             return `
-                <div class="flex flex-col gap-3 border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div class="min-w-0">
-                        <p class="truncate font-semibold text-slate-800">
-                            ${escapeHtml(
-                                block.original_file_name ||
-                                'Dokumen PDF'
-                            )}
-                        </p>
+                <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-stretch">
+                    <div class="flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-100 sm:h-28 sm:w-40">
+                        ${
+                            url
+                                ? `
+                                    <img
+                                        src="${escapeHtml(url)}"
+                                        alt="${escapeHtml(
+                                            description
+                                        )}"
+                                        class="h-full w-full object-cover"
+                                        loading="lazy"
+                                    >
+                                `
+                                : `
+                                    <div class="px-4 text-center text-slate-400">
+                                        <i class="bi bi-image text-3xl"></i>
 
-                        <p class="mt-1 text-xs text-slate-500">
-                            ${fileSize(
-                                block.file_size
-                            )}
+                                        <p class="mt-2 text-xs">
+                                            Gambar tidak tersedia
+                                        </p>
+                                    </div>
+                                `
+                        }
+                    </div>
+
+                    <div class="min-w-0 flex-1 py-1">
+                        <div class="flex items-start gap-2">
+                            <i class="bi bi-image mt-0.5 shrink-0 text-emerald-700"></i>
+
+                            <h4 class="line-clamp-2 font-semibold leading-6 text-slate-900">
+                                ${escapeHtml(title)}
+                            </h4>
+                        </div>
+
+                        <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                            ${escapeHtml(description)}
                         </p>
 
                         ${
-                            block.caption
+                            block.original_file_name
                                 ? `
-                                    <p class="mt-2 text-sm text-slate-600">
-                                        ${escapeHtml(
-                                            block.caption
+                                    <p class="mt-3 truncate text-xs text-slate-400">
+                                        File: ${escapeHtml(
+                                            block.original_file_name
                                         )}
                                     </p>
                                 `
                                 : ''
                         }
                     </div>
+                </div>
+            `;
+        }
 
-                    ${
-                        url
-                            ? `
-                                <a
-                                    href="${escapeHtml(url)}"
-                                    target="_blank"
-                                    rel="noopener"
-                                    class="inline-flex items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                                >
-                                    <i class="bi bi-box-arrow-up-right"></i>
-                                    Buka PDF
-                                </a>
-                            `
-                            : ''
-                    }
+        if (block.block_type === 'youtube') {
+            const videoId =
+                youtubeId(
+                    block.external_url
+                );
+
+            const title =
+                block.title ||
+                'Video YouTube';
+
+            const thumbnailUrl =
+                videoId
+                    ? `https://img.youtube.com/vi/${encodeURIComponent(
+                        videoId
+                    )}/mqdefault.jpg`
+                    : null;
+
+            return `
+                <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-stretch">
+                    <div class="relative flex h-44 w-full shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-950 sm:h-28 sm:w-40">
+                        ${
+                            thumbnailUrl
+                                ? `
+                                    <img
+                                        src="${escapeHtml(
+                                            thumbnailUrl
+                                        )}"
+                                        alt="${escapeHtml(title)}"
+                                        class="h-full w-full object-cover"
+                                        loading="lazy"
+                                    >
+
+                                    <div class="absolute inset-0 flex items-center justify-center bg-slate-950/25">
+                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white shadow">
+                                            <i class="bi bi-play-fill text-xl"></i>
+                                        </div>
+                                    </div>
+                                `
+                                : `
+                                    <div class="px-4 text-center text-red-400">
+                                        <i class="bi bi-youtube text-3xl"></i>
+
+                                        <p class="mt-2 text-xs">
+                                            URL tidak valid
+                                        </p>
+                                    </div>
+                                `
+                        }
+                    </div>
+
+                    <div class="min-w-0 flex-1 py-1">
+                        <div class="flex items-start gap-2">
+                            <i class="bi bi-youtube mt-0.5 shrink-0 text-red-600"></i>
+
+                            <h4 class="line-clamp-2 font-semibold leading-6 text-slate-900">
+                                ${escapeHtml(title)}
+                            </h4>
+                        </div>
+
+                        <p class="mt-2 text-sm text-slate-500">
+                            Video YouTube
+                        </p>
+
+                        ${
+                            block.external_url
+                                ? `
+                                    <a
+                                        href="${escapeHtml(
+                                            block.external_url
+                                        )}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 transition hover:underline"
+                                    >
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                        Buka video
+                                    </a>
+                                `
+                                : ''
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        if (block.block_type === 'pdf') {
+            const url =
+                storageUrl(
+                    block.file_path
+                );
+
+            const fileName =
+                block.original_file_name ||
+                'Dokumen PDF';
+
+            const description =
+                block.caption ||
+                'Tidak ada keterangan dokumen.';
+
+            return `
+                <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-stretch">
+                    <div class="flex h-44 w-full shrink-0 items-center justify-center border border-red-200 bg-red-50 sm:h-28 sm:w-40">
+                        <div class="text-center text-red-600">
+                            <i class="bi bi-file-earmark-pdf text-4xl"></i>
+
+                            <p class="mt-2 text-xs font-bold uppercase tracking-wide">
+                                PDF
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 flex-1 py-1">
+                        <div class="flex items-start gap-2">
+                            <i class="bi bi-file-earmark-pdf mt-0.5 shrink-0 text-red-600"></i>
+
+                            <h4 class="truncate font-semibold text-slate-900">
+                                ${escapeHtml(fileName)}
+                            </h4>
+                        </div>
+
+                        <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+                            ${escapeHtml(description)}
+                        </p>
+
+                        <div class="mt-3 flex flex-wrap items-center gap-3">
+                            <span class="text-xs text-slate-400">
+                                ${formatFileSize(
+                                    block.file_size
+                                )}
+                            </span>
+
+                            ${
+                                url
+                                    ? `
+                                        <a
+                                            href="${escapeHtml(url)}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 transition hover:underline"
+                                        >
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                            Buka PDF
+                                        </a>
+                                    `
+                                    : `
+                                        <span class="text-xs font-semibold text-red-600">
+                                            File tidak tersedia
+                                        </span>
+                                    `
+                            }
+                        </div>
+                    </div>
                 </div>
             `;
         }
 
         return `
-            <p class="text-sm text-slate-500">
-                Jenis blok tidak dikenali.
-            </p>
+            <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                <div class="flex h-40 w-full shrink-0 items-center justify-center border border-slate-200 bg-slate-100 text-slate-400 sm:h-28 sm:w-40">
+                    <i class="bi bi-question-circle text-3xl"></i>
+                </div>
+
+                <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-slate-900">
+                        Jenis blok tidak dikenali
+                    </p>
+
+                    <p class="mt-1 text-sm text-slate-500">
+                        Data content block tidak dapat ditampilkan.
+                    </p>
+                </div>
+            </div>
         `;
     }
 
-    function handleAction(event) {
+    function handleBlockAction(event) {
         const editButton =
             event.target.closest(
-                '.edit-block'
+                '.edit-block-button'
             );
 
         const deleteButton =
             event.target.closest(
-                '.delete-block'
+                '.delete-block-button'
             );
 
         const moveUpButton =
             event.target.closest(
-                '.move-up'
+                '.move-block-up'
             );
 
         const moveDownButton =
             event.target.closest(
-                '.move-down'
+                '.move-block-down'
             );
 
         if (editButton) {
-            openEdit(
+            openEditBlock(
                 Number(
                     editButton.dataset.id
                 )
@@ -866,31 +1087,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openCreate(type) {
-        resetForm();
+    function openCreateBlock(type) {
+        const validTypes = [
+            'text',
+            'image',
+            'youtube',
+            'pdf',
+        ];
 
-        el.type.value = type;
+        if (!validTypes.includes(type)) {
+            notify(
+                'Jenis blok tidak valid.',
+                'error'
+            );
 
-        el.formTitle.textContent =
-            `Tambah Blok ${typeLabel(type)}`;
+            return;
+        }
 
-        el.formDescription.textContent =
-            'Isi informasi blok konten baru.';
+        resetBlockForm();
 
-        configureFields(type);
+        elements.blockType.value =
+            type;
+
+        elements.formTitle.textContent =
+            `Tambah Blok ${blockTypeLabel(type)}`;
+
+        elements.formDescription.textContent =
+            'Isi informasi blok konten baru. Blok akan ditempatkan pada urutan paling bawah.';
+
+        configureFormFields(type);
 
         if (type === 'text') {
             setEditorContent('');
         }
 
-        openModal();
+        openBlockModal();
     }
 
-    function openEdit(id) {
-        const block = state.blocks.find(
-            (item) =>
-                Number(item.id) === id
-        );
+    function openEditBlock(id) {
+        const block =
+            state.blocks.find((item) => {
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            });
 
         if (!block) {
             notify(
@@ -901,128 +1142,168 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        resetForm();
+        resetBlockForm();
 
-        state.editing = block;
+        state.editingBlock =
+            block;
 
-        el.id.value =
+        elements.blockId.value =
             String(block.id);
 
-        el.type.value =
+        elements.blockType.value =
             block.block_type;
 
-        el.title.value =
+        elements.blockTitle.value =
             block.title ?? '';
 
-        el.content.value =
+        elements.blockContent.value =
             block.content ?? '';
 
-        el.url.value =
+        elements.blockUrl.value =
             block.external_url ?? '';
 
-        el.caption.value =
+        elements.blockCaption.value =
             block.caption ?? '';
 
-        el.alt.value =
+        elements.blockAlt.value =
             block.alt_text ?? '';
 
-        if (block.block_type === 'text') {
+        if (
+            block.block_type ===
+            'text'
+        ) {
             setEditorContent(
                 block.content ?? ''
             );
         }
 
         if (block.file_path) {
-            el.existingFile.textContent =
+            elements.existingFile.textContent =
                 `File saat ini: ${
                     block.original_file_name ||
                     block.file_path
                 }`;
 
-            el.existingFile.classList.remove(
+            elements.existingFile.classList.remove(
                 'hidden'
             );
         }
 
-        el.formTitle.textContent =
-            `Ubah Blok ${typeLabel(
+        if (
+            block.block_type ===
+                'image' &&
+            block.file_path
+        ) {
+            const imageUrl =
+                storageUrl(
+                    block.file_path
+                );
+
+            if (imageUrl) {
+                elements.imagePreviewElement.src =
+                    imageUrl;
+
+                elements.imagePreview.classList.remove(
+                    'hidden'
+                );
+            }
+        }
+
+        elements.formTitle.textContent =
+            `Ubah Blok ${blockTypeLabel(
                 block.block_type
             )}`;
 
-        el.formDescription.textContent =
-            'Perbarui informasi blok konten.';
+        elements.formDescription.textContent =
+            'Perbarui informasi blok konten. Urutan blok tidak berubah ketika isinya diperbarui.';
 
-        configureFields(
+        configureFormFields(
             block.block_type
         );
 
-        state.dirty = false;
+        state.dirty =
+            false;
 
-        state.textEditor?.setDirty(false);
+        state.textEditor?.setDirty(
+            false
+        );
 
-        openModal();
+        openBlockModal();
     }
 
-    function configureFields(type) {
-        el.textFields.classList.toggle(
+    function configureFormFields(type) {
+        elements.textFields.classList.toggle(
             'hidden',
             type !== 'text'
         );
 
-        el.youtubeFields.classList.toggle(
+        elements.youtubeFields.classList.toggle(
             'hidden',
             type !== 'youtube'
         );
 
-        el.fileFields.classList.toggle(
+        elements.fileFields.classList.toggle(
             'hidden',
-            !['image', 'pdf'].includes(type)
+            ![
+                'image',
+                'pdf',
+            ].includes(type)
         );
 
-        el.captionFields.classList.toggle(
+        elements.captionFields.classList.toggle(
             'hidden',
-            !['image', 'pdf'].includes(type)
+            ![
+                'image',
+                'pdf',
+            ].includes(type)
         );
 
-        el.altWrapper.classList.toggle(
+        elements.altWrapper.classList.toggle(
             'hidden',
             type !== 'image'
         );
 
-        el.content.required =
+        elements.blockContent.required =
             type === 'text';
 
-        el.url.required =
+        elements.blockUrl.required =
             type === 'youtube';
 
-        el.title.required =
+        elements.blockTitle.required =
             type === 'youtube';
 
-        el.file.required =
-            !state.editing &&
-            ['image', 'pdf'].includes(type);
-
-        if (type === 'youtube') {
-            el.title.placeholder =
-                'Contoh: Cara Menginstal Laravel';
-        }
+        elements.blockFile.required =
+            !state.editingBlock &&
+            [
+                'image',
+                'pdf',
+            ].includes(type);
 
         if (type === 'image') {
-            el.file.accept =
+            elements.blockFile.accept =
                 'image/jpeg,image/png,image/webp';
 
-            el.fileHelp.textContent =
+            elements.fileHelp.textContent =
                 'JPG, PNG, atau WEBP. Maksimal 20 MB.';
-        } else if (type === 'pdf') {
-            el.file.accept =
+
+            return;
+        }
+
+        if (type === 'pdf') {
+            elements.blockFile.accept =
                 'application/pdf';
 
-            el.fileHelp.textContent =
+            elements.fileHelp.textContent =
                 'Hanya PDF. Maksimal 20 MB.';
-        } else {
-            el.file.accept = '';
-            el.fileHelp.textContent = '';
+
+            return;
         }
+
+        elements.blockFile.accept =
+            '';
+
+        elements.fileHelp.textContent =
+            '';
     }
 
     async function saveBlock(event) {
@@ -1031,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncTinyMceToTextarea();
 
         const validationError =
-            validateForm();
+            validateBlockForm();
 
         if (validationError) {
             notify(
@@ -1042,62 +1323,63 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const data = new FormData();
+        const formData =
+            new FormData();
 
-        data.append(
+        formData.append(
             'block_type',
-            el.type.value
+            elements.blockType.value
         );
 
-        data.append(
+        formData.append(
             'title',
-            el.title.value.trim()
+            elements.blockTitle.value.trim()
         );
 
-        data.append(
+        formData.append(
             'content',
             getEditorContent()
         );
 
-        data.append(
+        formData.append(
             'external_url',
-            el.url.value.trim()
+            elements.blockUrl.value.trim()
         );
 
-        data.append(
+        formData.append(
             'caption',
-            el.caption.value.trim()
+            elements.blockCaption.value.trim()
         );
 
-        data.append(
+        formData.append(
             'alt_text',
-            el.alt.value.trim()
+            elements.blockAlt.value.trim()
         );
 
         const file =
-            el.file.files?.[0];
+            elements.blockFile.files?.[0];
 
         if (file) {
-            data.append(
+            formData.append(
                 'file',
                 file
             );
         }
 
         let url =
-            `${API}/tutorial-nodes/${nodeId}/content-blocks`;
+            `${API_BASE_URL}/tutorial-nodes/${nodeId}/content-blocks`;
 
-        if (state.editing) {
+        if (state.editingBlock) {
             url =
-                `${API}/tutorial-content-blocks/${state.editing.id}`;
+                `${API_BASE_URL}/tutorial-content-blocks/${state.editingBlock.id}`;
 
-            data.append(
+            formData.append(
                 '_method',
                 'PUT'
             );
         }
 
-        setSaving(true);
+        setSavingState(true);
 
         try {
             const response = await fetch(
@@ -1106,21 +1388,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
 
                     headers: {
-                        Accept: 'application/json',
+                        Accept:
+                            'application/json',
                     },
 
-                    body: data,
+                    body:
+                        formData,
                 }
             );
 
             const result =
-                await parseResponse(response);
+                await parseResponse(
+                    response
+                );
 
-            state.dirty = false;
+            state.dirty =
+                false;
 
-            state.textEditor?.setDirty(false);
+            state.textEditor?.setDirty(
+                false
+            );
 
-            closeModal();
+            closeBlockModal();
 
             await loadContent();
 
@@ -1135,16 +1424,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 'error'
             );
         } finally {
-            setSaving(false);
+            setSavingState(false);
         }
     }
 
-    function validateForm() {
+    function validateBlockForm() {
         const type =
-            el.type.value;
+            elements.blockType.value;
 
         const file =
-            el.file.files?.[0];
+            elements.blockFile.files?.[0];
 
         if (
             type === 'text' &&
@@ -1155,21 +1444,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (
             type === 'youtube' &&
-            !el.title.value.trim()
+            !elements.blockTitle.value.trim()
         ) {
             return 'Judul video YouTube wajib diisi.';
         }
 
         if (
             type === 'youtube' &&
-            !youtubeId(el.url.value)
+            !youtubeId(
+                elements.blockUrl.value
+            )
         ) {
             return 'Masukkan tautan YouTube yang valid.';
         }
 
         if (
-            ['image', 'pdf'].includes(type) &&
-            !state.editing &&
+            [
+                'image',
+                'pdf',
+            ].includes(type) &&
+            !state.editingBlock &&
             !file
         ) {
             return 'Pilih file terlebih dahulu.';
@@ -1198,7 +1492,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (
             file &&
             type === 'pdf' &&
-            file.type !== 'application/pdf'
+            file.type !==
+                'application/pdf'
         ) {
             return 'Dokumen harus berupa PDF.';
         }
@@ -1207,40 +1502,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteBlock(id) {
-        const block = state.blocks.find(
-            (item) =>
-                Number(item.id) === id
-        );
+        if (
+            state.reordering ||
+            state.deletingBlockId
+        ) {
+            return;
+        }
+
+        const block =
+            state.blocks.find((item) => {
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            });
 
         if (!block) {
+            notify(
+                'Blok tidak ditemukan.',
+                'error'
+            );
+
             return;
         }
 
         const confirmed =
             window.confirm(
-                `Hapus blok ${typeLabel(
-                    block.block_type
-                )} ini?\n\nTindakan ini tidak dapat dibatalkan.`
+                [
+                    `Hapus blok ${blockTypeLabel(
+                        block.block_type
+                    )} ini?`,
+                    '',
+                    'Blok akan dihapus dari materi dan urutan blok lain akan dirapikan.',
+                    '',
+                    'Tindakan ini tidak dapat dibatalkan.',
+                ].join('\n')
             );
 
         if (!confirmed) {
             return;
         }
 
+        state.deletingBlockId =
+            Number(id);
+
+        renderBlocks();
+
         try {
             const response = await fetch(
-                `${API}/tutorial-content-blocks/${id}`,
+                `${API_BASE_URL}/tutorial-content-blocks/${id}`,
                 {
                     method: 'DELETE',
 
                     headers: {
-                        Accept: 'application/json',
+                        Accept:
+                            'application/json',
                     },
                 }
             );
 
             const result =
-                await parseResponse(response);
+                await parseResponse(
+                    response
+                );
 
             await loadContent();
 
@@ -1254,6 +1578,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 error.message,
                 'error'
             );
+        } finally {
+            state.deletingBlockId =
+                null;
+
+            if (
+                state.blocks.length > 0
+            ) {
+                renderBlocks();
+            }
         }
     }
 
@@ -1261,14 +1594,22 @@ document.addEventListener('DOMContentLoaded', () => {
         id,
         direction
     ) {
-        if (reordering) {
+        if (
+            state.reordering ||
+            state.loadingContent ||
+            state.deletingBlockId
+        ) {
             return;
         }
 
         const currentIndex =
             state.blocks.findIndex(
-                (block) =>
-                    Number(block.id) === id
+                (block) => {
+                    return (
+                        Number(block.id) ===
+                        Number(id)
+                    );
+                }
             );
 
         const targetIndex =
@@ -1283,31 +1624,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const previousBlocks = [
-            ...state.blocks,
-        ];
+        const previousBlocks =
+            [...state.blocks];
 
-        const nextBlocks = [
-            ...state.blocks,
-        ];
+        const reorderedBlocks =
+            [...state.blocks];
 
         [
-            nextBlocks[currentIndex],
-            nextBlocks[targetIndex],
+            reorderedBlocks[currentIndex],
+            reorderedBlocks[targetIndex],
         ] = [
-            nextBlocks[targetIndex],
-            nextBlocks[currentIndex],
+            reorderedBlocks[targetIndex],
+            reorderedBlocks[currentIndex],
         ];
 
-        state.blocks = nextBlocks;
+        state.blocks =
+            reorderedBlocks;
 
+        state.reordering =
+            true;
+
+        setReorderingState(true);
         renderBlocks();
-
-        reordering = true;
 
         try {
             const response = await fetch(
-                `${API}/tutorial-nodes/${nodeId}/content-blocks/reorder`,
+                `${API_BASE_URL}/tutorial-nodes/${nodeId}/content-blocks/reorder`,
                 {
                     method: 'PUT',
 
@@ -1319,31 +1661,53 @@ document.addEventListener('DOMContentLoaded', () => {
                             'application/json',
                     },
 
-                    body: JSON.stringify({
-                        blocks:
-                            nextBlocks.map(
-                                (
-                                    block,
-                                    index
-                                ) => ({
-                                    id: Number(
-                                        block.id
-                                    ),
+                    body:
+                        JSON.stringify({
+                            blocks:
+                                reorderedBlocks.map(
+                                    (
+                                        block,
+                                        index
+                                    ) => {
+                                        return {
+                                            id:
+                                                Number(
+                                                    block.id
+                                                ),
 
-                                    sort_order:
-                                        index + 1,
-                                })
-                            ),
-                    }),
+                                            sort_order:
+                                                index,
+                                        };
+                                    }
+                                ),
+                        }),
                 }
             );
 
             const result =
-                await parseResponse(response);
+                await parseResponse(
+                    response
+                );
+
+            state.blocks =
+                reorderedBlocks.map(
+                    (
+                        block,
+                        index
+                    ) => {
+                        return {
+                            ...block,
+                            sort_order:
+                                index,
+                        };
+                    }
+                );
+
+            renderBlocks();
 
             notify(
                 result.message ||
-                'Urutan berhasil disimpan.',
+                'Urutan blok berhasil disimpan.',
                 'success'
             );
         } catch (error) {
@@ -1357,23 +1721,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 'error'
             );
         } finally {
-            reordering = false;
+            state.reordering =
+                false;
+
+            setReorderingState(false);
+            updateReorderButtonAvailability();
         }
     }
 
-    function previewFile() {
+    function setReorderingState(
+        isReordering
+    ) {
+        elements.reorderStatus.classList.toggle(
+            'hidden',
+            !isReordering
+        );
+
+        elements.reorderStatus.classList.toggle(
+            'inline-flex',
+            isReordering
+        );
+
+        elements.addBlockButtons.forEach(
+            (button) => {
+                button.disabled =
+                    isReordering;
+            }
+        );
+
+        elements.refreshButton.disabled =
+            isReordering;
+    }
+
+    function updateReorderButtonAvailability() {
+        document
+            .querySelectorAll(
+                '.move-block-up, .move-block-down'
+            )
+            .forEach((button) => {
+                const boundaryDisabled =
+                    button.dataset
+                        .boundaryDisabled ===
+                    'true';
+
+                button.disabled =
+                    state.reordering ||
+                    boundaryDisabled;
+            });
+    }
+
+    function previewSelectedFile() {
         revokeObjectUrl();
 
         const file =
-            el.file.files?.[0];
+            elements.blockFile.files?.[0];
 
         if (
             !file ||
-            el.type.value !== 'image'
+            elements.blockType.value !==
+                'image'
         ) {
-            el.imagePreview.classList.add(
-                'hidden'
-            );
+            if (
+                !state.editingBlock
+                    ?.file_path
+            ) {
+                elements.imagePreview.classList.add(
+                    'hidden'
+                );
+
+                elements.imagePreviewElement.src =
+                    '';
+            }
 
             return;
         }
@@ -1381,20 +1799,24 @@ document.addEventListener('DOMContentLoaded', () => {
         state.objectUrl =
             URL.createObjectURL(file);
 
-        el.imagePreviewElement.src =
+        elements.imagePreviewElement.src =
             state.objectUrl;
 
-        el.imagePreview.classList.remove(
+        elements.imagePreview.classList.remove(
             'hidden'
         );
     }
 
-    function previewYoutube() {
-        const videoId = youtubeId(
-            el.url.value
-        );
+    function previewYoutubeInForm() {
+        const title =
+            elements.blockTitle.value.trim();
 
-        if (!el.title.value.trim()) {
+        const videoId =
+            youtubeId(
+                elements.blockUrl.value
+            );
+
+        if (!title) {
             notify(
                 'Isi judul video terlebih dahulu.',
                 'error'
@@ -1412,18 +1834,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        el.youtubeIframe.src =
+        elements.youtubeIframe.src =
             `https://www.youtube.com/embed/${videoId}`;
 
-        el.youtubeIframe.title =
-            el.title.value.trim();
+        elements.youtubeIframe.title =
+            title;
 
-        el.youtubePreview.classList.remove(
+        elements.youtubePreview.classList.remove(
             'hidden'
         );
     }
 
-    function requestClose() {
+    function requestCloseBlockModal() {
         if (
             state.dirty &&
             !window.confirm(
@@ -1433,19 +1855,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        closeModal();
+        closeBlockModal();
     }
 
-    function openModal() {
-        el.modal.classList.remove(
+    function openBlockModal() {
+        elements.blockModal.classList.remove(
             'hidden'
         );
 
-        el.modal.classList.add(
+        elements.blockModal.classList.add(
             'flex'
         );
 
-        el.modal.setAttribute(
+        elements.blockModal.setAttribute(
             'aria-hidden',
             'false'
         );
@@ -1456,25 +1878,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.setTimeout(() => {
             if (
-                el.type.value === 'text'
+                elements.blockType.value ===
+                'text'
             ) {
                 state.textEditor?.focus();
+
+                return;
             }
+
+            if (
+                elements.blockType.value ===
+                'youtube'
+            ) {
+                elements.blockTitle.focus();
+
+                return;
+            }
+
+            elements.blockFile.focus();
         }, 100);
     }
 
-    function closeModal() {
-        state.dirty = false;
+    function closeBlockModal() {
+        state.dirty =
+            false;
 
-        el.modal.classList.add(
+        elements.blockModal.classList.add(
             'hidden'
         );
 
-        el.modal.classList.remove(
+        elements.blockModal.classList.remove(
             'flex'
         );
 
-        el.modal.setAttribute(
+        elements.blockModal.setAttribute(
             'aria-hidden',
             'true'
         );
@@ -1483,66 +1920,92 @@ document.addEventListener('DOMContentLoaded', () => {
             'overflow-hidden'
         );
 
-        resetForm();
+        resetBlockForm();
     }
 
-    function resetForm() {
-        el.form.reset();
+    function resetBlockForm() {
+        elements.blockForm.reset();
 
-        el.id.value = '';
-        el.type.value = '';
-        el.title.value = '';
-        el.content.value = '';
-        el.url.value = '';
-        el.caption.value = '';
-        el.alt.value = '';
+        elements.blockId.value =
+            '';
 
-        el.textFields.classList.add(
+        elements.blockType.value =
+            '';
+
+        elements.blockTitle.value =
+            '';
+
+        elements.blockContent.value =
+            '';
+
+        elements.blockUrl.value =
+            '';
+
+        elements.blockCaption.value =
+            '';
+
+        elements.blockAlt.value =
+            '';
+
+        elements.textFields.classList.add(
             'hidden'
         );
 
-        el.youtubeFields.classList.add(
+        elements.youtubeFields.classList.add(
             'hidden'
         );
 
-        el.fileFields.classList.add(
+        elements.fileFields.classList.add(
             'hidden'
         );
 
-        el.captionFields.classList.add(
+        elements.captionFields.classList.add(
             'hidden'
         );
 
-        el.existingFile.classList.add(
+        elements.altWrapper.classList.remove(
             'hidden'
         );
 
-        el.existingFile.textContent = '';
-
-        el.imagePreview.classList.add(
+        elements.existingFile.classList.add(
             'hidden'
         );
 
-        el.youtubePreview.classList.add(
+        elements.existingFile.textContent =
+            '';
+
+        elements.imagePreview.classList.add(
             'hidden'
         );
 
-        el.imagePreviewElement.src = '';
+        elements.imagePreviewElement.src =
+            '';
 
-        el.youtubeIframe.src = '';
+        elements.youtubePreview.classList.add(
+            'hidden'
+        );
 
-        el.youtubeIframe.title =
+        elements.youtubeIframe.src =
+            '';
+
+        elements.youtubeIframe.title =
             'Preview YouTube';
 
         setEditorContent('');
 
-        state.editing = null;
-        state.dirty = false;
+        state.editingBlock =
+            null;
 
-        state.textEditor?.setDirty(false);
+        state.dirty =
+            false;
+
+        state.textEditor?.setDirty(
+            false
+        );
 
         revokeObjectUrl();
-        setSaving(false);
+
+        setSavingState(false);
     }
 
     function setEditorContent(content) {
@@ -1556,7 +2019,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        el.content.value =
+        elements.blockContent.value =
             content || '';
     }
 
@@ -1565,68 +2028,107 @@ document.addEventListener('DOMContentLoaded', () => {
             return state.textEditor.getContent();
         }
 
-        return el.content.value.trim();
+        return elements.blockContent.value.trim();
     }
 
     function getEditorPlainText() {
         if (state.textEditor) {
             return state.textEditor
                 .getContent({
-                    format: 'text',
+                    format:
+                        'text',
                 })
                 .trim();
         }
 
-        return el.content.value.trim();
+        return elements.blockContent.value.trim();
     }
 
     function syncTinyMceToTextarea() {
         state.textEditor?.save();
     }
 
-    function showState(name) {
-        el.loading.classList.toggle(
+    function showPageState(name) {
+        elements.loadingState.classList.toggle(
             'hidden',
             name !== 'loading'
         );
 
-        el.error.classList.toggle(
+        elements.errorState.classList.toggle(
             'hidden',
             name !== 'error'
         );
 
-        el.empty.classList.toggle(
+        elements.emptyState.classList.toggle(
             'hidden',
             name !== 'empty'
         );
 
-        el.container.classList.toggle(
+        elements.blocksContainer.classList.toggle(
             'hidden',
             name !== 'blocks'
         );
     }
 
-    function setSaving(value) {
-        el.submit.disabled = value;
+    function setPageLoading(isLoading) {
+        elements.refreshButton.disabled =
+            isLoading ||
+            state.reordering;
 
-        el.submit.innerHTML =
-            value
+        elements.addBlockButtons.forEach(
+            (button) => {
+                button.disabled =
+                    isLoading ||
+                    state.reordering;
+            }
+        );
+
+        elements.refreshButton.innerHTML =
+            isLoading
+                ? `
+                    <i class="bi bi-arrow-repeat animate-spin"></i>
+                    Memuat...
+                `
+                : `
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Muat Ulang
+                `;
+    }
+
+    function setSavingState(isSaving) {
+        elements.submitButton.disabled =
+            isSaving;
+
+        elements.cancelButton.disabled =
+            isSaving;
+
+        elements.modalClose.disabled =
+            isSaving;
+
+        elements.submitButton.innerHTML =
+            isSaving
                 ? `
                     <i class="bi bi-arrow-repeat animate-spin"></i>
                     <span>Menyimpan...</span>
                 `
                 : `
                     <i class="bi bi-floppy"></i>
-                    <span>Simpan Blok</span>
+
+                    <span>
+                        ${
+                            state.editingBlock
+                                ? 'Perbarui Blok'
+                                : 'Simpan Blok'
+                        }
+                    </span>
                 `;
     }
 
-    async function parseResponse(
-        response
-    ) {
-        const result = await response
-            .json()
-            .catch(() => ({}));
+    async function parseResponse(response) {
+        const result =
+            await response
+                .json()
+                .catch(() => ({}));
 
         if (response.ok) {
             return result;
@@ -1664,43 +2166,95 @@ document.addEventListener('DOMContentLoaded', () => {
             notificationTimer
         );
 
-        el.notification.className =
+        elements.notification.className =
             `border px-4 py-3 text-sm ${styles[type]}`;
 
-        el.notification.textContent =
+        elements.notification.textContent =
             message;
 
-        el.notification.classList.remove(
+        elements.notification.classList.remove(
             'hidden'
         );
 
         notificationTimer =
             window.setTimeout(() => {
-                el.notification.classList.add(
+                elements.notification.classList.add(
                     'hidden'
                 );
             }, 5000);
     }
 
     function youtubeId(value) {
-        const input = String(
-            value || ''
-        ).trim();
+        const input =
+            String(
+                value || ''
+            ).trim();
 
-        const patterns = [
-            /youtube\.com\/watch\?v=([^&]+)/i,
-            /youtu\.be\/([^?&/]+)/i,
-            /youtube\.com\/embed\/([^?&/]+)/i,
-            /youtube\.com\/shorts\/([^?&/]+)/i,
-        ];
+        if (!input) {
+            return null;
+        }
 
-        for (const pattern of patterns) {
-            const match =
-                input.match(pattern);
+        try {
+            const url =
+                new URL(input);
 
-            if (match?.[1]) {
-                return match[1];
+            const hostname =
+                url.hostname
+                    .replace(
+                        /^www\./i,
+                        ''
+                    )
+                    .toLowerCase();
+
+            if (
+                hostname ===
+                'youtu.be'
+            ) {
+                return (
+                    url.pathname
+                        .split('/')
+                        .filter(Boolean)[0] ??
+                    null
+                );
             }
+
+            if (
+                hostname ===
+                    'youtube.com' ||
+                hostname ===
+                    'm.youtube.com'
+            ) {
+                if (
+                    url.pathname ===
+                    '/watch'
+                ) {
+                    return url.searchParams.get(
+                        'v'
+                    );
+                }
+
+                const segments =
+                    url.pathname
+                        .split('/')
+                        .filter(Boolean);
+
+                if (
+                    [
+                        'embed',
+                        'shorts',
+                        'live',
+                    ].includes(
+                        segments[0]
+                    )
+                ) {
+                    return (
+                        segments[1] ??
+                        null
+                    );
+                }
+            }
+        } catch {
+            return null;
         }
 
         return null;
@@ -1711,18 +2265,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        if (/^https?:\/\//i.test(path)) {
+        if (
+            /^https?:\/\//i.test(path)
+        ) {
             return path;
         }
 
-        return `/storage/${String(path)
-            .replace(/^\/+/, '')}`;
+        return `/storage/${String(path).replace(
+            /^\/+/,
+            ''
+        )}`;
     }
 
-    function fileSize(bytes) {
-        const size = Number(
-            bytes || 0
-        );
+    function formatFileSize(bytes) {
+        const size =
+            Number(bytes || 0);
+
+        if (
+            !Number.isFinite(size) ||
+            size <= 0
+        ) {
+            return 'Ukuran tidak diketahui';
+        }
 
         if (size < 1024) {
             return `${size} B`;
@@ -1743,27 +2307,56 @@ document.addEventListener('DOMContentLoaded', () => {
         ).toFixed(1)} MB`;
     }
 
-    function typeLabel(type) {
+    function htmlToPlainText(html) {
+        const container =
+            document.createElement('div');
+
+        container.innerHTML =
+            DOMPurify.sanitize(
+                String(html || '')
+            );
+
+        return String(
+            container.textContent ||
+            container.innerText ||
+            ''
+        )
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function blockTypeLabel(type) {
         return {
-            text: 'Teks',
-            image: 'Gambar',
-            youtube: 'YouTube',
-            pdf: 'PDF',
+            text:
+                'Teks',
+
+            image:
+                'Gambar',
+
+            youtube:
+                'YouTube',
+
+            pdf:
+                'PDF',
         }[type] || type;
     }
 
     function nodeTypeLabel(type) {
         return {
-            category: 'Kategori',
-            section: 'Bagian',
-            tutorial: 'Tutorial',
-            step: 'Langkah',
+            kategori:
+                'Kategori',
+
+            bagian:
+                'Bagian',
+
+            materi:
+                'Materi',
         }[type] ||
             type ||
             'Node';
     }
 
-    function typeClass(type) {
+    function blockTypeClass(type) {
         return {
             text:
                 'border-blue-200 bg-blue-50 text-blue-900',
@@ -1789,15 +2382,31 @@ document.addEventListener('DOMContentLoaded', () => {
             state.objectUrl
         );
 
-        state.objectUrl = null;
+        state.objectUrl =
+            null;
     }
 
     function escapeHtml(value) {
         return String(value ?? '')
-            .replaceAll('&', '&amp;')
-            .replaceAll('<', '&lt;')
-            .replaceAll('>', '&gt;')
-            .replaceAll('"', '&quot;')
-            .replaceAll("'", '&#039;');
+            .replaceAll(
+                '&',
+                '&amp;'
+            )
+            .replaceAll(
+                '<',
+                '&lt;'
+            )
+            .replaceAll(
+                '>',
+                '&gt;'
+            )
+            .replaceAll(
+                '"',
+                '&quot;'
+            )
+            .replaceAll(
+                "'",
+                '&#039;'
+            );
     }
 });

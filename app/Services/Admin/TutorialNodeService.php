@@ -11,8 +11,20 @@ use Illuminate\Validation\ValidationException;
 
 class TutorialNodeService
 {
-    public function getAll(?int $applicationId = null): Collection
-    {
+    public function getAll(
+        ?int $applicationId = null,
+        ?int $applicationVersionId = null
+    ): Collection {
+        if (
+            $applicationId !== null &&
+            $applicationVersionId !== null
+        ) {
+            $this->validateApplicationVersion(
+                $applicationId,
+                $applicationVersionId
+            );
+        }
+
         return TutorialNode::query()
             ->with([
                 'application:id,name,slug',
@@ -20,29 +32,45 @@ class TutorialNodeService
                 'parent:id,title',
             ])
             ->when(
-                $applicationId,
+                $applicationId !== null,
                 fn ($query) => $query->where(
                     'application_id',
                     $applicationId
                 )
             )
+            ->when(
+                $applicationVersionId !== null,
+                fn ($query) => $query->where(
+                    'application_version_id',
+                    $applicationVersionId
+                )
+            )
             ->orderBy('application_id')
+            ->orderBy('application_version_id')
             ->orderBy('parent_id')
             ->orderBy('sort_order')
             ->orderBy('title')
             ->get();
     }
 
-    public function getTree(?int $applicationId = null): Collection
-    {
+    public function getTree(
+        int $applicationId,
+        int $applicationVersionId
+    ): Collection {
+        $this->validateApplicationVersion(
+            $applicationId,
+            $applicationVersionId
+        );
+
         return TutorialNode::query()
             ->roots()
-            ->when(
-                $applicationId,
-                fn ($query) => $query->where(
-                    'application_id',
-                    $applicationId
-                )
+            ->where(
+                'application_id',
+                $applicationId
+            )
+            ->where(
+                'application_version_id',
+                $applicationVersionId
             )
             ->with([
                 'application:id,name,slug',
@@ -53,46 +81,119 @@ class TutorialNodeService
             ->get();
     }
 
-    public function find(TutorialNode $tutorialNode): TutorialNode
-    {
+    public function find(
+        TutorialNode $tutorialNode
+    ): TutorialNode {
         return $tutorialNode->load([
             'application:id,name,slug',
             'applicationVersion:id,application_id,version_number',
-            'parent:id,title',
+            'parent:id,title,application_id,application_version_id',
             'children',
         ]);
     }
 
-    public function create(array $data): TutorialNode
-    {
-        $this->validateRelations($data);
+    public function create(
+        array $data
+    ): TutorialNode {
+        $this->validateRelations(
+            $data
+        );
 
-        return DB::transaction(function () use ($data): TutorialNode {
-            $data['slug'] = $this->makeSlug(
-                $data['title'],
-                $data['slug'] ?? null
-            );
+        return DB::transaction(
+            function () use ($data): TutorialNode {
+                $data['slug'] =
+                    $this->makeSlug(
+                        $data['title'],
+                        $data['slug'] ?? null
+                    );
 
-            $data['sort_order'] = $data['sort_order'] ?? 0;
+                $data['sort_order'] =
+                    $data['sort_order'] ?? 0;
 
-            $tutorialNode = TutorialNode::create($data);
+                $tutorialNode =
+                    TutorialNode::create(
+                        $data
+                    );
 
-            return $this->find($tutorialNode);
-        });
+                return $this->find(
+                    $tutorialNode
+                );
+            }
+        );
     }
 
     public function update(
         TutorialNode $tutorialNode,
         array $data
     ): TutorialNode {
-        $mergedData = array_merge(
-            $tutorialNode->toArray(),
-            $data
-        );
+        $mergedData = [
+            'application_id' =>
+                $data['application_id']
+                ?? $tutorialNode->application_id,
+
+            'application_version_id' =>
+                $data['application_version_id']
+                ?? $tutorialNode->application_version_id,
+
+            'parent_id' =>
+                array_key_exists(
+                    'parent_id',
+                    $data
+                )
+                    ? $data['parent_id']
+                    : $tutorialNode->parent_id,
+
+            'title' =>
+                $data['title']
+                ?? $tutorialNode->title,
+
+            'slug' =>
+                array_key_exists(
+                    'slug',
+                    $data
+                )
+                    ? $data['slug']
+                    : $tutorialNode->slug,
+
+            'description' =>
+                array_key_exists(
+                    'description',
+                    $data
+                )
+                    ? $data['description']
+                    : $tutorialNode->description,
+
+            'node_type' =>
+                $data['node_type']
+                ?? $tutorialNode->node_type,
+
+            'sort_order' =>
+                $data['sort_order']
+                ?? $tutorialNode->sort_order,
+
+            'status' =>
+                $data['status']
+                ?? $tutorialNode->status,
+
+            'is_public' =>
+                $data['is_public']
+                ?? $tutorialNode->is_public,
+        ];
 
         $this->validateRelations(
             $mergedData,
             $tutorialNode
+        );
+
+        $this->validateChildrenRemainCompatible(
+            $tutorialNode,
+            (int) $mergedData['application_id'],
+            (int) $mergedData['application_version_id']
+        );
+
+        $this->validateNodeTypeChange(
+            $tutorialNode,
+            (string) $mergedData['node_type']
         );
 
         return DB::transaction(
@@ -101,22 +202,37 @@ class TutorialNodeService
                 $data
             ): TutorialNode {
                 if (
-                    array_key_exists('title', $data) ||
-                    array_key_exists('slug', $data)
+                    array_key_exists(
+                        'title',
+                        $data
+                    ) ||
+                    array_key_exists(
+                        'slug',
+                        $data
+                    )
                 ) {
-                    $title = $data['title']
+                    $title =
+                        $data['title']
                         ?? $tutorialNode->title;
 
-                    $slug = $data['slug']
-                        ?? $tutorialNode->slug;
+                    $slug =
+                        array_key_exists(
+                            'slug',
+                            $data
+                        )
+                            ? $data['slug']
+                            : $tutorialNode->slug;
 
-                    $data['slug'] = $this->makeSlug(
-                        $title,
-                        $slug
-                    );
+                    $data['slug'] =
+                        $this->makeSlug(
+                            $title,
+                            $slug
+                        );
                 }
 
-                $tutorialNode->update($data);
+                $tutorialNode->update(
+                    $data
+                );
 
                 return $this->find(
                     $tutorialNode->refresh()
@@ -128,12 +244,28 @@ class TutorialNodeService
     public function delete(
         TutorialNode $tutorialNode
     ): void {
-        if ($tutorialNode->children()->exists()) {
-            throw ValidationException::withMessages([
-                'tutorial_node' => [
-                    'Node tidak dapat dihapus karena masih memiliki child node.',
-                ],
-            ]);
+        DB::transaction(
+            function () use (
+                $tutorialNode
+            ): void {
+                $this->deleteNodeRecursively(
+                    $tutorialNode
+                );
+            }
+        );
+    }
+
+    private function deleteNodeRecursively(
+        TutorialNode $tutorialNode
+    ): void {
+        $children = $tutorialNode
+            ->children()
+            ->get();
+
+        foreach ($children as $child) {
+            $this->deleteNodeRecursively(
+                $child
+            );
         }
 
         $tutorialNode->delete();
@@ -143,69 +275,220 @@ class TutorialNodeService
         array $data,
         ?TutorialNode $currentNode = null
     ): void {
-        $applicationId = (int) $data['application_id'];
+        $applicationId =
+            (int) $data['application_id'];
 
-        $parentId = $data['parent_id'] ?? null;
+        $applicationVersionId =
+            (int) $data['application_version_id'];
 
-        $versionId =
-            $data['application_version_id'] ?? null;
+        $parentId =
+            $data['parent_id'] ?? null;
 
-        if ($parentId !== null) {
-            $parent = TutorialNode::query()
-                ->findOrFail($parentId);
+        $nodeType =
+            (string) $data['node_type'];
 
-            if (
-                $currentNode &&
-                $parent->id === $currentNode->id
-            ) {
-                throw ValidationException::withMessages([
-                    'parent_id' => [
-                        'Node tidak dapat menjadi parent untuk dirinya sendiri.',
-                    ],
-                ]);
-            }
+        $this->validateApplicationVersion(
+            $applicationId,
+            $applicationVersionId
+        );
 
-            if (
-                (int) $parent->application_id !==
-                $applicationId
-            ) {
-                throw ValidationException::withMessages([
-                    'parent_id' => [
-                        'Parent node harus berasal dari aplikasi yang sama.',
-                    ],
-                ]);
-            }
+        $this->validateNodeTypeHierarchy(
+            $parentId,
+            $nodeType
+        );
 
-            if (
-                $currentNode &&
-                $this->isDescendant(
-                    $parent,
-                    $currentNode->id
-                )
-            ) {
-                throw ValidationException::withMessages([
-                    'parent_id' => [
-                        'Node tidak dapat dipindahkan ke salah satu turunannya.',
-                    ],
-                ]);
-            }
+        if ($parentId === null) {
+            return;
         }
 
-        if ($versionId !== null) {
-            $applicationVersion =
-                ApplicationVersion::query()
-                    ->findOrFail($versionId);
+        $parent = TutorialNode::query()
+            ->find($parentId);
 
-            if (
-                (int) $applicationVersion->application_id !==
-                $applicationId
-            ) {
-                throw ValidationException::withMessages([
-                    'application_version_id' => [
-                        'Versi aplikasi harus berasal dari aplikasi yang sama.',
-                    ],
-                ]);
-            }
+        if (!$parent) {
+            throw ValidationException::withMessages([
+                'parent_id' => [
+                    'Parent materi tidak ditemukan.',
+                ],
+            ]);
+        }
+
+        if (
+            $currentNode &&
+            (int) $parent->id ===
+                (int) $currentNode->id
+        ) {
+            throw ValidationException::withMessages([
+                'parent_id' => [
+                    'Node tidak dapat menjadi parent untuk dirinya sendiri.',
+                ],
+            ]);
+        }
+
+        if (
+            (int) $parent->application_id !==
+            $applicationId
+        ) {
+            throw ValidationException::withMessages([
+                'parent_id' => [
+                    'Parent materi harus berasal dari aplikasi yang sama.',
+                ],
+            ]);
+        }
+
+        if (
+            (int) $parent->application_version_id !==
+            $applicationVersionId
+        ) {
+            throw ValidationException::withMessages([
+                'parent_id' => [
+                    'Parent materi harus berasal dari versi aplikasi yang sama.',
+                ],
+            ]);
+        }
+
+        if (
+            $currentNode &&
+            $this->isDescendant(
+                $parent,
+                (int) $currentNode->id
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'parent_id' => [
+                    'Node tidak dapat dipindahkan ke salah satu turunannya.',
+                ],
+            ]);
+        }
+    }
+
+    private function validateNodeTypeHierarchy(
+        ?int $parentId,
+        string $nodeType
+    ): void {
+        if (
+            $parentId === null &&
+            $nodeType !==
+                TutorialNode::TYPE_KATEGORI
+        ) {
+            throw ValidationException::withMessages([
+                'node_type' => [
+                    'Materi utama wajib menggunakan jenis Kategori.',
+                ],
+            ]);
+        }
+
+        if (
+            $parentId !== null &&
+            $nodeType ===
+                TutorialNode::TYPE_KATEGORI
+        ) {
+            throw ValidationException::withMessages([
+                'node_type' => [
+                    'Kategori hanya dapat digunakan sebagai materi utama dan tidak dapat ditambahkan sebagai child.',
+                ],
+            ]);
+        }
+
+        if (
+            $parentId !== null &&
+            !in_array(
+                $nodeType,
+                [
+                    TutorialNode::TYPE_BAGIAN,
+                    TutorialNode::TYPE_MATERI,
+                ],
+                true
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'node_type' => [
+                    'Child hanya boleh menggunakan jenis Bagian atau Materi.',
+                ],
+            ]);
+        }
+    }
+
+    private function validateApplicationVersion(
+        int $applicationId,
+        int $applicationVersionId
+    ): ApplicationVersion {
+        $applicationVersion =
+            ApplicationVersion::query()
+                ->whereKey(
+                    $applicationVersionId
+                )
+                ->where(
+                    'application_id',
+                    $applicationId
+                )
+                ->first();
+
+        if (!$applicationVersion) {
+            throw ValidationException::withMessages([
+                'application_version_id' => [
+                    'Versi aplikasi tidak berasal dari aplikasi yang dipilih.',
+                ],
+            ]);
+        }
+
+        return $applicationVersion;
+    }
+
+    private function validateChildrenRemainCompatible(
+        TutorialNode $tutorialNode,
+        int $applicationId,
+        int $applicationVersionId
+    ): void {
+        $applicationChanged =
+            (int) $tutorialNode->application_id !==
+            $applicationId;
+
+        $versionChanged =
+            (int) $tutorialNode->application_version_id !==
+            $applicationVersionId;
+
+        if (
+            !$applicationChanged &&
+            !$versionChanged
+        ) {
+            return;
+        }
+
+        if (
+            $tutorialNode
+                ->children()
+                ->exists()
+        ) {
+            throw ValidationException::withMessages([
+                'application_version_id' => [
+                    'Aplikasi atau versi node tidak dapat diubah karena node masih memiliki child.',
+                ],
+            ]);
+        }
+    }
+
+    private function validateNodeTypeChange(
+        TutorialNode $tutorialNode,
+        string $newNodeType
+    ): void {
+        $nodeTypeChanged =
+            $tutorialNode->node_type !==
+            $newNodeType;
+
+        if (!$nodeTypeChanged) {
+            return;
+        }
+
+        if (
+            $tutorialNode
+                ->children()
+                ->exists()
+        ) {
+            throw ValidationException::withMessages([
+                'node_type' => [
+                    'Jenis materi tidak dapat diubah karena node masih memiliki child.',
+                ],
+            ]);
         }
     }
 
@@ -224,7 +507,9 @@ class TutorialNodeService
             }
 
             $node = TutorialNode::query()
-                ->find($node->parent_id);
+                ->find(
+                    $node->parent_id
+                );
 
             if (!$node) {
                 break;

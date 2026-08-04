@@ -111,26 +111,26 @@
                 </div>
             </article>
 
-            <article class="border border-slate-200 bg-white p-5 shadow-sm">
-                <div class="flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">
-                            Total Versi
-                        </p>
+<article class="border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-medium text-slate-500">
+                Aplikasi Tidak Aktif
+            </p>
 
-                        <p
-                            id="stat-total-versions"
-                            class="mt-2 text-3xl font-bold text-slate-950"
-                        >
-                            0
-                        </p>
-                    </div>
+            <p
+                id="stat-inactive-applications"
+                class="mt-2 text-3xl font-bold text-slate-950"
+            >
+                0
+            </p>
+        </div>
 
-                    <div class="flex h-12 w-12 items-center justify-center bg-amber-100 text-amber-700">
-                        <i class="bi bi-tags text-xl"></i>
-                    </div>
-                </div>
-            </article>
+        <div class="flex h-12 w-12 items-center justify-center bg-amber-100 text-amber-700">
+            <i class="bi bi-file-earmark-text text-xl"></i>
+        </div>
+    </div>
+</article>
         </section>
 
         {{-- Tabel aplikasi --}}

@@ -12,22 +12,44 @@ use Illuminate\Http\Request;
 
 class TutorialNodeController extends Controller
 {
-    private TutorialNodeService $service;
-
     public function __construct(
-        TutorialNodeService $service
+        private readonly TutorialNodeService $service
     ) {
-        $this->service = $service;
     }
 
     public function index(Request $request): JsonResponse
     {
-        $applicationId = $request->integer(
-            'application_id'
-        );
+        $validated = $request->validate([
+            'application_id' => [
+                'nullable',
+                'required_with:application_version_id',
+                'integer',
+                'exists:applications,id',
+            ],
+
+            'application_version_id' => [
+                'nullable',
+                'required_with:application_id',
+                'integer',
+                'exists:application_versions,id',
+            ],
+        ]);
+
+        $applicationId = isset(
+            $validated['application_id']
+        )
+            ? (int) $validated['application_id']
+            : null;
+
+        $applicationVersionId = isset(
+            $validated['application_version_id']
+        )
+            ? (int) $validated['application_version_id']
+            : null;
 
         $tutorialNodes = $this->service->getAll(
-            $applicationId ?: null
+            $applicationId,
+            $applicationVersionId
         );
 
         return response()->json([
@@ -38,12 +60,23 @@ class TutorialNodeController extends Controller
 
     public function tree(Request $request): JsonResponse
     {
-        $applicationId = $request->integer(
-            'application_id'
-        );
+        $validated = $request->validate([
+            'application_id' => [
+                'required',
+                'integer',
+                'exists:applications,id',
+            ],
+
+            'application_version_id' => [
+                'required',
+                'integer',
+                'exists:application_versions,id',
+            ],
+        ]);
 
         $tutorialNodes = $this->service->getTree(
-            $applicationId ?: null
+            (int) $validated['application_id'],
+            (int) $validated['application_version_id']
         );
 
         return response()->json([
@@ -95,7 +128,9 @@ class TutorialNodeController extends Controller
     public function destroy(
         TutorialNode $tutorialNode
     ): JsonResponse {
-        $this->service->delete($tutorialNode);
+        $this->service->delete(
+            $tutorialNode
+        );
 
         return response()->json([
             'message' => 'Tutorial node berhasil dihapus.',

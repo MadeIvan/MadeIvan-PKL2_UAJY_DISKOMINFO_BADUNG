@@ -1,94 +1,360 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const sidebar = document.getElementById('admin-sidebar');
-const adminMain = document.getElementById('admin-main');
+const sidebar = document.getElementById(
+    'admin-sidebar'
+);
+
+const adminMain = document.getElementById(
+    'admin-main'
+);
+
 const collapseButton = document.getElementById(
     'sidebar-collapse'
 );
+
 const collapseIcon = document.getElementById(
     'sidebar-collapse-icon'
 );
+
+const collapseLabel = document.getElementById(
+    'sidebar-collapse-label'
+);
+
 const openMobileButton = document.getElementById(
     'sidebar-open-mobile'
 );
+
 const closeMobileButton = document.getElementById(
     'sidebar-close-mobile'
 );
-const overlay = document.getElementById('sidebar-overlay');
+
+const overlay = document.getElementById(
+    'sidebar-overlay'
+);
 
 const sidebarLabels = document.querySelectorAll(
     '[data-sidebar-label]'
 );
 
-const SIDEBAR_STORAGE_KEY = 'admin-sidebar-collapsed';
+const desktopMediaQuery = window.matchMedia(
+    '(min-width: 1024px)'
+);
 
-function setSidebarCollapsed(collapsed) {
-    if (!sidebar || !adminMain) {
+const SIDEBAR_STORAGE_KEY =
+    'admin-sidebar-pinned';
+
+const state = {
+    pinned:
+        localStorage.getItem(
+            SIDEBAR_STORAGE_KEY
+        ) === 'true',
+
+    hovered: false,
+    mobileOpen: false,
+};
+
+function isDesktop() {
+    return desktopMediaQuery.matches;
+}
+
+function shouldExpandDesktopSidebar() {
+    return state.pinned || state.hovered;
+}
+
+function showSidebarLabels() {
+    sidebarLabels.forEach((label) => {
+        label.classList.remove(
+            'w-0',
+            'opacity-0',
+            'pointer-events-none'
+        );
+
+        label.classList.add(
+            'opacity-100'
+        );
+    });
+}
+
+function hideSidebarLabels() {
+    sidebarLabels.forEach((label) => {
+        label.classList.remove(
+            'opacity-100'
+        );
+
+        label.classList.add(
+            'w-0',
+            'opacity-0',
+            'pointer-events-none'
+        );
+    });
+}
+
+function setMainExpanded(expanded) {
+    if (!adminMain) {
         return;
     }
 
-    if (collapsed) {
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-20');
+    if (expanded) {
+        adminMain.classList.remove(
+            'lg:ml-20'
+        );
 
-        adminMain.classList.remove('lg:ml-64');
-        adminMain.classList.add('lg:ml-20');
-
-        sidebarLabels.forEach((label) => {
-            label.classList.add('hidden');
-        });
-
-        collapseIcon?.classList.remove('bi-chevron-left');
-        collapseIcon?.classList.add('bi-chevron-right');
-
-        localStorage.setItem(
-            SIDEBAR_STORAGE_KEY,
-            'true'
+        adminMain.classList.add(
+            'lg:ml-64'
         );
 
         return;
     }
 
-    sidebar.classList.remove('w-20');
-    sidebar.classList.add('w-64');
+    adminMain.classList.remove(
+        'lg:ml-64'
+    );
 
-    adminMain.classList.remove('lg:ml-20');
-    adminMain.classList.add('lg:ml-64');
-
-    sidebarLabels.forEach((label) => {
-        label.classList.remove('hidden');
-    });
-
-    collapseIcon?.classList.remove('bi-chevron-right');
-    collapseIcon?.classList.add('bi-chevron-left');
-
-    localStorage.setItem(
-        SIDEBAR_STORAGE_KEY,
-        'false'
+    adminMain.classList.add(
+        'lg:ml-20'
     );
 }
 
-function toggleSidebarCollapse() {
-    const isCollapsed = sidebar?.classList.contains('w-20');
+function setDesktopSidebarExpanded(
+    expanded
+) {
+    if (!sidebar || !isDesktop()) {
+        return;
+    }
 
-    setSidebarCollapsed(!isCollapsed);
+    sidebar.classList.remove(
+        expanded
+            ? 'lg:w-20'
+            : 'lg:w-64'
+    );
+
+    sidebar.classList.add(
+        expanded
+            ? 'lg:w-64'
+            : 'lg:w-20'
+    );
+
+    if (expanded) {
+        showSidebarLabels();
+    } else {
+        hideSidebarLabels();
+    }
+
+    setMainExpanded(expanded);
+
+    sidebar.dataset.sidebarPinned =
+        state.pinned ? 'true' : 'false';
+}
+
+function updatePinButton() {
+    if (
+        !collapseButton ||
+        !collapseIcon ||
+        !collapseLabel
+    ) {
+        return;
+    }
+
+    collapseButton.setAttribute(
+        'aria-expanded',
+        state.pinned ? 'true' : 'false'
+    );
+
+    collapseIcon.className =
+        state.pinned
+            ? 'bi bi-pin-angle-fill text-lg'
+            : 'bi bi-pin-angle text-lg';
+
+    collapseLabel.textContent =
+        state.pinned
+            ? 'Lepas Sidebar'
+            : 'Kunci Sidebar';
+
+    collapseButton.title =
+        state.pinned
+            ? 'Biarkan sidebar menutup otomatis'
+            : 'Buka sidebar secara permanen';
+}
+
+function refreshDesktopSidebar() {
+    if (!isDesktop()) {
+        return;
+    }
+
+    setDesktopSidebarExpanded(
+        shouldExpandDesktopSidebar()
+    );
+
+    updatePinButton();
+}
+
+function toggleSidebarPin() {
+    state.pinned = !state.pinned;
+
+    localStorage.setItem(
+        SIDEBAR_STORAGE_KEY,
+        state.pinned ? 'true' : 'false'
+    );
+
+    refreshDesktopSidebar();
+}
+
+function handleSidebarMouseEnter() {
+    if (!isDesktop()) {
+        return;
+    }
+
+    state.hovered = true;
+
+    refreshDesktopSidebar();
+}
+
+function handleSidebarMouseLeave() {
+    if (!isDesktop()) {
+        return;
+    }
+
+    state.hovered = false;
+
+    refreshDesktopSidebar();
 }
 
 function openMobileSidebar() {
-    sidebar?.classList.remove('-translate-x-full');
-    overlay?.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
+    if (!sidebar || isDesktop()) {
+        return;
+    }
+
+    state.mobileOpen = true;
+
+    sidebar.classList.remove(
+        '-translate-x-full'
+    );
+
+    sidebar.classList.add(
+        'translate-x-0'
+    );
+
+    overlay?.classList.remove(
+        'hidden'
+    );
+
+    document.body.classList.add(
+        'overflow-hidden'
+    );
+
+    showSidebarLabels();
 }
 
 function closeMobileSidebar() {
-    sidebar?.classList.add('-translate-x-full');
-    overlay?.classList.add('hidden');
-    document.body.classList.remove('overflow-hidden');
+    if (!sidebar || isDesktop()) {
+        return;
+    }
+
+    state.mobileOpen = false;
+
+    sidebar.classList.remove(
+        'translate-x-0'
+    );
+
+    sidebar.classList.add(
+        '-translate-x-full'
+    );
+
+    overlay?.classList.add(
+        'hidden'
+    );
+
+    document.body.classList.remove(
+        'overflow-hidden'
+    );
 }
+
+function handleBreakpointChange() {
+    if (isDesktop()) {
+        state.mobileOpen = false;
+
+        sidebar?.classList.remove(
+            '-translate-x-full',
+            'translate-x-0'
+        );
+
+        sidebar?.classList.add(
+            'lg:translate-x-0'
+        );
+
+        overlay?.classList.add(
+            'hidden'
+        );
+
+        document.body.classList.remove(
+            'overflow-hidden'
+        );
+
+        state.hovered = false;
+
+        refreshDesktopSidebar();
+
+        return;
+    }
+
+    sidebar?.classList.remove(
+        'lg:w-20',
+        'lg:w-64'
+    );
+
+    sidebar?.classList.add(
+        'w-72',
+        '-translate-x-full'
+    );
+
+    setMainExpanded(false);
+    showSidebarLabels();
+    updatePinButton();
+}
+
+function closeMobileAfterNavigation(
+    event
+) {
+    const menuLink = event.target.closest(
+        'a'
+    );
+
+    if (!menuLink || isDesktop()) {
+        return;
+    }
+
+    const href =
+        menuLink.getAttribute('href');
+
+    if (
+        !href ||
+        href === '#' ||
+        href.startsWith('javascript:')
+    ) {
+        return;
+    }
+
+    closeMobileSidebar();
+}
+
+sidebar?.addEventListener(
+    'mouseenter',
+    handleSidebarMouseEnter
+);
+
+sidebar?.addEventListener(
+    'mouseleave',
+    handleSidebarMouseLeave
+);
+
+sidebar?.addEventListener(
+    'click',
+    closeMobileAfterNavigation
+);
 
 collapseButton?.addEventListener(
     'click',
-    toggleSidebarCollapse
+    toggleSidebarPin
 );
 
 openMobileButton?.addEventListener(
@@ -106,13 +372,21 @@ overlay?.addEventListener(
     closeMobileSidebar
 );
 
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-        closeMobileSidebar();
+document.addEventListener(
+    'keydown',
+    (event) => {
+        if (
+            event.key === 'Escape' &&
+            state.mobileOpen
+        ) {
+            closeMobileSidebar();
+        }
     }
-});
+);
 
-const savedState =
-    localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+desktopMediaQuery.addEventListener(
+    'change',
+    handleBreakpointChange
+);
 
-setSidebarCollapsed(savedState);
+handleBreakpointChange();
