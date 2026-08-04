@@ -20,12 +20,12 @@
             role="alert"
         ></div>
 
-        {{-- Page header --}}
+        {{-- Page Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">
-            <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+            <div class="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
                 <div class="min-w-0">
                     <a
-                        href="{{ url('/admin/Materi-demo') }}"
+                        href="{{ route('admin.materi-demo.index') }}"
                         class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-950"
                     >
                         <i class="bi bi-arrow-left"></i>
@@ -51,26 +51,42 @@
                     </p>
                 </div>
 
-                <button
-                    id="refresh-button"
-                    type="button"
-                    class="inline-flex shrink-0 items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Muat Ulang
-                </button>
+                <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
+                    <a
+                        href="{{ route(
+                            'admin.materi-demo.preview',
+                            ['tutorialNode' => $tutorialNode]
+                        ) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-semibold text-blue-950 transition hover:bg-blue-100"
+                    >
+                        <i class="bi bi-eye"></i>
+                        Preview Materi
+                    </a>
+
+                    <button
+                        id="refresh-button"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Muat Ulang
+                    </button>
+                </div>
             </div>
         </section>
 
-        {{-- Add block toolbar --}}
+        {{-- Add Block Toolbar --}}
         <section class="border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div>
                 <h3 class="text-lg font-bold text-slate-950">
                     Tambahkan Blok Konten
                 </h3>
 
-                <p class="mt-1 text-sm text-slate-500">
+                <p class="mt-1 text-sm leading-6 text-slate-500">
                     Susun materi menggunakan teks, gambar, video YouTube, dan dokumen PDF.
+                    Blok baru akan ditempatkan pada urutan paling bawah.
                 </p>
             </div>
 
@@ -78,7 +94,7 @@
                 <button
                     type="button"
                     data-add-type="text"
-                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <i class="bi bi-type text-xl text-blue-900"></i>
 
@@ -86,15 +102,15 @@
                         Teks
                     </span>
 
-                    <span class="mt-1 block text-xs text-slate-500">
-                        Teks dengan format seperti Microsoft Word.
+                    <span class="mt-1 block text-xs leading-5 text-slate-500">
+                        Tambahkan paragraf, heading, daftar, tabel, tautan, dan format teks.
                     </span>
                 </button>
 
                 <button
                     type="button"
                     data-add-type="image"
-                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <i class="bi bi-image text-xl text-emerald-700"></i>
 
@@ -102,15 +118,15 @@
                         Gambar
                     </span>
 
-                    <span class="mt-1 block text-xs text-slate-500">
-                        Upload JPG, PNG, atau WEBP.
+                    <span class="mt-1 block text-xs leading-5 text-slate-500">
+                        Upload gambar dengan format JPG, PNG, atau WEBP.
                     </span>
                 </button>
 
                 <button
                     type="button"
                     data-add-type="youtube"
-                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-red-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <i class="bi bi-youtube text-xl text-red-600"></i>
 
@@ -118,15 +134,15 @@
                         YouTube
                     </span>
 
-                    <span class="mt-1 block text-xs text-slate-500">
-                        Tambahkan judul dan tautan video.
+                    <span class="mt-1 block text-xs leading-5 text-slate-500">
+                        Tambahkan judul dan tautan video YouTube.
                     </span>
                 </button>
 
                 <button
                     type="button"
                     data-add-type="pdf"
-                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                    class="add-block-button border border-slate-200 p-4 text-left transition hover:border-amber-300 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <i class="bi bi-file-earmark-pdf text-xl text-red-600"></i>
 
@@ -134,35 +150,45 @@
                         PDF
                     </span>
 
-                    <span class="mt-1 block text-xs text-slate-500">
-                        Upload dokumen panduan PDF.
+                    <span class="mt-1 block text-xs leading-5 text-slate-500">
+                        Upload dokumen panduan dalam format PDF.
                     </span>
                 </button>
             </div>
         </section>
 
-        {{-- Content block list --}}
+        {{-- Content Block List --}}
         <section class="border border-slate-200 bg-white shadow-sm">
-            <div class="flex flex-col gap-3 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+            <div class="flex flex-col gap-4 border-b border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                     <h3 class="text-lg font-bold text-slate-950">
                         Isi Materi
                     </h3>
 
-                    <p class="mt-1 text-sm text-slate-500">
-                        Gunakan tombol panah untuk mengubah urutan blok.
+                    <p class="mt-1 text-sm leading-6 text-slate-500">
+                        Gunakan tombol caret untuk mengubah urutan blok. Setiap perubahan urutan akan langsung disimpan.
                     </p>
                 </div>
 
-                <span
-                    id="block-count"
-                    class="w-fit border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-900"
-                >
-                    0 blok
-                </span>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span
+                        id="reorder-status"
+                        class="hidden items-center gap-2 border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-900"
+                    >
+                        <i class="bi bi-arrow-repeat animate-spin"></i>
+                        Menyimpan urutan...
+                    </span>
+
+                    <span
+                        id="block-count"
+                        class="w-fit border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-900"
+                    >
+                        0 blok
+                    </span>
+                </div>
             </div>
 
-            {{-- Loading --}}
+            {{-- Loading State --}}
             <div
                 id="loading-state"
                 class="px-5 py-16 text-center text-sm text-slate-500"
@@ -171,7 +197,7 @@
                 Memuat konten...
             </div>
 
-            {{-- Error --}}
+            {{-- Error State --}}
             <div
                 id="error-state"
                 class="hidden px-5 py-16 text-center"
@@ -190,14 +216,14 @@
                 <button
                     id="retry-button"
                     type="button"
-                    class="mt-5 inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    class="mt-5 inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                 >
                     <i class="bi bi-arrow-clockwise"></i>
                     Coba Lagi
                 </button>
             </div>
 
-            {{-- Empty --}}
+            {{-- Empty State --}}
             <div
                 id="empty-state"
                 class="hidden px-5 py-16 text-center"
@@ -213,7 +239,7 @@
                 </p>
             </div>
 
-            {{-- Blocks --}}
+            {{-- Blocks Container --}}
             <div
                 id="blocks-container"
                 class="hidden space-y-4 p-5 sm:p-6"
@@ -221,13 +247,14 @@
         </section>
     </div>
 
-    {{-- Block form modal --}}
+    {{-- Block Form Modal --}}
     <div
         id="block-modal"
         class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/60 p-4"
         aria-hidden="true"
     >
         <div class="max-h-[92vh] w-full max-w-4xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+            {{-- Modal Header --}}
             <div class="sticky top-0 z-20 flex items-start justify-between gap-4 border-b border-slate-200 bg-white p-5 sm:p-6">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
@@ -252,13 +279,14 @@
                 <button
                     id="modal-close"
                     type="button"
-                    class="flex h-10 w-10 items-center justify-center text-slate-500 hover:bg-slate-100"
+                    class="flex h-10 w-10 items-center justify-center text-slate-500 transition hover:bg-slate-100"
                     aria-label="Tutup modal"
                 >
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
 
+            {{-- Modal Form --}}
             <form
                 id="block-form"
                 class="space-y-6 p-5 sm:p-6"
@@ -274,7 +302,7 @@
                     type="hidden"
                 >
 
-                {{-- Text fields --}}
+                {{-- Text Fields --}}
                 <div
                     id="text-fields"
                     class="hidden"
@@ -293,12 +321,12 @@
                         class="w-full border border-slate-300 px-4 py-3 leading-7 outline-none focus:border-blue-900"
                     ></textarea>
 
-                    <p class="mt-2 text-xs text-slate-500">
-                        Gunakan toolbar untuk mengatur heading, teks tebal, daftar, tautan, tabel, dan perataan.
+                    <p class="mt-2 text-xs leading-5 text-slate-500">
+                        Gunakan toolbar untuk heading, teks tebal, daftar, tautan, tabel, kode, dan perataan.
                     </p>
                 </div>
 
-                {{-- YouTube fields --}}
+                {{-- YouTube Fields --}}
                 <div
                     id="youtube-fields"
                     class="hidden space-y-5"
@@ -335,15 +363,15 @@
                             class="w-full border border-slate-300 px-4 py-3 outline-none focus:border-blue-900"
                         >
 
-                        <p class="mt-2 text-xs text-slate-500">
-                            Mendukung youtube.com/watch, youtu.be, embed, dan YouTube Shorts.
+                        <p class="mt-2 text-xs leading-5 text-slate-500">
+                            Mendukung youtube.com/watch, youtu.be, embed, Shorts, dan YouTube Live.
                         </p>
                     </div>
 
                     <button
                         id="youtube-preview-button"
                         type="button"
-                        class="inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        class="inline-flex items-center justify-center gap-2 border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
                         <i class="bi bi-play-btn"></i>
                         Tampilkan Preview
@@ -358,13 +386,14 @@
                             class="h-full w-full"
                             src=""
                             title="Preview YouTube"
+                            loading="lazy"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowfullscreen
                         ></iframe>
                     </div>
                 </div>
 
-                {{-- Image and PDF fields --}}
+                {{-- File Fields --}}
                 <div
                     id="file-fields"
                     class="hidden space-y-4"
@@ -407,7 +436,7 @@
                     </div>
                 </div>
 
-                {{-- Caption --}}
+                {{-- Caption Fields --}}
                 <div
                     id="caption-fields"
                     class="hidden grid gap-5 md:grid-cols-2"
@@ -447,12 +476,12 @@
                     </div>
                 </div>
 
-                {{-- Footer --}}
+                {{-- Modal Footer --}}
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
                     <button
                         id="cancel-button"
                         type="button"
-                        class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         Batal
                     </button>
@@ -460,7 +489,7 @@
                     <button
                         id="submit-button"
                         type="submit"
-                        class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                        class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         <i class="bi bi-floppy"></i>
                         <span>Simpan Blok</span>

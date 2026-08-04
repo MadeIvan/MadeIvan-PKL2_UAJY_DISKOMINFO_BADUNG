@@ -16,36 +16,48 @@ class TutorialContentBlockService
         array $data,
         ?UploadedFile $file = null
     ): TutorialContentBlock {
-        $this->ensureNodeCanContainContent($tutorialNode);
+        $this->ensureNodeCanContainContent(
+            $tutorialNode
+        );
 
-        return DB::transaction(function () use (
-            $tutorialNode,
-            $data,
-            $file
-        ): TutorialContentBlock {
-            $data['tutorial_node_id'] = $tutorialNode->id;
+        return DB::transaction(
+            function () use (
+                $tutorialNode,
+                $data,
+                $file
+            ): TutorialContentBlock {
+                $data['tutorial_node_id'] =
+                    $tutorialNode->id;
 
-            if (!isset($data['sort_order'])) {
-                $data['sort_order'] = (
-                    (int) $tutorialNode
-                        ->contentBlocks()
-                        ->max('sort_order')
-                ) + 1;
-            }
+                $data['sort_order'] =
+                    $this->getNextSortOrder(
+                        $tutorialNode
+                    );
 
-            if ($file) {
-                $data = array_merge(
-                    $data,
-                    $this->storeFile(
-                        $tutorialNode,
-                        $data['block_type'],
-                        $file
-                    )
+                $blockType =
+                    (string) $data['block_type'];
+
+                if ($file) {
+                    $data = array_merge(
+                        $data,
+                        $this->storeFile(
+                            $tutorialNode,
+                            $blockType,
+                            $file
+                        )
+                    );
+                }
+
+                $this->clearUnusedFields(
+                    $blockType,
+                    $data
                 );
-            }
 
-            return TutorialContentBlock::create($data);
-        });
+                return TutorialContentBlock::create(
+                    $data
+                )->refresh();
+            }
+        );
     }
 
     public function update(
@@ -53,105 +65,250 @@ class TutorialContentBlockService
         array $data,
         ?UploadedFile $file = null
     ): TutorialContentBlock {
-        return DB::transaction(function () use (
-            $block,
-            $data,
-            $file
-        ): TutorialContentBlock {
-            $blockType = $data['block_type'] ?? $block->block_type;
+        $block->loadMissing(
+            'tutorialNode'
+        );
 
-            if ($file) {
-                $this->deleteStoredFile($block);
+        $this->ensureNodeCanContainContent(
+            $block->tutorialNode
+        );
 
-                $data = array_merge(
-                    $data,
-                    $this->storeFile(
-                        $block->tutorialNode,
-                        $blockType,
-                        $file
-                    )
+        return DB::transaction(
+            function () use (
+                $block,
+                $data,
+                $file
+            ): TutorialContentBlock {
+                $oldBlockType =
+                    $block->block_type;
+
+                $newBlockType =
+                    (string) (
+                        $data['block_type']
+                        ?? $oldBlockType
+                    );
+
+                $changedAwayFromFileType =
+                    in_array(
+                        $oldBlockType,
+                        [
+                            TutorialContentBlock::TYPE_IMAGE,
+                            TutorialContentBlock::TYPE_PDF,
+                        ],
+                        true
+                    ) &&
+                    !in_array(
+                        $newBlockType,
+                        [
+                            TutorialContentBlock::TYPE_IMAGE,
+                            TutorialContentBlock::TYPE_PDF,
+                        ],
+                        true
+                    );
+
+                $changedFileType =
+                    $oldBlockType !==
+                        $newBlockType &&
+                    in_array(
+                        $oldBlockType,
+                        [
+                            TutorialContentBlock::TYPE_IMAGE,
+                            TutorialContentBlock::TYPE_PDF,
+                        ],
+                        true
+                    );
+
+                if (
+                    $changedAwayFromFileType ||
+                    $changedFileType ||
+                    $file
+                ) {
+                    $this->deleteStoredFile(
+                        $block
+                    );
+                }
+
+                if ($file) {
+                    $data = array_merge(
+                        $data,
+                        $this->storeFile(
+                            $block->tutorialNode,
+                            $newBlockType,
+                            $file
+                        )
+                    );
+                }
+
+                $this->clearUnusedFields(
+                    $newBlockType,
+                    $data
                 );
+
+                unset(
+                    $data['sort_order']
+                );
+
+                $block->update(
+                    $data
+                );
+
+                return $block->refresh();
             }
-
-            $this->clearUnusedFields(
-                $blockType,
-                $data
-            );
-
-            $block->update($data);
-
-            return $block->refresh();
-        });
+        );
     }
 
     public function delete(
         TutorialContentBlock $block
     ): void {
-        DB::transaction(function () use ($block): void {
-            $this->deleteStoredFile($block);
-            $block->delete();
-        });
+        DB::transaction(
+            function () use ($block): void {
+                $tutorialNodeId =
+                    (int) $block->tutorial_node_id;
+
+                $this->deleteStoredFile(
+                    $block
+                );
+
+                $block->delete();
+
+                $this->normalizeSortOrder(
+                    $tutorialNodeId
+                );
+            }
+        );
     }
 
     public function reorder(
         TutorialNode $tutorialNode,
         array $blocks
     ): void {
-        DB::transaction(function () use (
-            $tutorialNode,
-            $blocks
-        ): void {
-            $requestedIds = collect($blocks)
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->values();
+        $this->ensureNodeCanContainContent(
+            $tutorialNode
+        );
 
-            $ownedIds = $tutorialNode
-                ->contentBlocks()
-                ->whereIn('id', $requestedIds)
-                ->pluck('id')
-                ->map(fn ($id) => (int) $id)
-                ->values();
+        DB::transaction(
+            function () use (
+                $tutorialNode,
+                $blocks
+            ): void {
+                $orderedBlocks =
+                    collect($blocks)
+                        ->sortBy('sort_order')
+                        ->values();
 
-            if (
-                $requestedIds->sort()->values()->all() !==
-                $ownedIds->sort()->values()->all()
-            ) {
-                throw ValidationException::withMessages([
-                    'blocks' => [
-                        'Terdapat blok yang bukan milik materi ini.',
-                    ],
-                ]);
-            }
+                $requestedIds =
+                    $orderedBlocks
+                        ->pluck('id')
+                        ->map(
+                            fn ($id): int =>
+                                (int) $id
+                        )
+                        ->values();
 
-            foreach ($blocks as $item) {
-                TutorialContentBlock::query()
-                    ->where('id', $item['id'])
-                    ->where(
-                        'tutorial_node_id',
-                        $tutorialNode->id
-                    )
-                    ->update([
-                        'sort_order' => $item['sort_order'],
+                $ownedIds =
+                    $tutorialNode
+                        ->contentBlocks()
+                        ->pluck('id')
+                        ->map(
+                            fn ($id): int =>
+                                (int) $id
+                        )
+                        ->values();
+
+                if (
+                    $requestedIds
+                        ->sort()
+                        ->values()
+                        ->all() !==
+                    $ownedIds
+                        ->sort()
+                        ->values()
+                        ->all()
+                ) {
+                    throw ValidationException::withMessages([
+                        'blocks' => [
+                            'Seluruh blok milik materi harus dikirim saat memperbarui urutan.',
+                        ],
                     ]);
+                }
+
+                foreach (
+                    $orderedBlocks
+                    as $index => $item
+                ) {
+                    TutorialContentBlock::query()
+                        ->whereKey(
+                            (int) $item['id']
+                        )
+                        ->where(
+                            'tutorial_node_id',
+                            $tutorialNode->id
+                        )
+                        ->update([
+                            'sort_order' =>
+                                $index,
+                        ]);
+                }
             }
-        });
+        );
     }
 
     private function ensureNodeCanContainContent(
         TutorialNode $tutorialNode
     ): void {
         if (
-            !in_array(
-                $tutorialNode->node_type,
-                ['tutorial', 'step'],
-                true
-            )
+            $tutorialNode->node_type !==
+            TutorialNode::TYPE_MATERI
         ) {
             throw ValidationException::withMessages([
                 'tutorial_node' => [
-                    'Konten hanya dapat ditambahkan pada node berjenis tutorial atau langkah.',
+                    'Konten hanya dapat ditambahkan pada node berjenis Materi.',
                 ],
+            ]);
+        }
+    }
+
+    private function getNextSortOrder(
+        TutorialNode $tutorialNode
+    ): int {
+        $maximumOrder =
+            $tutorialNode
+                ->contentBlocks()
+                ->max('sort_order');
+
+        if ($maximumOrder === null) {
+            return 0;
+        }
+
+        return (int) $maximumOrder + 1;
+    }
+
+    private function normalizeSortOrder(
+        int $tutorialNodeId
+    ): void {
+        $blocks =
+            TutorialContentBlock::query()
+                ->where(
+                    'tutorial_node_id',
+                    $tutorialNodeId
+                )
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->get();
+
+        foreach (
+            $blocks
+            as $index => $block
+        ) {
+            if (
+                (int) $block->sort_order ===
+                $index
+            ) {
+                continue;
+            }
+
+            $block->update([
+                'sort_order' => $index,
             ]);
         }
     }
@@ -161,31 +318,67 @@ class TutorialContentBlockService
         string $blockType,
         UploadedFile $file
     ): array {
-        $folder = $blockType === 'image'
-            ? 'tutorials/images'
-            : 'tutorials/pdfs';
+        if (
+            !in_array(
+                $blockType,
+                [
+                    TutorialContentBlock::TYPE_IMAGE,
+                    TutorialContentBlock::TYPE_PDF,
+                ],
+                true
+            )
+        ) {
+            throw ValidationException::withMessages([
+                'file' => [
+                    'Jenis blok ini tidak menerima file.',
+                ],
+            ]);
+        }
 
-        $path = $file->store(
-            "{$folder}/{$tutorialNode->id}",
-            'public'
-        );
+        $folder =
+            $blockType ===
+                TutorialContentBlock::TYPE_IMAGE
+                ? 'tutorials/images'
+                : 'tutorials/pdfs';
+
+        $path =
+            $file->store(
+                "{$folder}/{$tutorialNode->id}",
+                'public'
+            );
 
         return [
-            'file_path' => $path,
-            'original_file_name' => $file->getClientOriginalName(),
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
+            'file_path' =>
+                $path,
+
+            'original_file_name' =>
+                $file->getClientOriginalName(),
+
+            'file_size' =>
+                $file->getSize(),
+
+            'mime_type' =>
+                $file->getMimeType(),
         ];
     }
 
     private function deleteStoredFile(
         TutorialContentBlock $block
     ): void {
+        if (!$block->file_path) {
+            return;
+        }
+
         if (
-            $block->file_path &&
-            Storage::disk('public')->exists($block->file_path)
+            Storage::disk('public')
+                ->exists(
+                    $block->file_path
+                )
         ) {
-            Storage::disk('public')->delete($block->file_path);
+            Storage::disk('public')
+                ->delete(
+                    $block->file_path
+                );
         }
     }
 
@@ -193,19 +386,44 @@ class TutorialContentBlockService
         string $blockType,
         array &$data
     ): void {
-        if ($blockType === 'text') {
+        if (
+            $blockType !==
+            TutorialContentBlock::TYPE_YOUTUBE
+        ) {
+            $data['title'] = null;
             $data['external_url'] = null;
         }
 
-        if ($blockType === 'youtube') {
+        if (
+            $blockType !==
+            TutorialContentBlock::TYPE_TEXT
+        ) {
             $data['content'] = null;
         }
 
-        if (!in_array($blockType, ['image', 'pdf'], true)) {
+        if (
+            !in_array(
+                $blockType,
+                [
+                    TutorialContentBlock::TYPE_IMAGE,
+                    TutorialContentBlock::TYPE_PDF,
+                ],
+                true
+            )
+        ) {
             $data['file_path'] = null;
             $data['original_file_name'] = null;
             $data['file_size'] = null;
             $data['mime_type'] = null;
+            $data['caption'] = null;
+            $data['alt_text'] = null;
+        }
+
+        if (
+            $blockType ===
+            TutorialContentBlock::TYPE_PDF
+        ) {
+            $data['alt_text'] = null;
         }
     }
 }

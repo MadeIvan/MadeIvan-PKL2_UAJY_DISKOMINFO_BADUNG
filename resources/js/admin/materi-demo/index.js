@@ -6,155 +6,284 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         applications: [],
         selectedApplicationId: null,
+        selectedVersionId: null,
         tree: [],
         flattenedNodes: [],
+        formSortOrder: 0,
+        reorderingNode: false,
     };
+
+    let notificationTimeout = null;
 
     const elements = {
-        notification: document.getElementById('notification'),
+        notification:
+            document.getElementById('notification'),
 
-        applicationSearchWrapper: document.getElementById(
-            'application-search-wrapper'
-        ),
-        applicationSearch: document.getElementById(
-            'application-search'
-        ),
-        applicationId: document.getElementById(
-            'application-id'
-        ),
-        applicationDropdownButton: document.getElementById(
-            'application-dropdown-button'
-        ),
-        applicationDropdown: document.getElementById(
-            'application-dropdown'
-        ),
-        applicationOptions: document.getElementById(
-            'application-options'
-        ),
-        applicationEmpty: document.getElementById(
-            'application-empty'
-        ),
-        applicationSearchError: document.getElementById(
-            'application-search-error'
-        ),
+        applicationSearchWrapper:
+            document.getElementById(
+                'application-search-wrapper'
+            ),
 
-        refreshTreeButton: document.getElementById(
-            'refresh-tree-button'
-        ),
-        openRootNodeFormButton: document.getElementById(
-            'open-root-node-form'
-        ),
-        emptyAddRootButton: document.getElementById(
-            'empty-add-root-button'
-        ),
+        applicationSearch:
+            document.getElementById(
+                'application-search'
+            ),
 
-        statTotalNodes: document.getElementById(
-            'stat-total-nodes'
-        ),
-        statPublicNodes: document.getElementById(
-            'stat-public-nodes'
-        ),
-        statPublishedNodes: document.getElementById(
-            'stat-published-nodes'
-        ),
-        statTutorialNodes: document.getElementById(
-            'stat-tutorial-nodes'
-        ),
+        applicationId:
+            document.getElementById(
+                'application-id'
+            ),
 
-        treeDescription: document.getElementById(
-            'tree-description'
-        ),
-        treeInitial: document.getElementById(
-            'tree-initial'
-        ),
-        treeLoading: document.getElementById(
-            'tree-loading'
-        ),
-        treeEmpty: document.getElementById(
-            'tree-empty'
-        ),
-        treeError: document.getElementById(
-            'tree-error'
-        ),
-        treeErrorMessage: document.getElementById(
-            'tree-error-message'
-        ),
-        treeRetryButton: document.getElementById(
-            'tree-retry-button'
-        ),
-        tutorialTree: document.getElementById(
-            'tutorial-tree'
-        ),
+        applicationDropdownButton:
+            document.getElementById(
+                'application-dropdown-button'
+            ),
 
-        expandAllButton: document.getElementById(
-            'expand-all-button'
-        ),
-        collapseAllButton: document.getElementById(
-            'collapse-all-button'
-        ),
+        applicationDropdown:
+            document.getElementById(
+                'application-dropdown'
+            ),
 
-        nodeFormModal: document.getElementById(
-            'node-form-modal'
-        ),
-        nodeFormModalClose: document.getElementById(
-            'node-form-modal-close'
-        ),
-        nodeForm: document.getElementById(
-            'node-form'
-        ),
-        nodeFormTitle: document.getElementById(
-            'node-form-title'
-        ),
-        nodeFormDescription: document.getElementById(
-            'node-form-description'
-        ),
+        applicationOptions:
+            document.getElementById(
+                'application-options'
+            ),
 
-        nodeId: document.getElementById('node-id'),
-        nodeParentId: document.getElementById(
-            'node-parent-id'
-        ),
-        nodeTitle: document.getElementById(
-            'node-title'
-        ),
-        nodeSlug: document.getElementById(
-            'node-slug'
-        ),
-        nodeType: document.getElementById(
-            'node-type'
-        ),
-        nodeSortOrder: document.getElementById(
-            'node-sort-order'
-        ),
-        nodeStatus: document.getElementById(
-            'node-status'
-        ),
-        nodeApplicationVersion: document.getElementById(
-            'node-application-version'
-        ),
-        nodeDescription: document.getElementById(
-            'node-description'
-        ),
-        nodeIsPublic: document.getElementById(
-            'node-is-public'
-        ),
-        nodeSubmitButton: document.getElementById(
-            'node-submit-button'
-        ),
-        nodeCancelButton: document.getElementById(
-            'node-cancel-button'
-        ),
+        applicationEmpty:
+            document.getElementById(
+                'application-empty'
+            ),
 
-        parentInformation: document.getElementById(
-            'parent-information'
-        ),
-        parentInformationTitle: document.getElementById(
-            'parent-information-title'
-        ),
+        applicationSearchError:
+            document.getElementById(
+                'application-search-error'
+            ),
+
+        applicationVersionSelect:
+            document.getElementById(
+                'application-version-select'
+            ),
+
+        applicationVersionHelp:
+            document.getElementById(
+                'application-version-help'
+            ),
+
+        applicationVersionError:
+            document.getElementById(
+                'application-version-error'
+            ),
+
+        selectedContext:
+            document.getElementById(
+                'selected-context'
+            ),
+
+        selectedContextText:
+            document.getElementById(
+                'selected-context-text'
+            ),
+
+        refreshTreeButton:
+            document.getElementById(
+                'refresh-tree-button'
+            ),
+
+        openRootNodeFormButton:
+            document.getElementById(
+                'open-root-node-form'
+            ),
+
+        emptyAddRootButton:
+            document.getElementById(
+                'empty-add-root-button'
+            ),
+
+        statTotalNodes:
+            document.getElementById(
+                'stat-total-nodes'
+            ),
+
+        statPublicNodes:
+            document.getElementById(
+                'stat-public-nodes'
+            ),
+
+        statPublishedNodes:
+            document.getElementById(
+                'stat-published-nodes'
+            ),
+
+        statMaterialNodes:
+            document.getElementById(
+                'stat-material-nodes'
+            ),
+
+        treeDescription:
+            document.getElementById(
+                'tree-description'
+            ),
+
+        treeInitial:
+            document.getElementById(
+                'tree-initial'
+            ),
+
+        treeLoading:
+            document.getElementById(
+                'tree-loading'
+            ),
+
+        treeEmpty:
+            document.getElementById(
+                'tree-empty'
+            ),
+
+        treeError:
+            document.getElementById(
+                'tree-error'
+            ),
+
+        treeErrorMessage:
+            document.getElementById(
+                'tree-error-message'
+            ),
+
+        treeRetryButton:
+            document.getElementById(
+                'tree-retry-button'
+            ),
+
+        tutorialTree:
+            document.getElementById(
+                'tutorial-tree'
+            ),
+
+        expandAllButton:
+            document.getElementById(
+                'expand-all-button'
+            ),
+
+        collapseAllButton:
+            document.getElementById(
+                'collapse-all-button'
+            ),
+
+        nodeFormModal:
+            document.getElementById(
+                'node-form-modal'
+            ),
+
+        nodeFormModalClose:
+            document.getElementById(
+                'node-form-modal-close'
+            ),
+
+        nodeForm:
+            document.getElementById(
+                'node-form'
+            ),
+
+        nodeFormTitle:
+            document.getElementById(
+                'node-form-title'
+            ),
+
+        nodeFormDescription:
+            document.getElementById(
+                'node-form-description'
+            ),
+
+        formApplicationName:
+            document.getElementById(
+                'form-application-name'
+            ),
+
+        formVersionName:
+            document.getElementById(
+                'form-version-name'
+            ),
+
+        nodeId:
+            document.getElementById(
+                'node-id'
+            ),
+
+        nodeParentId:
+            document.getElementById(
+                'node-parent-id'
+            ),
+
+        nodeTitle:
+            document.getElementById(
+                'node-title'
+            ),
+
+        nodeSlug:
+            document.getElementById(
+                'node-slug'
+            ),
+
+        nodeType:
+            document.getElementById(
+                'node-type'
+            ),
+
+        nodeTypeHelp:
+            document.getElementById(
+                'node-type-help'
+            ),
+
+        nodeTypeNotice:
+            document.getElementById(
+                'node-type-notice'
+            ),
+
+        nodeTypeNoticeText:
+            document.getElementById(
+                'node-type-notice-text'
+            ),
+
+        nodeStatus:
+            document.getElementById(
+                'node-status'
+            ),
+
+        nodeDescription:
+            document.getElementById(
+                'node-description'
+            ),
+
+        nodeIsPublic:
+            document.getElementById(
+                'node-is-public'
+            ),
+
+        nodeSubmitButton:
+            document.getElementById(
+                'node-submit-button'
+            ),
+
+        nodeCancelButton:
+            document.getElementById(
+                'node-cancel-button'
+            ),
+
+        parentInformation:
+            document.getElementById(
+                'parent-information'
+            ),
+
+        parentInformationTitle:
+            document.getElementById(
+                'parent-information-title'
+            ),
     };
 
-    const missingElements = Object.entries(elements)
-        .filter(([, element]) => !element)
-        .map(([name]) => name);
+    const missingElements =
+        Object.entries(elements)
+            .filter(([, element]) => !element)
+            .map(([name]) => name);
 
     if (missingElements.length > 0) {
         console.error(
@@ -165,12 +294,196 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    let notificationTimeout = null;
+    initializePage();
 
     async function initializePage() {
+        bindEvents();
         resetNodeForm();
         showInitialState();
         await fetchApplications();
+    }
+
+    function bindEvents() {
+        elements.applicationSearch.addEventListener(
+            'focus',
+            () => {
+                filterApplications(
+                    elements.applicationSearch.value
+                );
+
+                openApplicationDropdown();
+            }
+        );
+
+        elements.applicationSearch.addEventListener(
+            'input',
+            handleApplicationInput
+        );
+
+        elements.applicationSearch.addEventListener(
+            'keydown',
+            handleApplicationKeydown
+        );
+
+        elements.applicationSearch.addEventListener(
+            'blur',
+            () => {
+                window.setTimeout(() => {
+                    validateTypedApplication();
+                }, 200);
+            }
+        );
+
+        elements.applicationDropdownButton.addEventListener(
+            'click',
+            toggleApplicationDropdown
+        );
+
+        elements.applicationOptions.addEventListener(
+            'click',
+            handleApplicationOptionClick
+        );
+
+        elements.applicationVersionSelect.addEventListener(
+            'change',
+            handleVersionChange
+        );
+
+        elements.nodeStatus.addEventListener(
+            'change',
+            handleStatusChange
+        );
+
+        document.addEventListener(
+            'click',
+            (event) => {
+                if (
+                    !elements.applicationSearchWrapper.contains(
+                        event.target
+                    )
+                ) {
+                    closeApplicationDropdown();
+                }
+            }
+        );
+
+        elements.openRootNodeFormButton.addEventListener(
+            'click',
+            openCreateRootNodeModal
+        );
+
+        elements.emptyAddRootButton.addEventListener(
+            'click',
+            openCreateRootNodeModal
+        );
+
+        elements.refreshTreeButton.addEventListener(
+            'click',
+            fetchTree
+        );
+
+        elements.treeRetryButton.addEventListener(
+            'click',
+            fetchTree
+        );
+
+        elements.expandAllButton.addEventListener(
+            'click',
+            () => setAllNodesCollapsed(false)
+        );
+
+        elements.collapseAllButton.addEventListener(
+            'click',
+            () => setAllNodesCollapsed(true)
+        );
+
+        elements.tutorialTree.addEventListener(
+            'click',
+            handleTreeClick
+        );
+
+        elements.nodeForm.addEventListener(
+            'submit',
+            submitNode
+        );
+
+        elements.nodeFormModalClose.addEventListener(
+            'click',
+            closeNodeModal
+        );
+
+        elements.nodeCancelButton.addEventListener(
+            'click',
+            closeNodeModal
+        );
+
+        elements.nodeFormModal.addEventListener(
+            'click',
+            (event) => {
+                if (
+                    event.target ===
+                    elements.nodeFormModal
+                ) {
+                    closeNodeModal();
+                }
+            }
+        );
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+                if (
+                    event.key === 'Escape' &&
+                    !elements.nodeFormModal.classList.contains(
+                        'hidden'
+                    )
+                ) {
+                    closeNodeModal();
+                }
+            }
+        );
+    }
+
+    function handleStatusChange() {
+        updatePublicCheckboxState();
+    }
+
+    function updatePublicCheckboxState() {
+        const isPublished =
+            elements.nodeStatus.value ===
+            'published';
+
+        const publicSettingContainer =
+            elements.nodeIsPublic.closest(
+                'label'
+            );
+
+        elements.nodeIsPublic.disabled =
+            !isPublished;
+
+        if (!isPublished) {
+            elements.nodeIsPublic.checked =
+                false;
+        }
+
+        if (!publicSettingContainer) {
+            return;
+        }
+
+        publicSettingContainer.classList.toggle(
+            'opacity-60',
+            !isPublished
+        );
+
+        publicSettingContainer.classList.toggle(
+            'cursor-not-allowed',
+            !isPublished
+        );
+
+        publicSettingContainer.classList.toggle(
+            'bg-slate-50',
+            !isPublished
+        );
     }
 
     async function fetchApplications() {
@@ -187,11 +500,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             );
 
-            const result = await parseResponse(response);
+            const result =
+                await parseResponse(response);
 
-            state.applications = extractApplications(
-                result
-            );
+            state.applications =
+                extractApplications(result);
 
             renderApplicationOptions(
                 state.applications
@@ -221,11 +534,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return result.data;
         }
 
-        if (Array.isArray(result?.data?.data)) {
+        if (
+            Array.isArray(
+                result?.data?.data
+            )
+        ) {
             return result.data.data;
         }
 
-        if (Array.isArray(result?.applications)) {
+        if (
+            Array.isArray(
+                result?.applications
+            )
+        ) {
             return result.applications;
         }
 
@@ -236,7 +557,8 @@ document.addEventListener('DOMContentLoaded', () => {
         applications
     ) {
         if (applications.length === 0) {
-            elements.applicationOptions.innerHTML = '';
+            elements.applicationOptions.innerHTML =
+                '';
 
             elements.applicationEmpty.classList.remove(
                 'hidden'
@@ -251,40 +573,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.applicationOptions.innerHTML =
             applications
-                .map((application) => `
-                    <button
-                        type="button"
-                        class="application-option flex w-full items-center justify-between gap-4 px-4 py-3 text-left text-sm transition hover:bg-slate-100"
-                        data-id="${application.id}"
-                    >
-                        <span class="min-w-0">
-                            <span class="block truncate font-semibold text-slate-800">
-                                ${escapeHtml(application.name)}
+                .map((application) => {
+                    const versionCount =
+                        getApplicationVersions(
+                            application
+                        ).length;
+
+                    return `
+                        <button
+                            type="button"
+                            class="application-option flex w-full items-center justify-between gap-4 px-4 py-3 text-left text-sm transition hover:bg-slate-100"
+                            data-id="${application.id}"
+                        >
+                            <span class="min-w-0">
+                                <span class="block truncate font-semibold text-slate-800">
+                                    ${escapeHtml(
+                                        application.name
+                                    )}
+                                </span>
+
+                                <span class="mt-1 block text-xs text-slate-500">
+                                    ${versionCount} versi tersedia
+                                </span>
                             </span>
 
-                            ${
-                                application.description
-                                    ? `
-                                        <span class="mt-1 block truncate text-xs text-slate-500">
-                                            ${escapeHtml(application.description)}
-                                        </span>
-                                    `
-                                    : ''
-                            }
-                        </span>
-
-                        <i class="bi bi-chevron-right shrink-0 text-slate-400"></i>
-                    </button>
-                `)
+                            <i class="bi bi-chevron-right shrink-0 text-slate-400"></i>
+                        </button>
+                    `;
+                })
                 .join('');
     }
 
     function filterApplications(keyword) {
-        const normalizedKeyword = String(
-            keyword
-        )
-            .trim()
-            .toLowerCase();
+        const normalizedKeyword =
+            String(keyword)
+                .trim()
+                .toLowerCase();
 
         if (!normalizedKeyword) {
             renderApplicationOptions(
@@ -299,11 +623,101 @@ document.addEventListener('DOMContentLoaded', () => {
                 (application) =>
                     String(application.name)
                         .toLowerCase()
-                        .includes(normalizedKeyword)
+                        .includes(
+                            normalizedKeyword
+                        )
             );
 
         renderApplicationOptions(
             filteredApplications
+        );
+    }
+
+    function handleApplicationInput(event) {
+        elements.applicationSearchError.classList.add(
+            'hidden'
+        );
+
+        filterApplications(
+            event.target.value
+        );
+
+        openApplicationDropdown();
+
+        const selectedApplication =
+            getSelectedApplication();
+
+        if (
+            selectedApplication &&
+            event.target.value !==
+                selectedApplication.name
+        ) {
+            clearSelectedApplication(false);
+        }
+
+        if (
+            event.target.value.trim() === ''
+        ) {
+            clearSelectedApplication(true);
+            openApplicationDropdown();
+        }
+    }
+
+    function handleApplicationKeydown(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            const firstOption =
+                elements.applicationOptions.querySelector(
+                    '.application-option'
+                );
+
+            if (firstOption) {
+                selectApplication(
+                    firstOption.dataset.id
+                );
+            } else {
+                validateTypedApplication();
+            }
+        }
+
+        if (event.key === 'Escape') {
+            closeApplicationDropdown();
+        }
+    }
+
+    function toggleApplicationDropdown() {
+        const isHidden =
+            elements.applicationDropdown.classList.contains(
+                'hidden'
+            );
+
+        if (isHidden) {
+            filterApplications(
+                elements.applicationSearch.value
+            );
+
+            openApplicationDropdown();
+            elements.applicationSearch.focus();
+        } else {
+            closeApplicationDropdown();
+        }
+    }
+
+    function handleApplicationOptionClick(
+        event
+    ) {
+        const option =
+            event.target.closest(
+                '.application-option'
+            );
+
+        if (!option) {
+            return;
+        }
+
+        selectApplication(
+            option.dataset.id
         );
     }
 
@@ -319,24 +733,27 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    function selectApplication(applicationId) {
-        const application = state.applications.find(
-            (item) =>
-                Number(item.id) ===
-                Number(applicationId)
-        );
+    function selectApplication(
+        applicationId
+    ) {
+        const application =
+            state.applications.find(
+                (item) =>
+                    Number(item.id) ===
+                    Number(applicationId)
+            );
 
         if (!application) {
             return;
         }
 
-        state.selectedApplicationId = Number(
-            application.id
-        );
+        state.selectedApplicationId =
+            Number(application.id);
 
-        elements.applicationId.value = String(
-            application.id
-        );
+        state.selectedVersionId = null;
+
+        elements.applicationId.value =
+            String(application.id);
 
         elements.applicationSearch.value =
             application.name;
@@ -346,21 +763,152 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         closeApplicationDropdown();
-        setApplicationSelected(true);
+
+        populateVersionSelector(
+            application
+        );
+
+        clearTreeData();
+        updateContextDisplay();
+        updateActionAvailability();
+        showInitialState();
+    }
+
+    function populateVersionSelector(
+        application
+    ) {
+        const versions =
+            getApplicationVersions(
+                application
+            );
+
+        elements.applicationVersionSelect.disabled =
+            versions.length === 0;
+
+        if (versions.length === 0) {
+            elements.applicationVersionSelect.innerHTML = `
+                <option value="">
+                    Belum ada versi aplikasi
+                </option>
+            `;
+
+            elements.applicationVersionHelp.textContent =
+                'Tambahkan versi aplikasi terlebih dahulu.';
+
+            return;
+        }
+
+        elements.applicationVersionSelect.innerHTML =
+            [
+                `
+                    <option value="">
+                        Pilih versi aplikasi
+                    </option>
+                `,
+
+                ...versions.map(
+                    (version) => `
+                        <option value="${version.id}">
+                            ${escapeHtml(
+                                getVersionLabel(
+                                    version
+                                )
+                            )}
+                        </option>
+                    `
+                ),
+            ].join('');
+
+        elements.applicationVersionHelp.textContent =
+            `${versions.length} versi tersedia untuk aplikasi ini.`;
+    }
+
+    function handleVersionChange(event) {
+        elements.applicationVersionError.classList.add(
+            'hidden'
+        );
+
+        const versionId =
+            Number(event.target.value);
+
+        if (
+            !Number.isInteger(versionId) ||
+            versionId <= 0
+        ) {
+            state.selectedVersionId = null;
+
+            clearTreeData();
+            updateContextDisplay();
+            updateActionAvailability();
+            showInitialState();
+
+            return;
+        }
+
+        const version =
+            getSelectedApplicationVersions().find(
+                (item) =>
+                    Number(item.id) ===
+                    versionId
+            );
+
+        if (!version) {
+            state.selectedVersionId = null;
+
+            elements.applicationVersionError.classList.remove(
+                'hidden'
+            );
+
+            updateActionAvailability();
+
+            return;
+        }
+
+        state.selectedVersionId =
+            versionId;
+
+        updateContextDisplay();
+        updateActionAvailability();
 
         fetchTree();
     }
 
-    function clearSelectedApplication() {
+    function clearSelectedApplication(
+        clearInput = true
+    ) {
         state.selectedApplicationId = null;
+        state.selectedVersionId = null;
 
         elements.applicationId.value = '';
+
+        if (clearInput) {
+            elements.applicationSearch.value =
+                '';
+        }
+
+        elements.applicationVersionSelect.disabled =
+            true;
+
+        elements.applicationVersionSelect.innerHTML = `
+            <option value="">
+                Pilih aplikasi terlebih dahulu
+            </option>
+        `;
+
+        elements.applicationVersionHelp.textContent =
+            'Struktur materi akan dibedakan berdasarkan versi.';
 
         elements.applicationSearchError.classList.add(
             'hidden'
         );
 
-        setApplicationSelected(false);
+        elements.applicationVersionError.classList.add(
+            'hidden'
+        );
+
+        clearTreeData();
+        updateContextDisplay();
+        updateActionAvailability();
         showInitialState();
     }
 
@@ -371,7 +919,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .toLowerCase();
 
         if (!value) {
-            clearSelectedApplication();
+            clearSelectedApplication(true);
+
             return;
         }
 
@@ -380,13 +929,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 (application) =>
                     String(application.name)
                         .trim()
-                        .toLowerCase() === value
+                        .toLowerCase() ===
+                    value
             );
 
         if (exactApplication) {
-            selectApplication(
-                exactApplication.id
-            );
+            if (
+                Number(
+                    state.selectedApplicationId
+                ) !==
+                Number(
+                    exactApplication.id
+                )
+            ) {
+                selectApplication(
+                    exactApplication.id
+                );
+            }
 
             return;
         }
@@ -397,16 +956,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchTree() {
-        if (!state.selectedApplicationId) {
+        if (!hasCompleteSelection()) {
+            showNotification(
+                'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
+                'error'
+            );
+
             showInitialState();
+
             return;
         }
 
         showTreeLoading();
 
+        const query =
+            new URLSearchParams({
+                application_id:
+                    String(
+                        state.selectedApplicationId
+                    ),
+
+                application_version_id:
+                    String(
+                        state.selectedVersionId
+                    ),
+            });
+
         try {
             const response = await fetch(
-                `${API_BASE_URL}/tutorial-nodes/tree?application_id=${state.selectedApplicationId}`,
+                `${API_BASE_URL}/tutorial-nodes/tree?${query.toString()}`,
                 {
                     headers: {
                         Accept: 'application/json',
@@ -414,22 +992,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             );
 
-            const result = await parseResponse(
-                response
-            );
+            const result =
+                await parseResponse(response);
 
-            state.tree = Array.isArray(result.data)
-                ? result.data
-                : [];
+            state.tree =
+                Array.isArray(result.data)
+                    ? result.data
+                    : [];
 
-            state.flattenedNodes = flattenTree(
-                state.tree
-            );
+            state.flattenedNodes =
+                flattenTree(
+                    state.tree
+                );
 
             renderTree();
             renderStatistics();
         } catch (error) {
-            showTreeError(error.message);
+            showTreeError(
+                error.message
+            );
         }
     }
 
@@ -439,13 +1020,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const application =
             getSelectedApplication();
 
+        const version =
+            getSelectedVersion();
+
         elements.treeDescription.textContent =
-            application
-                ? `Struktur materi untuk ${application.name}.`
+            application && version
+                ? `Struktur materi ${application.name} versi ${getVersionLabel(version)}.`
                 : 'Struktur materi aplikasi.';
 
         if (state.tree.length === 0) {
-            elements.tutorialTree.innerHTML = '';
+            elements.tutorialTree.innerHTML =
+                '';
 
             elements.tutorialTree.classList.add(
                 'hidden'
@@ -462,8 +1047,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.tutorialTree.innerHTML =
             state.tree
-                .map((node) =>
-                    createNodeHtml(node)
+                .map(
+                    (node, index) =>
+                        createNodeHtml(
+                            node,
+                            state.tree,
+                            index
+                        )
                 )
                 .join('');
 
@@ -474,39 +1064,63 @@ document.addEventListener('DOMContentLoaded', () => {
         setTreeActionAvailability(true);
     }
 
-    function createNodeHtml(node) {
-        const children = getNodeChildren(node);
-        const hasChildren = children.length > 0;
+    function createNodeHtml(
+        node,
+        siblings,
+        siblingIndex
+    ) {
+        const children =
+            getNodeChildren(node);
 
-        const childrenHtml = hasChildren
-            ? `
-                <div
-                    data-node-children="${node.id}"
-                    class="ml-5 space-y-3 border-l border-slate-200 pl-4"
-                >
-                    ${children
-                        .map((child) =>
-                            createNodeHtml(child)
-                        )
-                        .join('')}
-                </div>
-            `
-            : '';
+        const hasChildren =
+            children.length > 0;
 
-        const toggleButton = hasChildren
-            ? `
-                <button
-                    type="button"
-                    class="node-toggle-button flex h-8 w-8 shrink-0 items-center justify-center border border-slate-300 text-slate-600 hover:bg-white"
-                    data-id="${node.id}"
-                    aria-label="Buka atau tutup child"
-                >
-                    <i class="bi bi-chevron-down"></i>
-                </button>
-            `
-            : `
-                <div class="h-8 w-8 shrink-0"></div>
-            `;
+        const isFirst =
+            siblingIndex === 0;
+
+        const isLast =
+            siblingIndex ===
+            siblings.length - 1;
+
+        const descendantCount =
+            countDescendants(node);
+
+        const childrenHtml =
+            hasChildren
+                ? `
+                    <div
+                        data-node-children="${node.id}"
+                        class="ml-5 space-y-3 border-l border-slate-200 pl-4"
+                    >
+                        ${children
+                            .map(
+                                (child, index) =>
+                                    createNodeHtml(
+                                        child,
+                                        children,
+                                        index
+                                    )
+                            )
+                            .join('')}
+                    </div>
+                `
+                : '';
+
+        const toggleButton =
+            hasChildren
+                ? `
+                    <button
+                        type="button"
+                        class="node-toggle-button flex h-8 w-8 shrink-0 items-center justify-center border border-slate-300 text-slate-600 hover:bg-white"
+                        data-id="${node.id}"
+                        aria-label="Buka atau tutup child"
+                    >
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                `
+                : `
+                    <div class="h-8 w-8 shrink-0"></div>
+                `;
 
         return `
             <div
@@ -515,17 +1129,20 @@ document.addEventListener('DOMContentLoaded', () => {
             >
                 <article class="border border-slate-200 bg-white p-4 transition hover:bg-slate-50">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-
                         <div class="flex min-w-0 items-start gap-3">
                             ${toggleButton}
 
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h4 class="font-bold text-slate-950">
-                                        ${escapeHtml(node.title)}
+                                        ${escapeHtml(
+                                            node.title
+                                        )}
                                     </h4>
 
-                                    <span class="border px-2 py-1 text-xs font-semibold ${getNodeTypeClass(node.node_type)}">
+                                    <span class="border px-2 py-1 text-xs font-semibold ${getNodeTypeClass(
+                                        node.node_type
+                                    )}">
                                         ${escapeHtml(
                                             getNodeTypeLabel(
                                                 node.node_type
@@ -533,7 +1150,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                         )}
                                     </span>
 
-                                    <span class="border px-2 py-1 text-xs font-semibold ${getNodeStatusClass(node.status)}">
+                                    <span class="border px-2 py-1 text-xs font-semibold ${getNodeStatusClass(
+                                        node.status
+                                    )}">
                                         ${escapeHtml(
                                             getNodeStatusLabel(
                                                 node.status
@@ -561,19 +1180,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 <div class="mt-2 flex flex-wrap gap-4 text-xs text-slate-400">
                                     <span>
-                                        Urutan: ${Number(
-                                            node.sort_order ?? 0
-                                        )}
+                                        Posisi: ${siblingIndex + 1}
                                     </span>
 
                                     <span>
-                                        ${children.length} child
+                                        ${children.length} child langsung
                                     </span>
+
+                                    ${
+                                        descendantCount > 0
+                                            ? `
+                                                <span>
+                                                    ${descendantCount} total turunan
+                                                </span>
+                                            `
+                                            : ''
+                                    }
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex shrink-0 flex-wrap gap-2 pl-11 lg:pl-0">
+                        <div class="flex shrink-0 flex-wrap items-center gap-2 pl-11 lg:pl-0">
+                            <div class="flex overflow-hidden border border-slate-300">
+                                <button
+                                    type="button"
+                                    class="node-move-up-button flex h-9 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
+                                    data-id="${node.id}"
+                                    data-boundary-disabled="${isFirst ? 'true' : 'false'}"
+                                    ${isFirst ? 'disabled' : ''}
+                                    aria-label="Pindahkan materi ke atas"
+                                    title="Pindahkan ke atas"
+                                >
+                                    <i class="bi bi-caret-up-fill"></i>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="node-move-down-button flex h-9 w-9 items-center justify-center border-l border-slate-300 text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-30"
+                                    data-id="${node.id}"
+                                    data-boundary-disabled="${isLast ? 'true' : 'false'}"
+                                    ${isLast ? 'disabled' : ''}
+                                    aria-label="Pindahkan materi ke bawah"
+                                    title="Pindahkan ke bawah"
+                                >
+                                    <i class="bi bi-caret-down-fill"></i>
+                                </button>
+                            </div>
+
                             <button
                                 type="button"
                                 class="node-add-child-button inline-flex items-center gap-2 border border-emerald-200 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
@@ -582,10 +1235,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <i class="bi bi-plus-lg"></i>
                                 Child
                             </button>
-                            
 
                             ${
-                                ['tutorial', 'step'].includes(node.node_type)
+                                node.node_type ===
+                                'materi'
                                     ? `
                                         <a
                                             href="/admin/Materi-demo/${node.id}/content"
@@ -598,21 +1251,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                     : ''
                             }
 
-
                             <button
                                 type="button"
                                 class="node-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 hover:bg-blue-50"
                                 data-id="${node.id}"
                                 aria-label="Ubah materi"
+                                title="Ubah materi"
                             >
                                 <i class="bi bi-pencil-square"></i>
                             </button>
 
                             <button
                                 type="button"
-                                class="node-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 hover:bg-red-50"
+                                class="node-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                                 data-id="${node.id}"
                                 aria-label="Hapus materi"
+                                title="${
+                                    descendantCount > 0
+                                        ? `Hapus bersama ${descendantCount} turunannya`
+                                        : 'Hapus materi'
+                                }"
                             >
                                 <i class="bi bi-trash3"></i>
                             </button>
@@ -625,50 +1283,356 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    function getNodeChildren(node) {
-        if (
-            Array.isArray(
-                node.children_recursive
-            )
-        ) {
-            return node.children_recursive;
+    function handleTreeClick(event) {
+        const toggleButton =
+            event.target.closest(
+                '.node-toggle-button'
+            );
+
+        const moveUpButton =
+            event.target.closest(
+                '.node-move-up-button'
+            );
+
+        const moveDownButton =
+            event.target.closest(
+                '.node-move-down-button'
+            );
+
+        const addChildButton =
+            event.target.closest(
+                '.node-add-child-button'
+            );
+
+        const editButton =
+            event.target.closest(
+                '.node-edit-button'
+            );
+
+        const deleteButton =
+            event.target.closest(
+                '.node-delete-button'
+            );
+
+        if (toggleButton) {
+            toggleNode(
+                toggleButton.dataset.id
+            );
+
+            return;
         }
 
-        if (Array.isArray(node.children)) {
-            return node.children;
+        if (moveUpButton) {
+            moveNode(
+                Number(
+                    moveUpButton.dataset.id
+                ),
+                -1
+            );
+
+            return;
         }
 
-        return [];
+        if (moveDownButton) {
+            moveNode(
+                Number(
+                    moveDownButton.dataset.id
+                ),
+                1
+            );
+
+            return;
+        }
+
+        if (addChildButton) {
+            openCreateChildNodeModal(
+                addChildButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (editButton) {
+            openEditNodeModal(
+                editButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (deleteButton) {
+            deleteNode(
+                Number(
+                    deleteButton.dataset.id
+                )
+            );
+        }
     }
 
-    function renderStatistics() {
-        const nodes = state.flattenedNodes;
+    async function moveNode(
+        nodeId,
+        direction
+    ) {
+        if (state.reorderingNode) {
+            return;
+        }
 
-        elements.statTotalNodes.textContent =
-            nodes.length;
+        const siblings =
+            findSiblingGroup(
+                state.tree,
+                nodeId
+            );
 
-        elements.statPublicNodes.textContent =
-            nodes.filter(
-                (node) => Boolean(node.is_public)
-            ).length;
+        if (!siblings) {
+            showNotification(
+                'Kelompok materi tidak ditemukan.',
+                'error'
+            );
 
-        elements.statPublishedNodes.textContent =
-            nodes.filter(
+            return;
+        }
+
+        const currentIndex =
+            siblings.findIndex(
                 (node) =>
-                    node.status === 'published'
-            ).length;
+                    Number(node.id) ===
+                    Number(nodeId)
+            );
 
-        elements.statTutorialNodes.textContent =
-            nodes.filter(
+        const targetIndex =
+            currentIndex + direction;
+
+        if (
+            currentIndex < 0 ||
+            targetIndex < 0 ||
+            targetIndex >= siblings.length
+        ) {
+            return;
+        }
+
+        const reorderedSiblings = [
+            ...siblings,
+        ];
+
+        [
+            reorderedSiblings[currentIndex],
+            reorderedSiblings[targetIndex],
+        ] = [
+            reorderedSiblings[targetIndex],
+            reorderedSiblings[currentIndex],
+        ];
+
+        state.reorderingNode = true;
+
+        setReorderButtonsDisabled(true);
+
+        try {
+            for (
+                let index = 0;
+                index < reorderedSiblings.length;
+                index += 1
+            ) {
+                const sibling =
+                    reorderedSiblings[index];
+
+                const response = await fetch(
+                    `${API_BASE_URL}/tutorial-nodes/${sibling.id}`,
+                    {
+                        method: 'PUT',
+
+                        headers: {
+                            Accept:
+                                'application/json',
+
+                            'Content-Type':
+                                'application/json',
+                        },
+
+                        body: JSON.stringify({
+                            sort_order: index,
+                        }),
+                    }
+                );
+
+                await parseResponse(response);
+            }
+
+            await fetchTree();
+
+            showNotification(
+                direction < 0
+                    ? 'Materi berhasil dipindahkan ke atas.'
+                    : 'Materi berhasil dipindahkan ke bawah.',
+                'success'
+            );
+        } catch (error) {
+            await fetchTree();
+
+            showNotification(
+                `Urutan gagal diperbarui: ${error.message}`,
+                'error'
+            );
+        } finally {
+            state.reorderingNode = false;
+
+            restoreReorderButtonStates();
+        }
+    }
+
+    function findSiblingGroup(
+        nodes,
+        nodeId
+    ) {
+        if (
+            nodes.some(
                 (node) =>
-                    node.node_type === 'tutorial'
-            ).length;
+                    Number(node.id) ===
+                    Number(nodeId)
+            )
+        ) {
+            return nodes;
+        }
+
+        for (const node of nodes) {
+            const children =
+                getNodeChildren(node);
+
+            if (children.length === 0) {
+                continue;
+            }
+
+            const result =
+                findSiblingGroup(
+                    children,
+                    nodeId
+                );
+
+            if (result) {
+                return result;
+            }
+        }
+
+        return null;
+    }
+
+    function setReorderButtonsDisabled(
+        disabled
+    ) {
+        document
+            .querySelectorAll(
+                '.node-move-up-button, .node-move-down-button'
+            )
+            .forEach((button) => {
+                button.disabled =
+                    disabled;
+            });
+    }
+
+    function restoreReorderButtonStates() {
+        document
+            .querySelectorAll(
+                '.node-move-up-button, .node-move-down-button'
+            )
+            .forEach((button) => {
+                button.disabled =
+                    button.dataset
+                        .boundaryDisabled ===
+                    'true';
+            });
+    }
+
+    function resetNodeTypeOptions() {
+        Array.from(
+            elements.nodeType.options
+        ).forEach((option) => {
+            option.disabled = false;
+        });
+
+        elements.nodeType.disabled =
+            false;
+
+        elements.nodeTypeNotice.classList.add(
+            'hidden'
+        );
+
+        elements.nodeTypeNoticeText.textContent =
+            '';
+
+        elements.nodeTypeHelp.textContent =
+            'Pilih jenis materi sesuai posisi dalam struktur.';
+
+        elements.nodeTypeHelp.className =
+            'mt-2 text-xs text-slate-500';
+    }
+
+    function configureRootNodeType() {
+        resetNodeTypeOptions();
+
+        elements.nodeType.value =
+            'kategori';
+
+        elements.nodeType.disabled =
+            true;
+
+        elements.nodeTypeHelp.textContent =
+            'Jenis materi ditentukan otomatis untuk materi utama.';
+
+        elements.nodeTypeNoticeText.textContent =
+            'Materi utama merupakan tingkat paling atas pada struktur sehingga wajib menggunakan jenis Kategori. Bagian dan Materi hanya dapat ditambahkan sebagai child.';
+
+        elements.nodeTypeNotice.classList.remove(
+            'hidden'
+        );
+    }
+
+    function configureChildNodeType() {
+        resetNodeTypeOptions();
+
+        const categoryOption =
+            elements.nodeType.querySelector(
+                'option[value="kategori"]'
+            );
+
+        if (categoryOption) {
+            categoryOption.disabled =
+                true;
+        }
+
+        elements.nodeType.value =
+            'bagian';
+
+        elements.nodeTypeHelp.textContent =
+            'Child hanya dapat menggunakan jenis Bagian atau Materi.';
+
+        elements.nodeTypeNoticeText.textContent =
+            'Kategori hanya boleh digunakan sebagai materi utama. Untuk child, pilih Bagian atau Materi.';
+
+        elements.nodeTypeNotice.classList.remove(
+            'hidden'
+        );
+    }
+
+    function lockNodeTypeBecauseOfChildren(
+        childCount
+    ) {
+        elements.nodeType.disabled =
+            true;
+
+        elements.nodeTypeHelp.textContent =
+            'Jenis materi tidak dapat diubah.';
+
+        elements.nodeTypeNoticeText.textContent =
+            `Node ini memiliki ${childCount} child langsung. Jenis materi dikunci untuk menjaga konsistensi hierarki.`;
+
+        elements.nodeTypeNotice.classList.remove(
+            'hidden'
+        );
     }
 
     function openCreateRootNodeModal() {
-        if (!state.selectedApplicationId) {
+        if (!hasCompleteSelection()) {
             showNotification(
-                'Pilih aplikasi terlebih dahulu.',
+                'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
 
@@ -676,13 +1640,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         resetNodeForm();
-        populateVersionOptions();
+        populateFormContext();
+        configureRootNodeType();
+
+        state.formSortOrder =
+            getNextSortOrder(
+                state.tree
+            );
 
         elements.nodeFormTitle.textContent =
             'Tambah Materi Utama';
 
         elements.nodeFormDescription.textContent =
-            'Materi ini tidak memiliki parent.';
+            'Materi utama wajib berupa Kategori dan akan ditempatkan pada urutan terakhir.';
 
         openNodeModal();
     }
@@ -690,7 +1660,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function openCreateChildNodeModal(
         parentId
     ) {
-        const parent = findNode(parentId);
+        if (!hasCompleteSelection()) {
+            showNotification(
+                'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
+                'error'
+            );
+
+            return;
+        }
+
+        const parent =
+            findNode(parentId);
 
         if (!parent) {
             showNotification(
@@ -701,12 +1681,42 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        resetNodeForm();
-        populateVersionOptions();
+        if (
+            Number(
+                parent.application_id
+            ) !==
+                Number(
+                    state.selectedApplicationId
+                ) ||
+            Number(
+                parent.application_version_id
+            ) !==
+                Number(
+                    state.selectedVersionId
+                )
+        ) {
+            showNotification(
+                'Parent tidak berasal dari aplikasi dan versi yang sedang dipilih.',
+                'error'
+            );
 
-        elements.nodeParentId.value = String(
-            parent.id
-        );
+            return;
+        }
+
+        resetNodeForm();
+        populateFormContext();
+        configureChildNodeType();
+
+        const children =
+            getNodeChildren(parent);
+
+        state.formSortOrder =
+            getNextSortOrder(
+                children
+            );
+
+        elements.nodeParentId.value =
+            String(parent.id);
 
         elements.parentInformationTitle.textContent =
             parent.title;
@@ -719,13 +1729,14 @@ document.addEventListener('DOMContentLoaded', () => {
             'Tambah Child Materi';
 
         elements.nodeFormDescription.textContent =
-            `Tambahkan materi di bawah "${parent.title}".`;
+            `Tambahkan Bagian atau Materi di bawah "${parent.title}".`;
 
         openNodeModal();
     }
 
     function openEditNodeModal(nodeId) {
-        const node = findNode(nodeId);
+        const node =
+            findNode(nodeId);
 
         if (!node) {
             showNotification(
@@ -737,9 +1748,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         resetNodeForm();
-        populateVersionOptions();
+        populateFormContext();
+        resetNodeTypeOptions();
 
-        elements.nodeId.value = String(node.id);
+        state.formSortOrder =
+            Number(
+                node.sort_order ?? 0
+            );
+
+        elements.nodeId.value =
+            String(node.id);
 
         elements.nodeParentId.value =
             node.parent_id
@@ -753,30 +1771,74 @@ document.addEventListener('DOMContentLoaded', () => {
             node.slug || '';
 
         elements.nodeType.value =
-            node.node_type || 'tutorial';
-
-        elements.nodeSortOrder.value =
-            Number(node.sort_order ?? 0);
+            node.node_type ||
+            'materi';
 
         elements.nodeStatus.value =
-            node.status || 'draft';
-
-        elements.nodeApplicationVersion.value =
-            node.application_version_id ?? '';
+            node.status ||
+            'draft';
 
         elements.nodeDescription.value =
-            node.description || '';
+            node.description ||
+            '';
 
         elements.nodeIsPublic.checked =
             Boolean(node.is_public);
 
+        updatePublicCheckboxState();
+
+        const children =
+            getNodeChildren(node);
+
+        const hasChildren =
+            children.length > 0;
+
+        const isRootNode =
+            node.parent_id === null ||
+            node.parent_id === undefined;
+
+        if (isRootNode) {
+            configureRootNodeType();
+        } else {
+            const categoryOption =
+                elements.nodeType.querySelector(
+                    'option[value="kategori"]'
+                );
+
+            if (categoryOption) {
+                categoryOption.disabled =
+                    true;
+            }
+
+            elements.nodeType.value =
+                node.node_type;
+
+            if (hasChildren) {
+                lockNodeTypeBecauseOfChildren(
+                    children.length
+                );
+            } else {
+                elements.nodeTypeHelp.textContent =
+                    'Jenis child dapat diubah menjadi Bagian atau Materi.';
+
+                elements.nodeTypeNoticeText.textContent =
+                    'Kategori tidak dapat digunakan sebagai child.';
+
+                elements.nodeTypeNotice.classList.remove(
+                    'hidden'
+                );
+            }
+        }
+
         if (node.parent_id) {
-            const parent = findNode(
-                node.parent_id
-            );
+            const parent =
+                findNode(
+                    node.parent_id
+                );
 
             elements.parentInformationTitle.textContent =
-                parent?.title || 'Parent materi';
+                parent?.title ||
+                'Parent materi';
 
             elements.parentInformation.classList.remove(
                 'hidden'
@@ -786,8 +1848,16 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.nodeFormTitle.textContent =
             'Ubah Materi';
 
-        elements.nodeFormDescription.textContent =
-            'Perbarui informasi materi.';
+        if (isRootNode) {
+            elements.nodeFormDescription.textContent =
+                'Perbarui informasi materi utama. Jenis materi wajib tetap Kategori.';
+        } else if (hasChildren) {
+            elements.nodeFormDescription.textContent =
+                'Perbarui informasi materi. Jenis materi dikunci karena node memiliki child.';
+        } else {
+            elements.nodeFormDescription.textContent =
+                'Perbarui informasi materi. Jenis dapat diubah menjadi Bagian atau Materi.';
+        }
 
         setButtonContent(
             elements.nodeSubmitButton,
@@ -798,12 +1868,51 @@ document.addEventListener('DOMContentLoaded', () => {
         openNodeModal();
     }
 
+    function getNextSortOrder(nodes) {
+        if (
+            !Array.isArray(nodes) ||
+            nodes.length === 0
+        ) {
+            return 0;
+        }
+
+        const highestSortOrder =
+            Math.max(
+                ...nodes.map(
+                    (node) =>
+                        Number(
+                            node.sort_order ??
+                            0
+                        )
+                )
+            );
+
+        return highestSortOrder + 1;
+    }
+
+    function populateFormContext() {
+        const application =
+            getSelectedApplication();
+
+        const version =
+            getSelectedVersion();
+
+        elements.formApplicationName.textContent =
+            application?.name ||
+            'Aplikasi tidak diketahui';
+
+        elements.formVersionName.textContent =
+            version
+                ? getVersionLabel(version)
+                : 'Versi tidak diketahui';
+    }
+
     async function submitNode(event) {
         event.preventDefault();
 
-        if (!state.selectedApplicationId) {
+        if (!hasCompleteSelection()) {
             showNotification(
-                'Pilih aplikasi terlebih dahulu.',
+                'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
 
@@ -813,30 +1922,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const nodeId =
             elements.nodeId.value;
 
-        const isEditing = nodeId !== '';
+        const isEditing =
+            nodeId !== '';
+
+        const title =
+            elements.nodeTitle.value.trim();
+
+        if (!title) {
+            showNotification(
+                'Judul materi wajib diisi.',
+                'error'
+            );
+
+            elements.nodeTitle.focus();
+
+            return;
+        }
+
+        const parentId =
+            elements.nodeParentId.value
+                ? Number(
+                    elements.nodeParentId.value
+                )
+                : null;
+
+        const nodeType =
+            parentId === null
+                ? 'kategori'
+                : elements.nodeType.value;
+
+        if (
+            parentId !== null &&
+            nodeType === 'kategori'
+        ) {
+            showNotification(
+                'Kategori hanya dapat digunakan sebagai materi utama.',
+                'error'
+            );
+
+            return;
+        }
+
+        const isPublished =
+            elements.nodeStatus.value ===
+            'published';
 
         const payload = {
-            application_id: Number(
-                state.selectedApplicationId
-            ),
+            application_id:
+                Number(
+                    state.selectedApplicationId
+                ),
 
             application_version_id:
-                elements.nodeApplicationVersion.value
-                    ? Number(
-                        elements.nodeApplicationVersion
-                            .value
-                    )
-                    : null,
+                Number(
+                    state.selectedVersionId
+                ),
 
             parent_id:
-                elements.nodeParentId.value
-                    ? Number(
-                        elements.nodeParentId.value
-                    )
-                    : null,
+                parentId,
 
-            title:
-                elements.nodeTitle.value.trim(),
+            title,
 
             slug:
                 elements.nodeSlug.value.trim() ||
@@ -847,46 +1992,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 null,
 
             node_type:
-                elements.nodeType.value,
+                nodeType,
 
             sort_order:
                 Number(
-                    elements.nodeSortOrder.value || 0
+                    state.formSortOrder
                 ),
 
             status:
                 elements.nodeStatus.value,
 
             is_public:
-                elements.nodeIsPublic.checked,
+                isPublished
+                    ? elements.nodeIsPublic.checked
+                    : false,
         };
 
-        const url = isEditing
-            ? `${API_BASE_URL}/tutorial-nodes/${nodeId}`
-            : `${API_BASE_URL}/tutorial-nodes`;
+        const url =
+            isEditing
+                ? `${API_BASE_URL}/tutorial-nodes/${nodeId}`
+                : `${API_BASE_URL}/tutorial-nodes`;
 
         setNodeSubmitLoading(true);
 
         try {
-            const response = await fetch(url, {
-                method: isEditing
-                    ? 'PUT'
-                    : 'POST',
+            const response = await fetch(
+                url,
+                {
+                    method:
+                        isEditing
+                            ? 'PUT'
+                            : 'POST',
 
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type':
-                        'application/json',
-                },
+                    headers: {
+                        Accept:
+                            'application/json',
 
-                body: JSON.stringify(payload),
-            });
+                        'Content-Type':
+                            'application/json',
+                    },
 
-            const result = await parseResponse(
-                response
+                    body: JSON.stringify(
+                        payload
+                    ),
+                }
             );
 
+            const result =
+                await parseResponse(response);
+
             closeNodeModal();
+
             await fetchTree();
 
             showNotification(
@@ -905,40 +2061,74 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteNode(nodeId) {
-        const node = findNode(nodeId);
+        const node =
+            findNode(nodeId);
 
         if (!node) {
+            showNotification(
+                'Materi tidak ditemukan.',
+                'error'
+            );
+
             return;
         }
 
-        const confirmed = window.confirm(
-            `Hapus materi "${node.title}"?`
-        );
+        const descendantCount =
+            countDescendants(node);
+
+        const warningMessage =
+            descendantCount > 0
+                ? [
+                    `Hapus materi "${node.title}" beserta seluruh turunannya?`,
+                    '',
+                    `Sebanyak ${descendantCount} child, grandchild, atau turunan lain akan ikut dihapus.`,
+                    '',
+                    'Tindakan ini tidak dapat dibatalkan.',
+                ].join('\n')
+                : [
+                    `Hapus materi "${node.title}"?`,
+                    '',
+                    'Tindakan ini tidak dapat dibatalkan.',
+                ].join('\n');
+
+        const confirmed =
+            window.confirm(
+                warningMessage
+            );
 
         if (!confirmed) {
             return;
         }
+
+        setDeleteButtonLoading(
+            nodeId,
+            true
+        );
 
         try {
             const response = await fetch(
                 `${API_BASE_URL}/tutorial-nodes/${nodeId}`,
                 {
                     method: 'DELETE',
+
                     headers: {
-                        Accept: 'application/json',
+                        Accept:
+                            'application/json',
                     },
                 }
             );
 
-            const result = await parseResponse(
-                response
-            );
+            const result =
+                await parseResponse(response);
 
             await fetchTree();
 
             showNotification(
-                result.message ||
-                'Materi berhasil dihapus.',
+                descendantCount > 0
+                    ? result.message ||
+                        `Materi beserta ${descendantCount} turunannya berhasil dihapus.`
+                    : result.message ||
+                        'Materi berhasil dihapus.',
                 'success'
             );
         } catch (error) {
@@ -946,36 +2136,51 @@ document.addEventListener('DOMContentLoaded', () => {
                 error.message,
                 'error'
             );
+
+            setDeleteButtonLoading(
+                nodeId,
+                false
+            );
         }
     }
 
-    function populateVersionOptions() {
-        const application =
-            getSelectedApplication();
+    function setDeleteButtonLoading(
+        nodeId,
+        isLoading
+    ) {
+        const button =
+            elements.tutorialTree.querySelector(
+                `.node-delete-button[data-id="${nodeId}"]`
+            );
 
-        const versions = Array.isArray(
-            application?.versions
-        )
-            ? application.versions
-            : [];
+        if (!button) {
+            return;
+        }
 
-        elements.nodeApplicationVersion.innerHTML =
-            [
+        button.disabled =
+            isLoading;
+
+        button.innerHTML =
+            isLoading
+                ? `
+                    <i class="bi bi-arrow-repeat animate-spin"></i>
                 `
-                    <option value="">
-                        Semua versi
-                    </option>
-                `,
-                ...versions.map((version) => `
-                    <option value="${version.id}">
-                        ${escapeHtml(
-                            version.version_number ||
-                            version.version ||
-                            `Versi ${version.id}`
-                        )}
-                    </option>
-                `),
-            ].join('');
+                : `
+                    <i class="bi bi-trash3"></i>
+                `;
+    }
+
+    function countDescendants(node) {
+        const children =
+            getNodeChildren(node);
+
+        return children.reduce(
+            (total, child) =>
+                total +
+                1 +
+                countDescendants(child),
+            0
+        );
     }
 
     function openNodeModal() {
@@ -1025,16 +2230,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetNodeForm() {
         elements.nodeForm.reset();
 
-        elements.nodeId.value = '';
-        elements.nodeParentId.value = '';
-        elements.nodeSortOrder.value = '0';
-        elements.nodeStatus.value = 'draft';
+        state.formSortOrder = 0;
+
+        elements.nodeId.value =
+            '';
+
+        elements.nodeParentId.value =
+            '';
+
+        elements.nodeStatus.value =
+            'draft';
+
+        elements.nodeIsPublic.checked =
+            false;
+
+        updatePublicCheckboxState();
+
+        resetNodeTypeOptions();
+
+        elements.nodeType.value =
+            'materi';
 
         elements.parentInformation.classList.add(
             'hidden'
         );
 
         elements.parentInformationTitle.textContent =
+            '';
+
+        elements.formApplicationName.textContent =
+            '';
+
+        elements.formVersionName.textContent =
             '';
 
         elements.nodeFormTitle.textContent =
@@ -1049,93 +2276,64 @@ document.addEventListener('DOMContentLoaded', () => {
             'Simpan Materi'
         );
 
-        elements.nodeSubmitButton.disabled = false;
+        elements.nodeSubmitButton.disabled =
+            false;
     }
 
-    function toggleNode(nodeId) {
-        const childrenContainer =
-            document.querySelector(
-                `[data-node-children="${nodeId}"]`
-            );
+    function updateContextDisplay() {
+        const application =
+            getSelectedApplication();
 
-        const toggleButton =
-            document.querySelector(
-                `.node-toggle-button[data-id="${nodeId}"]`
-            );
+        const version =
+            getSelectedVersion();
 
         if (
-            !childrenContainer ||
-            !toggleButton
+            !application ||
+            !version
         ) {
-            return;
-        }
-
-        const icon =
-            toggleButton.querySelector('i');
-
-        const isHidden =
-            childrenContainer.classList.contains(
+            elements.selectedContext.classList.add(
                 'hidden'
             );
 
-        childrenContainer.classList.toggle(
+            elements.selectedContextText.textContent =
+                '';
+
+            return;
+        }
+
+        elements.selectedContextText.textContent =
+            `${application.name} — Versi ${getVersionLabel(version)}`;
+
+        elements.selectedContext.classList.remove(
             'hidden'
         );
-
-        icon.classList.toggle(
-            'bi-chevron-down',
-            isHidden
-        );
-
-        icon.classList.toggle(
-            'bi-chevron-right',
-            !isHidden
-        );
     }
 
-    function setAllNodesCollapsed(collapsed) {
-        document
-            .querySelectorAll(
-                '[data-node-children]'
-            )
-            .forEach((container) => {
-                container.classList.toggle(
-                    'hidden',
-                    collapsed
-                );
-            });
+    function updateActionAvailability() {
+        const enabled =
+            hasCompleteSelection();
 
-        document
-            .querySelectorAll(
-                '.node-toggle-button i'
-            )
-            .forEach((icon) => {
-                icon.classList.toggle(
-                    'bi-chevron-right',
-                    collapsed
-                );
+        elements.openRootNodeFormButton.disabled =
+            !enabled;
 
-                icon.classList.toggle(
-                    'bi-chevron-down',
-                    !collapsed
-                );
-            });
+        elements.refreshTreeButton.disabled =
+            !enabled;
+
+        if (!enabled) {
+            setTreeActionAvailability(false);
+        }
     }
 
-    function flattenTree(nodes) {
-        return nodes.flatMap((node) => [
-            node,
-            ...flattenTree(
-                getNodeChildren(node)
-            ),
-        ]);
-    }
-
-    function findNode(nodeId) {
-        return state.flattenedNodes.find(
-            (node) =>
-                Number(node.id) ===
-                Number(nodeId)
+    function hasCompleteSelection() {
+        return (
+            Number.isInteger(
+                state.selectedApplicationId
+            ) &&
+            state.selectedApplicationId > 0 &&
+            Number.isInteger(
+                state.selectedVersionId
+            ) &&
+            state.selectedVersionId > 0
         );
     }
 
@@ -1149,24 +2347,127 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    function setApplicationSelected(selected) {
-        elements.openRootNodeFormButton.disabled =
-            !selected;
-
-        elements.refreshTreeButton.disabled =
-            !selected;
-
-        if (!selected) {
-            setTreeActionAvailability(false);
-        }
+    function getSelectedApplicationVersions() {
+        return getApplicationVersions(
+            getSelectedApplication()
+        );
     }
 
-    function setTreeActionAvailability(enabled) {
-        elements.expandAllButton.disabled =
-            !enabled;
+    function getSelectedVersion() {
+        return getSelectedApplicationVersions().find(
+            (version) =>
+                Number(version.id) ===
+                Number(
+                    state.selectedVersionId
+                )
+        );
+    }
 
-        elements.collapseAllButton.disabled =
-            !enabled;
+    function getApplicationVersions(
+        application
+    ) {
+        return Array.isArray(
+            application?.versions
+        )
+            ? application.versions
+            : [];
+    }
+
+    function getVersionLabel(version) {
+        return (
+            version?.version_number ||
+            version?.version ||
+            version?.name ||
+            `Versi ${version?.id ?? ''}`
+        );
+    }
+
+    function getNodeChildren(node) {
+        if (
+            Array.isArray(
+                node.children_recursive
+            )
+        ) {
+            return node.children_recursive;
+        }
+
+        if (
+            Array.isArray(
+                node.children
+            )
+        ) {
+            return node.children;
+        }
+
+        return [];
+    }
+
+    function flattenTree(nodes) {
+        return nodes.flatMap(
+            (node) => [
+                node,
+
+                ...flattenTree(
+                    getNodeChildren(node)
+                ),
+            ]
+        );
+    }
+
+    function findNode(nodeId) {
+        return state.flattenedNodes.find(
+            (node) =>
+                Number(node.id) ===
+                Number(nodeId)
+        );
+    }
+
+    function renderStatistics() {
+        const nodes =
+            state.flattenedNodes;
+
+        elements.statTotalNodes.textContent =
+            String(nodes.length);
+
+        elements.statPublicNodes.textContent =
+            String(
+                nodes.filter(
+                    (node) =>
+                        node.status ===
+                            'published' &&
+                        Boolean(
+                            node.is_public
+                        )
+                ).length
+            );
+
+        elements.statPublishedNodes.textContent =
+            String(
+                nodes.filter(
+                    (node) =>
+                        node.status ===
+                        'published'
+                ).length
+            );
+
+        elements.statMaterialNodes.textContent =
+            String(
+                nodes.filter(
+                    (node) =>
+                        node.node_type ===
+                        'materi'
+                ).length
+            );
+    }
+
+    function clearTreeData() {
+        state.tree = [];
+        state.flattenedNodes = [];
+
+        elements.tutorialTree.innerHTML =
+            '';
+
+        renderStatistics();
     }
 
     function showInitialState() {
@@ -1181,13 +2482,9 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         elements.treeDescription.textContent =
-            'Pilih aplikasi untuk menampilkan materi.';
+            'Pilih aplikasi dan versi untuk menampilkan materi.';
 
-        state.tree = [];
-        state.flattenedNodes = [];
-
-        renderStatistics();
-        setApplicationSelected(false);
+        setTreeActionAvailability(false);
     }
 
     function showTreeLoading() {
@@ -1237,7 +2534,91 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    function setNodeSubmitLoading(isLoading) {
+    function setTreeActionAvailability(
+        enabled
+    ) {
+        elements.expandAllButton.disabled =
+            !enabled;
+
+        elements.collapseAllButton.disabled =
+            !enabled;
+    }
+
+    function toggleNode(nodeId) {
+        const childrenContainer =
+            document.querySelector(
+                `[data-node-children="${nodeId}"]`
+            );
+
+        const toggleButton =
+            document.querySelector(
+                `.node-toggle-button[data-id="${nodeId}"]`
+            );
+
+        if (
+            !childrenContainer ||
+            !toggleButton
+        ) {
+            return;
+        }
+
+        const icon =
+            toggleButton.querySelector('i');
+
+        const isHidden =
+            childrenContainer.classList.contains(
+                'hidden'
+            );
+
+        childrenContainer.classList.toggle(
+            'hidden'
+        );
+
+        icon.classList.toggle(
+            'bi-chevron-down',
+            isHidden
+        );
+
+        icon.classList.toggle(
+            'bi-chevron-right',
+            !isHidden
+        );
+    }
+
+    function setAllNodesCollapsed(
+        collapsed
+    ) {
+        document
+            .querySelectorAll(
+                '[data-node-children]'
+            )
+            .forEach((container) => {
+                container.classList.toggle(
+                    'hidden',
+                    collapsed
+                );
+            });
+
+        document
+            .querySelectorAll(
+                '.node-toggle-button i'
+            )
+            .forEach((icon) => {
+                icon.classList.toggle(
+                    'bi-chevron-right',
+                    collapsed
+                );
+
+                icon.classList.toggle(
+                    'bi-chevron-down',
+                    !collapsed
+                );
+            });
+    }
+
+    function setNodeSubmitLoading(
+        isLoading
+    ) {
         elements.nodeSubmitButton.disabled =
             isLoading;
 
@@ -1247,13 +2628,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 'bi-arrow-repeat animate-spin',
                 'Menyimpan...'
             );
+
+            return;
         }
+
+        const isEditing =
+            elements.nodeId.value !== '';
+
+        setButtonContent(
+            elements.nodeSubmitButton,
+            isEditing
+                ? 'bi-pencil-square'
+                : 'bi-plus-lg',
+            isEditing
+                ? 'Perbarui Materi'
+                : 'Simpan Materi'
+        );
     }
 
     async function parseResponse(response) {
-        const result = await response
-            .json()
-            .catch(() => ({}));
+        const result =
+            await response
+                .json()
+                .catch(() => ({}));
 
         if (response.ok) {
             return result;
@@ -1261,7 +2658,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (result.errors) {
             throw new Error(
-                Object.values(result.errors)
+                Object.values(
+                    result.errors
+                )
                     .flat()
                     .join(' ')
             );
@@ -1320,10 +2719,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getNodeTypeLabel(type) {
         return {
-            category: 'Kategori',
-            section: 'Bagian',
-            tutorial: 'Tutorial',
-            step: 'Langkah',
+            kategori: 'Kategori',
+            bagian: 'Bagian',
+            materi: 'Materi',
         }[type] || type;
     }
 
@@ -1337,17 +2735,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function getNodeTypeClass(type) {
         return {
-            category:
+            kategori:
                 'border-blue-200 bg-blue-50 text-blue-800',
 
-            section:
+            bagian:
                 'border-violet-200 bg-violet-50 text-violet-700',
 
-            tutorial:
+            materi:
                 'border-amber-200 bg-amber-50 text-amber-700',
-
-            step:
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
         }[type] ||
             'border-slate-200 bg-slate-100 text-slate-600';
     }
@@ -1374,269 +2769,4 @@ document.addEventListener('DOMContentLoaded', () => {
             .replaceAll('"', '&quot;')
             .replaceAll("'", '&#039;');
     }
-
-    elements.applicationSearch.addEventListener(
-        'focus',
-        () => {
-            filterApplications(
-                elements.applicationSearch.value
-            );
-
-            openApplicationDropdown();
-        }
-    );
-
-    elements.applicationSearch.addEventListener(
-        'input',
-        (event) => {
-            elements.applicationSearchError.classList.add(
-                'hidden'
-            );
-
-            filterApplications(
-                event.target.value
-            );
-
-            openApplicationDropdown();
-
-            const selectedApplication =
-                getSelectedApplication();
-
-            if (
-                selectedApplication &&
-                event.target.value !==
-                    selectedApplication.name
-            ) {
-                state.selectedApplicationId =
-                    null;
-
-                elements.applicationId.value =
-                    '';
-
-                setApplicationSelected(false);
-            }
-
-            if (
-                event.target.value.trim() === ''
-            ) {
-                clearSelectedApplication();
-                openApplicationDropdown();
-            }
-        }
-    );
-
-    elements.applicationSearch.addEventListener(
-        'keydown',
-        (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-
-                const firstOption =
-                    elements.applicationOptions
-                        .querySelector(
-                            '.application-option'
-                        );
-
-                if (firstOption) {
-                    selectApplication(
-                        firstOption.dataset.id
-                    );
-                } else {
-                    validateTypedApplication();
-                }
-            }
-
-            if (event.key === 'Escape') {
-                closeApplicationDropdown();
-            }
-        }
-    );
-
-    elements.applicationSearch.addEventListener(
-        'blur',
-        () => {
-            window.setTimeout(() => {
-                validateTypedApplication();
-            }, 200);
-        }
-    );
-
-    elements.applicationDropdownButton.addEventListener(
-        'click',
-        () => {
-            const isHidden =
-                elements.applicationDropdown
-                    .classList
-                    .contains('hidden');
-
-            if (isHidden) {
-                filterApplications(
-                    elements.applicationSearch.value
-                );
-
-                openApplicationDropdown();
-
-                elements.applicationSearch.focus();
-            } else {
-                closeApplicationDropdown();
-            }
-        }
-    );
-
-    elements.applicationOptions.addEventListener(
-        'click',
-        (event) => {
-            const option = event.target.closest(
-                '.application-option'
-            );
-
-            if (!option) {
-                return;
-            }
-
-            selectApplication(
-                option.dataset.id
-            );
-        }
-    );
-
-    document.addEventListener(
-        'click',
-        (event) => {
-            if (
-                !elements.applicationSearchWrapper
-                    .contains(event.target)
-            ) {
-                closeApplicationDropdown();
-            }
-        }
-    );
-
-    elements.openRootNodeFormButton.addEventListener(
-        'click',
-        openCreateRootNodeModal
-    );
-
-    elements.emptyAddRootButton.addEventListener(
-        'click',
-        openCreateRootNodeModal
-    );
-
-    elements.refreshTreeButton.addEventListener(
-        'click',
-        fetchTree
-    );
-
-    elements.treeRetryButton.addEventListener(
-        'click',
-        fetchTree
-    );
-
-    elements.expandAllButton.addEventListener(
-        'click',
-        () => setAllNodesCollapsed(false)
-    );
-
-    elements.collapseAllButton.addEventListener(
-        'click',
-        () => setAllNodesCollapsed(true)
-    );
-
-    elements.tutorialTree.addEventListener(
-        'click',
-        (event) => {
-            const toggleButton =
-                event.target.closest(
-                    '.node-toggle-button'
-                );
-
-            const addChildButton =
-                event.target.closest(
-                    '.node-add-child-button'
-                );
-
-            const editButton =
-                event.target.closest(
-                    '.node-edit-button'
-                );
-
-            const deleteButton =
-                event.target.closest(
-                    '.node-delete-button'
-                );
-
-            if (toggleButton) {
-                toggleNode(
-                    toggleButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (addChildButton) {
-                openCreateChildNodeModal(
-                    addChildButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (editButton) {
-                openEditNodeModal(
-                    editButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (deleteButton) {
-                deleteNode(
-                    deleteButton.dataset.id
-                );
-            }
-        }
-    );
-
-    elements.nodeForm.addEventListener(
-        'submit',
-        submitNode
-    );
-
-    elements.nodeFormModalClose.addEventListener(
-        'click',
-        closeNodeModal
-    );
-
-    elements.nodeCancelButton.addEventListener(
-        'click',
-        closeNodeModal
-    );
-
-    elements.nodeFormModal.addEventListener(
-        'click',
-        (event) => {
-            if (
-                event.target ===
-                elements.nodeFormModal
-            ) {
-                closeNodeModal();
-            }
-        }
-    );
-
-    document.addEventListener(
-        'keydown',
-        (event) => {
-            if (
-                event.key === 'Escape' &&
-                !elements.nodeFormModal
-                    .classList
-                    .contains('hidden')
-            ) {
-                closeNodeModal();
-            }
-        }
-    );
-
-    initializePage();
 });

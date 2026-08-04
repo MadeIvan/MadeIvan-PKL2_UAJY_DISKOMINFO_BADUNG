@@ -9,11 +9,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-
 class TutorialNode extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    public const TYPE_KATEGORI = 'kategori';
+    public const TYPE_BAGIAN = 'bagian';
+    public const TYPE_MATERI = 'materi';
+
+    public const TYPES = [
+        self::TYPE_KATEGORI,
+        self::TYPE_BAGIAN,
+        self::TYPE_MATERI,
+    ];
 
     protected $fillable = [
         'application_id',
@@ -26,7 +35,6 @@ class TutorialNode extends Model
         'sort_order',
         'status',
         'is_public',
-        'title',
     ];
 
     protected function casts(): array
@@ -42,12 +50,16 @@ class TutorialNode extends Model
 
     public function application(): BelongsTo
     {
-        return $this->belongsTo(Application::class);
+        return $this->belongsTo(
+            Application::class
+        );
     }
 
     public function applicationVersion(): BelongsTo
     {
-        return $this->belongsTo(ApplicationVersion::class);
+        return $this->belongsTo(
+            ApplicationVersion::class
+        );
     }
 
     public function parent(): BelongsTo
@@ -76,20 +88,41 @@ class TutorialNode extends Model
             ->with('childrenRecursive');
     }
 
-    public function scopeRoots(Builder $query): Builder
+    public function contentBlocks(): HasMany
     {
-        return $query->whereNull('parent_id');
+        return $this
+            ->hasMany(
+                TutorialContentBlock::class
+            )
+            ->orderBy('sort_order')
+            ->orderBy('id');
     }
 
-    public function scopePublished(Builder $query): Builder
-    {
+    public function scopeRoots(
+        Builder $query
+    ): Builder {
+        return $query->whereNull(
+            'parent_id'
+        );
+    }
+
+    public function scopePublished(
+        Builder $query
+    ): Builder {
         return $query
-            ->where('status', 'published')
-            ->where('is_public', true);
+            ->where(
+                'status',
+                'published'
+            )
+            ->where(
+                'is_public',
+                true
+            );
     }
 
-    public function scopeOrdered(Builder $query): Builder
-    {
+    public function scopeOrdered(
+        Builder $query
+    ): Builder {
         return $query
             ->orderBy('sort_order')
             ->orderBy('title');
@@ -100,13 +133,21 @@ class TutorialNode extends Model
         return $this->parent_id === null;
     }
 
+    public function isKategori(): bool
+    {
+        return $this->node_type ===
+            self::TYPE_KATEGORI;
+    }
 
-    public function contentBlocks(): HasMany
-{
-    return $this
-        ->hasMany(TutorialContentBlock::class)
-        ->orderBy('sort_order')
-        ->orderBy('id');
-}
-    
+    public function isBagian(): bool
+    {
+        return $this->node_type ===
+            self::TYPE_BAGIAN;
+    }
+
+    public function isMateri(): bool
+    {
+        return $this->node_type ===
+            self::TYPE_MATERI;
+    }
 }
