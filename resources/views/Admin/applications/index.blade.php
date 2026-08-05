@@ -8,8 +8,10 @@
 @endpush
 
 @section('content')
-    <div class="space-y-6">
-
+    <div
+        id="application-page"
+        class="space-y-6"
+    >
         {{-- Notifikasi --}}
         <div
             id="notification"
@@ -17,7 +19,7 @@
             role="alert"
         ></div>
 
-        {{-- Header halaman --}}
+        {{-- Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
@@ -111,29 +113,29 @@
                 </div>
             </article>
 
-<article class="border border-slate-200 bg-white p-5 shadow-sm">
-    <div class="flex items-center justify-between gap-4">
-        <div>
-            <p class="text-sm font-medium text-slate-500">
-                Aplikasi Tidak Aktif
-            </p>
+            <article class="border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">
+                            Aplikasi Tidak Aktif
+                        </p>
 
-            <p
-                id="stat-inactive-applications"
-                class="mt-2 text-3xl font-bold text-slate-950"
-            >
-                0
-            </p>
-        </div>
+                        <p
+                            id="stat-inactive-applications"
+                            class="mt-2 text-3xl font-bold text-slate-950"
+                        >
+                            0
+                        </p>
+                    </div>
 
-        <div class="flex h-12 w-12 items-center justify-center bg-amber-100 text-amber-700">
-            <i class="bi bi-file-earmark-text text-xl"></i>
-        </div>
-    </div>
-</article>
+                    <div class="flex h-12 w-12 items-center justify-center bg-amber-100 text-amber-700">
+                        <i class="bi bi-pause-circle text-xl"></i>
+                    </div>
+                </div>
+            </article>
         </section>
 
-        {{-- Tabel aplikasi --}}
+        {{-- Data aplikasi --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 p-5 sm:p-6">
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -164,7 +166,6 @@
                 </div>
             </div>
 
-            {{-- Loading --}}
             <div
                 id="application-loading"
                 class="py-16 text-center text-sm text-slate-500"
@@ -173,7 +174,6 @@
                 Memuat data aplikasi...
             </div>
 
-            {{-- Empty --}}
             <div
                 id="application-empty"
                 class="hidden px-5 py-16 text-center"
@@ -191,7 +191,6 @@
                 </p>
             </div>
 
-            {{-- Error --}}
             <div
                 id="application-error"
                 class="hidden px-5 py-16 text-center"
@@ -219,7 +218,6 @@
                 </button>
             </div>
 
-            {{-- Table --}}
             <div
                 id="application-table-wrapper"
                 class="hidden overflow-x-auto"
@@ -264,7 +262,6 @@
                 </table>
             </div>
 
-            {{-- Pagination --}}
             <div
                 id="application-pagination-wrapper"
                 class="hidden border-t border-slate-200 px-5 py-5 sm:px-6"
@@ -286,7 +283,7 @@
         </section>
     </div>
 
-    {{-- Modal tambah atau ubah aplikasi --}}
+    {{-- Modal aplikasi --}}
     <div
         id="application-form-modal"
         class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4"
@@ -403,9 +400,17 @@
                             required
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="active">Aktif</option>
-                            <option value="inactive">Tidak Aktif</option>
-                            <option value="archived">Diarsipkan</option>
+                            <option value="active">
+                                Aktif
+                            </option>
+
+                            <option value="inactive">
+                                Tidak Aktif
+                            </option>
+
+                            <option value="archived">
+                                Diarsipkan
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -426,7 +431,6 @@
                     ></textarea>
                 </div>
 
-                {{-- Logo --}}
                 <div class="border border-slate-200 bg-slate-50 p-5">
                     <div class="mb-4">
                         <h3 class="font-bold text-slate-950">
@@ -472,7 +476,6 @@
                     </div>
                 </div>
 
-                {{-- Visibilitas --}}
                 <label class="flex cursor-pointer items-center gap-3 border border-slate-200 p-4">
                     <input
                         id="application-is-public"
@@ -552,8 +555,15 @@
                     id="version-form"
                     class="h-fit space-y-4 border border-slate-200 bg-slate-50 p-5"
                 >
-                    <input id="version-id" type="hidden">
-                    <input id="version-application-id" type="hidden">
+                    <input
+                        id="version-id"
+                        type="hidden"
+                    >
+
+                    <input
+                        id="version-application-id"
+                        type="hidden"
+                    >
 
                     <div>
                         <h3
@@ -614,10 +624,21 @@
                             id="version-status"
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="draft">Draf</option>
-                            <option value="beta">Beta</option>
-                            <option value="stable">Stabil</option>
-                            <option value="deprecated">Tidak Digunakan</option>
+                            <option value="draft">
+                                Draf
+                            </option>
+
+                            <option value="beta">
+                                Beta
+                            </option>
+
+                            <option value="stable">
+                                Stabil
+                            </option>
+
+                            <option value="deprecated">
+                                Tidak Digunakan
+                            </option>
                         </select>
                     </div>
 
