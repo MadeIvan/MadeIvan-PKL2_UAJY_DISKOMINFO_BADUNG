@@ -3,644 +3,768 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 const API_BASE_URL = '/api/admin';
 const DEFAULT_LOGO_URL = '/images/Logo.png';
 
-const state = {
-    applications: [],
-    search: '',
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    from: null,
-    to: null,
-    activeApplicationId: null,
-};
+const page = document.getElementById('application-page');
 
-const elements = {
-    notification: document.getElementById('notification'),
+if (page) {
+    initializeApplicationPage();
+}
 
-    // Statistics
-    statTotalApplications: document.getElementById(
-        'stat-total-applications'
-    ),
+function initializeApplicationPage() {
+    const state = {
+        applications: [],
+        search: '',
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        from: null,
+        to: null,
+        activeApplicationId: null,
+    };
 
-    statActiveApplications: document.getElementById(
-        'stat-active-applications'
-    ),
+    const elements = {
+        notification: document.getElementById('notification'),
 
-    statPublicApplications: document.getElementById(
-        'stat-public-applications'
-    ),
+        statTotalApplications: document.getElementById(
+            'stat-total-applications'
+        ),
 
-    statTotalDrafts: document.getElementById(
-        'stat-total-drafts'
-    ),
+        statActiveApplications: document.getElementById(
+            'stat-active-applications'
+        ),
 
-    // Application table
-    applicationSearch: document.getElementById(
-        'application-search'
-    ),
+        statPublicApplications: document.getElementById(
+            'stat-public-applications'
+        ),
 
-    applicationCount: document.getElementById(
-        'application-count'
-    ),
+        statInactiveApplications: document.getElementById(
+            'stat-inactive-applications'
+        ),
 
-    applicationTableWrapper: document.getElementById(
-        'application-table-wrapper'
-    ),
+        applicationSearch: document.getElementById(
+            'application-search'
+        ),
 
-    applicationTableBody: document.getElementById(
-        'application-table-body'
-    ),
+        applicationCount: document.getElementById(
+            'application-count'
+        ),
 
-    applicationLoading: document.getElementById(
-        'application-loading'
-    ),
+        applicationTableWrapper: document.getElementById(
+            'application-table-wrapper'
+        ),
 
-    applicationEmpty: document.getElementById(
-        'application-empty'
-    ),
+        applicationTableBody: document.getElementById(
+            'application-table-body'
+        ),
 
-    applicationError: document.getElementById(
-        'application-error'
-    ),
+        applicationLoading: document.getElementById(
+            'application-loading'
+        ),
 
-    applicationErrorMessage: document.getElementById(
-        'application-error-message'
-    ),
+        applicationEmpty: document.getElementById(
+            'application-empty'
+        ),
 
-    applicationRetryButton: document.getElementById(
-        'application-retry-button'
-    ),
+        applicationError: document.getElementById(
+            'application-error'
+        ),
 
-    // Pagination
-    paginationWrapper: document.getElementById(
-        'application-pagination-wrapper'
-    ),
+        applicationErrorMessage: document.getElementById(
+            'application-error-message'
+        ),
 
-    pagination: document.getElementById(
-        'application-pagination'
-    ),
+        applicationRetryButton: document.getElementById(
+            'application-retry-button'
+        ),
 
-    pageInfo: document.getElementById(
-        'application-page-info'
-    ),
+        paginationWrapper: document.getElementById(
+            'application-pagination-wrapper'
+        ),
 
-    // Application modal
-    applicationFormModal: document.getElementById(
-        'application-form-modal'
-    ),
+        pagination: document.getElementById(
+            'application-pagination'
+        ),
 
-    openApplicationFormButton: document.getElementById(
-        'open-application-form'
-    ),
+        pageInfo: document.getElementById(
+            'application-page-info'
+        ),
 
-    applicationFormModalClose: document.getElementById(
-        'application-form-modal-close'
-    ),
+        applicationFormModal: document.getElementById(
+            'application-form-modal'
+        ),
 
-    // Application form
-    applicationForm: document.getElementById(
-        'application-form'
-    ),
+        openApplicationFormButton: document.getElementById(
+            'open-application-form'
+        ),
 
-    applicationFormTitle: document.getElementById(
-        'application-form-title'
-    ),
+        applicationFormModalClose: document.getElementById(
+            'application-form-modal-close'
+        ),
 
-    applicationId: document.getElementById(
-        'application-id'
-    ),
+        applicationForm: document.getElementById(
+            'application-form'
+        ),
 
-    applicationName: document.getElementById(
-        'application-name'
-    ),
+        applicationFormTitle: document.getElementById(
+            'application-form-title'
+        ),
 
-    applicationSlug: document.getElementById(
-        'application-slug'
-    ),
+        applicationId: document.getElementById(
+            'application-id'
+        ),
 
-    applicationDescription: document.getElementById(
-        'application-description'
-    ),
+        applicationName: document.getElementById(
+            'application-name'
+        ),
 
-    applicationCategory: document.getElementById(
-        'application-category'
-    ),
+        applicationSlug: document.getElementById(
+            'application-slug'
+        ),
 
-    applicationStatus: document.getElementById(
-        'application-status'
-    ),
+        applicationDescription: document.getElementById(
+            'application-description'
+        ),
 
-    applicationIsPublic: document.getElementById(
-        'application-is-public'
-    ),
+        applicationCategory: document.getElementById(
+            'application-category'
+        ),
 
-    applicationLogo: document.getElementById(
-        'application-logo'
-    ),
+        applicationStatus: document.getElementById(
+            'application-status'
+        ),
 
-    applicationLogoPreview: document.getElementById(
-        'application-logo-preview'
-    ),
+        applicationIsPublic: document.getElementById(
+            'application-is-public'
+        ),
 
-    applicationLogoPreviewWrapper: document.getElementById(
-        'application-logo-preview-wrapper'
-    ),
+        applicationLogo: document.getElementById(
+            'application-logo'
+        ),
 
-    applicationRemoveLogo: document.getElementById(
-        'application-remove-logo'
-    ),
+        applicationLogoPreview: document.getElementById(
+            'application-logo-preview'
+        ),
 
-    applicationSubmitButton: document.getElementById(
-        'application-submit-button'
-    ),
+        applicationLogoPreviewWrapper: document.getElementById(
+            'application-logo-preview-wrapper'
+        ),
 
-    applicationCancelButton: document.getElementById(
-        'application-cancel-button'
-    ),
+        applicationRemoveLogo: document.getElementById(
+            'application-remove-logo'
+        ),
 
-    // Version modal
-    versionModal: document.getElementById(
-        'version-modal'
-    ),
+        applicationSubmitButton: document.getElementById(
+            'application-submit-button'
+        ),
 
-    versionModalClose: document.getElementById(
-        'version-modal-close'
-    ),
+        applicationCancelButton: document.getElementById(
+            'application-cancel-button'
+        ),
 
-    versionModalApplicationName: document.getElementById(
-        'version-modal-application-name'
-    ),
+        versionModal: document.getElementById(
+            'version-modal'
+        ),
 
-    // Version form
-    versionForm: document.getElementById(
-        'version-form'
-    ),
+        versionModalClose: document.getElementById(
+            'version-modal-close'
+        ),
 
-    versionFormTitle: document.getElementById(
-        'version-form-title'
-    ),
+        versionModalApplicationName: document.getElementById(
+            'version-modal-application-name'
+        ),
 
-    versionId: document.getElementById(
-        'version-id'
-    ),
+        versionForm: document.getElementById(
+            'version-form'
+        ),
 
-    versionApplicationId: document.getElementById(
-        'version-application-id'
-    ),
+        versionFormTitle: document.getElementById(
+            'version-form-title'
+        ),
 
-    versionNumber: document.getElementById(
-        'version-number'
-    ),
+        versionId: document.getElementById(
+            'version-id'
+        ),
 
-    versionReleaseDate: document.getElementById(
-        'version-release-date'
-    ),
+        versionApplicationId: document.getElementById(
+            'version-application-id'
+        ),
 
-    versionStatus: document.getElementById(
-        'version-status'
-    ),
+        versionNumber: document.getElementById(
+            'version-number'
+        ),
 
-    versionReleaseNotes: document.getElementById(
-        'version-release-notes'
-    ),
+        versionReleaseDate: document.getElementById(
+            'version-release-date'
+        ),
 
-    versionIsCurrent: document.getElementById(
-        'version-is-current'
-    ),
+        versionStatus: document.getElementById(
+            'version-status'
+        ),
 
-    versionSubmitButton: document.getElementById(
-        'version-submit-button'
-    ),
+        versionReleaseNotes: document.getElementById(
+            'version-release-notes'
+        ),
 
-    versionCancelButton: document.getElementById(
-        'version-cancel-button'
-    ),
+        versionIsCurrent: document.getElementById(
+            'version-is-current'
+        ),
 
-    versionList: document.getElementById(
-        'version-list'
-    ),
+        versionSubmitButton: document.getElementById(
+            'version-submit-button'
+        ),
 
-    versionEmpty: document.getElementById(
-        'version-empty'
-    ),
-};
+        versionCancelButton: document.getElementById(
+            'version-cancel-button'
+        ),
 
-let searchTimeout = null;
-let notificationTimeout = null;
+        versionList: document.getElementById(
+            'version-list'
+        ),
 
-/**
- * Retrieve paginated applications from the admin API.
- */
-async function fetchApplications(page = 1) {
-    showApplicationLoading();
+        versionEmpty: document.getElementById(
+            'version-empty'
+        ),
+    };
 
-    try {
-        const parameters = new URLSearchParams({
-            page: String(page),
-        });
+    const missingElements = Object.entries(elements)
+        .filter(([, element]) => !element)
+        .map(([name]) => name);
 
-        if (state.search !== '') {
-            parameters.set(
-                'search',
-                state.search
-            );
-        }
+    if (missingElements.length > 0) {
+        console.error(
+            'Halaman aplikasi: elemen Blade tidak ditemukan:',
+            missingElements
+        );
 
-        const response = await fetch(
-            `${API_BASE_URL}/applications-with-versions?${parameters.toString()}`,
-            {
-                headers: {
-                    Accept: 'application/json',
-                },
+        return;
+    }
+
+    let searchTimeout = null;
+    let notificationTimeout = null;
+
+    bindEvents();
+    resetApplicationForm();
+    resetVersionForm();
+    fetchApplications();
+
+    function bindEvents() {
+        elements.openApplicationFormButton.addEventListener(
+            'click',
+            openCreateApplicationModal
+        );
+
+        elements.applicationFormModalClose.addEventListener(
+            'click',
+            closeApplicationModal
+        );
+
+        elements.applicationCancelButton.addEventListener(
+            'click',
+            closeApplicationModal
+        );
+
+        elements.applicationForm.addEventListener(
+            'submit',
+            submitApplication
+        );
+
+        elements.applicationSearch.addEventListener(
+            'input',
+            (event) => {
+                state.search = event.target.value.trim();
+
+                window.clearTimeout(searchTimeout);
+
+                searchTimeout = window.setTimeout(() => {
+                    fetchApplications(1);
+                }, 400);
             }
         );
 
-        const result = await parseResponse(
-            response
-        );
-
-        state.applications = Array.isArray(
-            result.data
-        )
-            ? result.data
-            : [];
-
-        state.currentPage = Number(
-            result.meta?.current_page ?? 1
-        );
-
-        state.lastPage = Number(
-            result.meta?.last_page ?? 1
-        );
-
-        state.total = Number(
-            result.meta?.total ??
-            state.applications.length
-        );
-
-        state.from =
-            result.meta?.from ?? null;
-
-        state.to =
-            result.meta?.to ?? null;
-
-        renderApplications();
-        renderPagination();
-        renderStatistics(result.summary);
-
-        refreshOpenedVersionModal();
-    } catch (error) {
-        showApplicationError(
-            error.message
-        );
-    }
-}
-
-/**
- * Render application rows in the admin table.
- */
-function renderApplications() {
-    hideApplicationStates();
-
-    elements.applicationCount.textContent =
-        `${state.total} aplikasi ditemukan`;
-
-    if (
-        state.applications.length === 0
-    ) {
-        elements.applicationTableBody.innerHTML =
-            '';
-
-        elements.applicationTableWrapper.classList.add(
-            'hidden'
-        );
-
-        elements.applicationEmpty.classList.remove(
-            'hidden'
-        );
-
-        elements.paginationWrapper.classList.add(
-            'hidden'
-        );
-
-        return;
-    }
-
-    elements.applicationTableBody.innerHTML =
-        state.applications
-            .map(createApplicationRow)
-            .join('');
-
-    elements.applicationTableWrapper.classList.remove(
-        'hidden'
-    );
-}
-
-/**
- * Create one row for the application table.
- */
-function createApplicationRow(application) {
-    const logoUrl =
-        application.logo_url ||
-        DEFAULT_LOGO_URL;
-
-    const category =
-        application.category_name ||
-        'Tanpa Kategori';
-
-    const description =
-        application.description ||
-        'Belum ada deskripsi aplikasi.';
-
-    const currentVersion =
-        application.current_version
-            ?.version_number ||
-        null;
-
-    const versionsCount =
-        Array.isArray(
-            application.versions
-        )
-            ? application.versions.length
-            : 0;
-
-    const visibilityLabel =
-        application.is_public
-            ? 'Publik'
-            : 'Privat';
-
-    const visibilityClass =
-        application.is_public
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-slate-200 bg-slate-100 text-slate-600';
-
-    const currentVersionLabel =
-        currentVersion
-            ? `v${escapeHtml(
-                currentVersion
-            )}`
-            : 'Belum ada';
-
-    return `
-        <tr class="transition hover:bg-slate-50">
-            <td class="whitespace-nowrap px-5 py-4 align-middle">
-                <div class="flex h-12 w-12 items-center justify-center border border-slate-200 bg-white">
-                    <img
-                        src="${escapeAttribute(
-                            logoUrl
-                        )}"
-                        alt="${escapeAttribute(
-                            application.name
-                        )}"
-                        class="h-full w-full object-contain p-1.5"
-                        loading="lazy"
-                        onerror="this.onerror=null;this.src='${DEFAULT_LOGO_URL}';"
-                    >
-                </div>
-            </td>
-
-            <td class="px-5 py-4 align-middle">
-                <div class="max-w-sm">
-                    <p class="font-semibold text-slate-950">
-                        ${escapeHtml(
-                            application.name
-                        )}
-                    </p>
-
-                    <p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-                        ${escapeHtml(
-                            description
-                        )}
-                    </p>
-
-                    ${
-                        application.slug
-                            ? `
-                                <p class="mt-1 text-xs text-slate-400">
-                                    /${escapeHtml(
-                                        application.slug
-                                    )}
-                                </p>
-                            `
-                            : ''
-                    }
-                </div>
-            </td>
-
-            <td class="whitespace-nowrap px-5 py-4 align-middle">
-                <span class="text-sm text-slate-700">
-                    ${escapeHtml(category)}
-                </span>
-            </td>
-
-            <td class="whitespace-nowrap px-5 py-4 align-middle">
-                <span class="inline-flex border px-2.5 py-1 text-xs font-semibold ${getApplicationStatusClass(
-                    application.status
-                )}">
-                    ${escapeHtml(
-                        getApplicationStatusLabel(
-                            application.status
-                        )
-                    )}
-                </span>
-            </td>
-
-            <td class="whitespace-nowrap px-5 py-4 align-middle">
-                <span class="inline-flex border px-2.5 py-1 text-xs font-semibold ${visibilityClass}">
-                    ${visibilityLabel}
-                </span>
-            </td>
-
-            <td class="whitespace-nowrap px-5 py-4 align-middle">
-                <div>
-                    <p class="text-sm font-semibold text-slate-800">
-                        ${currentVersionLabel}
-                    </p>
-
-                    <p class="mt-1 text-xs text-slate-500">
-                        ${versionsCount} versi
-                    </p>
-                </div>
-            </td>
-
-            <td class="whitespace-nowrap px-5 py-4 text-right align-middle">
-                <div class="inline-flex items-center justify-end gap-2">
-                    <button
-                        type="button"
-                        class="application-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50"
-                        data-id="${application.id}"
-                        title="Ubah aplikasi"
-                        aria-label="Ubah aplikasi ${escapeAttribute(
-                            application.name
-                        )}"
-                    >
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="application-version-button flex h-9 w-9 items-center justify-center border border-violet-200 text-violet-700 transition hover:bg-violet-50"
-                        data-id="${application.id}"
-                        title="Kelola versi"
-                        aria-label="Kelola versi ${escapeAttribute(
-                            application.name
-                        )}"
-                    >
-                        <i class="bi bi-tags"></i>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="application-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
-                        data-id="${application.id}"
-                        title="Hapus aplikasi"
-                        aria-label="Hapus aplikasi ${escapeAttribute(
-                            application.name
-                        )}"
-                    >
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `;
-}
-
-/**
- * Render statistics.
- *
- * Recommended API summary:
- *
- * summary: {
- *     total_applications: 20,
- *     active_applications: 15,
- *     public_applications: 12,
- *     total_drafts: 4
- * }
- *
- * When total_drafts is unavailable from the backend,
- * the fallback counts draft versions from the currently loaded page.
- */
-function renderStatistics(
-    summary = null
-) {
-    const pageActiveApplications =
-        state.applications.filter(
-            (application) =>
-                application.status ===
-                'active'
-        ).length;
-
-    const pagePublicApplications =
-        state.applications.filter(
-            (application) =>
-                Boolean(
-                    application.is_public
-                )
-        ).length;
-
-    const pageTotalDrafts =
-        state.applications.reduce(
-            (
-                total,
-                application
-            ) => {
-                const versions =
-                    Array.isArray(
-                        application.versions
-                    )
-                        ? application.versions
-                        : [];
-
-                const draftCount =
-                    versions.filter(
-                        (version) =>
-                            version.status ===
-                            'draft'
-                    ).length;
-
-                return (
-                    total +
-                    draftCount
+        elements.pagination.addEventListener(
+            'click',
+            (event) => {
+                const button = event.target.closest(
+                    '.pagination-button'
                 );
-            },
-            0
+
+                if (!button || button.disabled) {
+                    return;
+                }
+
+                changePage(
+                    Number(button.dataset.page)
+                );
+            }
         );
 
-    elements.statTotalApplications.textContent =
-        Number(
-            summary
-                ?.total_applications ??
-            state.total
+        elements.applicationRetryButton.addEventListener(
+            'click',
+            () => {
+                fetchApplications(state.currentPage);
+            }
         );
 
-    elements.statActiveApplications.textContent =
-        Number(
-            summary
-                ?.active_applications ??
-            pageActiveApplications
+        elements.applicationTableBody.addEventListener(
+            'click',
+            (event) => {
+                const editButton = event.target.closest(
+                    '.application-edit-button'
+                );
+
+                const versionButton = event.target.closest(
+                    '.application-version-button'
+                );
+
+                const deleteButton = event.target.closest(
+                    '.application-delete-button'
+                );
+
+                if (editButton) {
+                    startApplicationEdit(
+                        editButton.dataset.id
+                    );
+
+                    return;
+                }
+
+                if (versionButton) {
+                    openVersionModal(
+                        versionButton.dataset.id
+                    );
+
+                    return;
+                }
+
+                if (deleteButton) {
+                    deleteApplication(
+                        deleteButton.dataset.id
+                    );
+                }
+            }
         );
 
-    elements.statPublicApplications.textContent =
-        Number(
-            summary
-                ?.public_applications ??
-            pagePublicApplications
+        elements.applicationLogo.addEventListener(
+            'change',
+            () => {
+                previewSelectedImage();
+            }
         );
 
-    elements.statTotalDrafts.textContent =
-        Number(
-            summary?.total_drafts ??
-            pageTotalDrafts
+        elements.versionForm.addEventListener(
+            'submit',
+            submitVersion
         );
-}
 
-/**
- * Render server-side pagination.
- */
-function renderPagination() {
-    if (
-        state.total === 0 ||
-        state.lastPage <= 1
-    ) {
-        elements.paginationWrapper.classList.add(
+        elements.versionCancelButton.addEventListener(
+            'click',
+            resetVersionForm
+        );
+
+        elements.versionModalClose.addEventListener(
+            'click',
+            closeVersionModal
+        );
+
+        elements.versionList.addEventListener(
+            'click',
+            (event) => {
+                const editButton = event.target.closest(
+                    '.version-edit-button'
+                );
+
+                const deleteButton = event.target.closest(
+                    '.version-delete-button'
+                );
+
+                if (editButton) {
+                    startVersionEdit(
+                        editButton.dataset.id
+                    );
+
+                    return;
+                }
+
+                if (deleteButton) {
+                    deleteVersion(
+                        deleteButton.dataset.id
+                    );
+                }
+            }
+        );
+
+        elements.applicationFormModal.addEventListener(
+            'click',
+            (event) => {
+                if (
+                    event.target ===
+                    elements.applicationFormModal
+                ) {
+                    closeApplicationModal();
+                }
+            }
+        );
+
+        elements.versionModal.addEventListener(
+            'click',
+            (event) => {
+                if (
+                    event.target ===
+                    elements.versionModal
+                ) {
+                    closeVersionModal();
+                }
+            }
+        );
+
+        document.addEventListener(
+            'keydown',
+            (event) => {
+                if (event.key !== 'Escape') {
+                    return;
+                }
+
+                if (
+                    !elements.versionModal.classList.contains(
+                        'hidden'
+                    )
+                ) {
+                    closeVersionModal();
+                    return;
+                }
+
+                if (
+                    !elements.applicationFormModal.classList.contains(
+                        'hidden'
+                    )
+                ) {
+                    closeApplicationModal();
+                }
+            }
+        );
+    }
+
+    async function fetchApplications(pageNumber = 1) {
+        showApplicationLoading();
+
+        try {
+            const parameters = new URLSearchParams({
+                page: String(pageNumber),
+            });
+
+            if (state.search !== '') {
+                parameters.set('search', state.search);
+            }
+
+            const response = await fetch(
+                `${API_BASE_URL}/applications-with-versions?${parameters.toString()}`,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                }
+            );
+
+            const result = await parseResponse(response);
+
+            state.applications = Array.isArray(result.data)
+                ? result.data
+                : [];
+
+            state.currentPage = Number(
+                result.meta?.current_page ?? 1
+            );
+
+            state.lastPage = Number(
+                result.meta?.last_page ?? 1
+            );
+
+            state.total = Number(
+                result.meta?.total ??
+                state.applications.length
+            );
+
+            state.from = result.meta?.from ?? null;
+            state.to = result.meta?.to ?? null;
+
+            renderApplications();
+            renderPagination();
+            renderStatistics(result.summary ?? null);
+            refreshOpenedVersionModal();
+        } catch (error) {
+            showApplicationError(error.message);
+        }
+    }
+
+    function renderApplications() {
+        hideApplicationStates();
+
+        elements.applicationCount.textContent =
+            `${state.total} aplikasi ditemukan`;
+
+        if (state.applications.length === 0) {
+            elements.applicationTableBody.innerHTML = '';
+
+            elements.applicationTableWrapper.classList.add(
+                'hidden'
+            );
+
+            elements.applicationEmpty.classList.remove(
+                'hidden'
+            );
+
+            elements.paginationWrapper.classList.add(
+                'hidden'
+            );
+
+            return;
+        }
+
+        elements.applicationTableBody.innerHTML =
+            state.applications
+                .map(createApplicationRow)
+                .join('');
+
+        elements.applicationTableWrapper.classList.remove(
+            'hidden'
+        );
+    }
+
+    function createApplicationRow(application) {
+        const logoUrl =
+            application.logo_url ||
+            DEFAULT_LOGO_URL;
+
+        const category =
+            application.category_name ||
+            'Tanpa Kategori';
+
+        const description =
+            application.description ||
+            'Belum ada deskripsi aplikasi.';
+
+        const currentVersion =
+            application.current_version?.version_number ||
+            null;
+
+        const versionsCount =
+            Array.isArray(application.versions)
+                ? application.versions.length
+                : 0;
+
+        const visibilityLabel =
+            application.is_public
+                ? 'Publik'
+                : 'Privat';
+
+        const visibilityClass =
+            application.is_public
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                : 'border-slate-200 bg-slate-100 text-slate-600';
+
+        const currentVersionLabel =
+            currentVersion
+                ? `v${escapeHtml(currentVersion)}`
+                : 'Belum ada';
+
+        return `
+            <tr class="transition hover:bg-slate-50">
+                <td class="whitespace-nowrap px-5 py-4 align-middle">
+                    <div class="flex h-12 w-12 items-center justify-center border border-slate-200 bg-white">
+                        <img
+                            src="${escapeAttribute(logoUrl)}"
+                            alt="${escapeAttribute(application.name)}"
+                            class="h-full w-full object-contain p-1.5"
+                            loading="lazy"
+                            onerror="this.onerror=null;this.src='${DEFAULT_LOGO_URL}';"
+                        >
+                    </div>
+                </td>
+
+                <td class="px-5 py-4 align-middle">
+                    <div class="max-w-sm">
+                        <p class="font-semibold text-slate-950">
+                            ${escapeHtml(application.name)}
+                        </p>
+
+                        <p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                            ${escapeHtml(description)}
+                        </p>
+
+                        ${
+                            application.slug
+                                ? `
+                                    <p class="mt-1 text-xs text-slate-400">
+                                        /${escapeHtml(application.slug)}
+                                    </p>
+                                `
+                                : ''
+                        }
+                    </div>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 align-middle">
+                    <span class="text-sm text-slate-700">
+                        ${escapeHtml(category)}
+                    </span>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 align-middle">
+                    <span class="inline-flex border px-2.5 py-1 text-xs font-semibold ${getApplicationStatusClass(
+                        application.status
+                    )}">
+                        ${escapeHtml(
+                            getApplicationStatusLabel(
+                                application.status
+                            )
+                        )}
+                    </span>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 align-middle">
+                    <span class="inline-flex border px-2.5 py-1 text-xs font-semibold ${visibilityClass}">
+                        ${visibilityLabel}
+                    </span>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 align-middle">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">
+                            ${currentVersionLabel}
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-500">
+                            ${versionsCount} versi
+                        </p>
+                    </div>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-right align-middle">
+                    <div class="inline-flex items-center justify-end gap-2">
+                        <button
+                            type="button"
+                            class="application-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50"
+                            data-id="${application.id}"
+                            title="Ubah aplikasi"
+                        >
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="application-version-button flex h-9 w-9 items-center justify-center border border-violet-200 text-violet-700 transition hover:bg-violet-50"
+                            data-id="${application.id}"
+                            title="Kelola versi"
+                        >
+                            <i class="bi bi-tags"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="application-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
+                            data-id="${application.id}"
+                            title="Hapus aplikasi"
+                        >
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    function renderStatistics(summary = null) {
+        const pageActiveApplications =
+            state.applications.filter(
+                (application) =>
+                    application.status === 'active'
+            ).length;
+
+        const pagePublicApplications =
+            state.applications.filter(
+                (application) =>
+                    Boolean(application.is_public)
+            ).length;
+
+        const pageInactiveApplications =
+            state.applications.filter(
+                (application) =>
+                    application.status === 'inactive'
+            ).length;
+
+        elements.statTotalApplications.textContent =
+            String(
+                Number(
+                    summary?.total_applications ??
+                    state.total
+                )
+            );
+
+        elements.statActiveApplications.textContent =
+            String(
+                Number(
+                    summary?.active_applications ??
+                    pageActiveApplications
+                )
+            );
+
+        elements.statPublicApplications.textContent =
+            String(
+                Number(
+                    summary?.public_applications ??
+                    pagePublicApplications
+                )
+            );
+
+        elements.statInactiveApplications.textContent =
+            String(
+                Number(
+                    summary?.inactive_applications ??
+                    pageInactiveApplications
+                )
+            );
+    }
+
+    function renderPagination() {
+        if (
+            state.total === 0 ||
+            state.lastPage <= 1
+        ) {
+            elements.paginationWrapper.classList.add(
+                'hidden'
+            );
+
+            elements.pagination.innerHTML = '';
+
+            return;
+        }
+
+        elements.paginationWrapper.classList.remove(
             'hidden'
         );
 
-        elements.pagination.innerHTML =
-            '';
+        elements.pageInfo.textContent =
+            `Menampilkan ${state.from ?? 0}–${state.to ?? 0} dari ${state.total} aplikasi`;
 
-        return;
-    }
+        const buttons = [];
 
-    elements.paginationWrapper.classList.remove(
-        'hidden'
-    );
+        buttons.push(
+            createPaginationButton({
+                label:
+                    '<i class="bi bi-chevron-left"></i>',
 
-    elements.pageInfo.textContent =
-        `Menampilkan ${state.from ?? 0}–${state.to ?? 0} dari ${state.total} aplikasi`;
+                page:
+                    state.currentPage - 1,
 
-    const buttons = [];
+                disabled:
+                    state.currentPage === 1,
 
-    buttons.push(
-        createPaginationButton({
-            label:
-                '<i class="bi bi-chevron-left"></i>',
+                title:
+                    'Halaman sebelumnya',
+            })
+        );
 
-            page:
-                state.currentPage - 1,
-
-            disabled:
-                state.currentPage === 1,
-
-            title:
-                'Halaman sebelumnya',
-        })
-    );
-
-    getVisiblePages().forEach(
-        (page) => {
-            if (page === '...') {
+        getVisiblePages().forEach((visiblePage) => {
+            if (visiblePage === '...') {
                 buttons.push(`
                     <span class="flex h-10 min-w-10 items-center justify-center px-2 text-sm text-slate-400">
                         ...
@@ -652,1673 +776,1154 @@ function renderPagination() {
 
             buttons.push(
                 createPaginationButton({
-                    label:
-                        String(page),
-
-                    page,
-
+                    label: String(visiblePage),
+                    page: visiblePage,
                     active:
-                        page ===
+                        visiblePage ===
                         state.currentPage,
-
                     title:
-                        `Halaman ${page}`,
+                        `Halaman ${visiblePage}`,
                 })
             );
-        }
-    );
+        });
 
-    buttons.push(
-        createPaginationButton({
-            label:
-                '<i class="bi bi-chevron-right"></i>',
+        buttons.push(
+            createPaginationButton({
+                label:
+                    '<i class="bi bi-chevron-right"></i>',
 
-            page:
-                state.currentPage + 1,
+                page:
+                    state.currentPage + 1,
 
-            disabled:
-                state.currentPage ===
-                state.lastPage,
+                disabled:
+                    state.currentPage ===
+                    state.lastPage,
 
-            title:
-                'Halaman berikutnya',
-        })
-    );
+                title:
+                    'Halaman berikutnya',
+            })
+        );
 
-    elements.pagination.innerHTML =
-        buttons.join('');
-}
+        elements.pagination.innerHTML =
+            buttons.join('');
+    }
 
-function createPaginationButton({
-    label,
-    page,
-    active = false,
-    disabled = false,
-    title = '',
-}) {
-    const stateClass =
-        active
+    function createPaginationButton({
+        label,
+        page: targetPage,
+        active = false,
+        disabled = false,
+        title = '',
+    }) {
+        const stateClass = active
             ? 'border-blue-950 bg-blue-950 text-white'
             : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50';
 
-    const disabledClass =
-        disabled
+        const disabledClass = disabled
             ? 'cursor-not-allowed opacity-40'
             : '';
 
-    return `
-        <button
-            type="button"
-            data-page="${page}"
-            title="${escapeAttribute(
-                title
-            )}"
-            ${disabled ? 'disabled' : ''}
-            class="pagination-button flex h-10 min-w-10 items-center justify-center border px-3 text-sm font-semibold transition ${stateClass} ${disabledClass}"
-        >
-            ${label}
-        </button>
-    `;
-}
-
-function getVisiblePages() {
-    const current =
-        state.currentPage;
-
-    const last =
-        state.lastPage;
-
-    if (last <= 7) {
-        return Array.from(
-            {
-                length: last,
-            },
-            (
-                _,
-                index
-            ) =>
-                index + 1
-        );
+        return `
+            <button
+                type="button"
+                data-page="${targetPage}"
+                title="${escapeAttribute(title)}"
+                ${disabled ? 'disabled' : ''}
+                class="pagination-button flex h-10 min-w-10 items-center justify-center border px-3 text-sm font-semibold transition ${stateClass} ${disabledClass}"
+            >
+                ${label}
+            </button>
+        `;
     }
 
-    if (current <= 4) {
+    function getVisiblePages() {
+        const current = state.currentPage;
+        const last = state.lastPage;
+
+        if (last <= 7) {
+            return Array.from(
+                { length: last },
+                (_, index) => index + 1
+            );
+        }
+
+        if (current <= 4) {
+            return [
+                1,
+                2,
+                3,
+                4,
+                5,
+                '...',
+                last,
+            ];
+        }
+
+        if (current >= last - 3) {
+            return [
+                1,
+                '...',
+                last - 4,
+                last - 3,
+                last - 2,
+                last - 1,
+                last,
+            ];
+        }
+
         return [
             1,
-            2,
-            3,
-            4,
-            5,
+            '...',
+            current - 1,
+            current,
+            current + 1,
             '...',
             last,
         ];
     }
 
-    if (
-        current >=
-        last - 3
-    ) {
-        return [
-            1,
-            '...',
-            last - 4,
-            last - 3,
-            last - 2,
-            last - 1,
-            last,
-        ];
+    function changePage(targetPage) {
+        if (
+            !Number.isInteger(targetPage) ||
+            targetPage < 1 ||
+            targetPage > state.lastPage ||
+            targetPage === state.currentPage
+        ) {
+            return;
+        }
+
+        fetchApplications(targetPage);
     }
 
-    return [
-        1,
-        '...',
-        current - 1,
-        current,
-        current + 1,
-        '...',
-        last,
-    ];
-}
-
-function changePage(page) {
-    if (
-        !Number.isInteger(page) ||
-        page < 1 ||
-        page > state.lastPage ||
-        page === state.currentPage
-    ) {
-        return;
+    function openCreateApplicationModal() {
+        resetApplicationForm();
+        openApplicationModal();
     }
 
-    fetchApplications(page);
+    function startApplicationEdit(applicationId) {
+        const application =
+            findApplication(applicationId);
 
-    elements.applicationTableWrapper
-        ?.closest('section')
-        ?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-}
+        if (!application) {
+            showNotification(
+                'Data aplikasi tidak ditemukan.',
+                'error'
+            );
 
-/**
- * Open application form for a new application.
- */
-function openCreateApplicationModal() {
-    resetApplicationForm();
-    openApplicationModal();
-}
+            return;
+        }
 
-/**
- * Open application form for editing.
- */
-function startApplicationEdit(
-    applicationId
-) {
-    const application =
-        findApplication(
-            applicationId
+        resetApplicationForm();
+
+        elements.applicationId.value =
+            application.id;
+
+        elements.applicationName.value =
+            application.name || '';
+
+        elements.applicationSlug.value =
+            application.slug || '';
+
+        elements.applicationDescription.value =
+            application.description || '';
+
+        elements.applicationCategory.value =
+            application.category_name || '';
+
+        elements.applicationStatus.value =
+            application.status || 'active';
+
+        elements.applicationIsPublic.checked =
+            Boolean(application.is_public);
+
+        elements.applicationLogo.value = '';
+
+        elements.applicationRemoveLogo.checked =
+            false;
+
+        showExistingImage(application.logo_url);
+
+        elements.applicationFormTitle.textContent =
+            'Ubah Aplikasi';
+
+        setButtonContent(
+            elements.applicationSubmitButton,
+            'bi-pencil-square',
+            'Perbarui Aplikasi'
         );
 
-    if (!application) {
-        showNotification(
-            'Data aplikasi tidak ditemukan.',
-            'error'
-        );
-
-        return;
+        openApplicationModal();
     }
 
-    resetApplicationForm();
-
-    elements.applicationId.value =
-        application.id;
-
-    elements.applicationName.value =
-        application.name || '';
-
-    elements.applicationSlug.value =
-        application.slug || '';
-
-    elements.applicationDescription.value =
-        application.description || '';
-
-    elements.applicationCategory.value =
-        application.category_name || '';
-
-    elements.applicationStatus.value =
-        application.status ||
-        'active';
-
-    elements.applicationIsPublic.checked =
-        Boolean(
-            application.is_public
+    function openApplicationModal() {
+        elements.applicationFormModal.classList.remove(
+            'hidden'
         );
 
-    elements.applicationLogo.value =
-        '';
+        elements.applicationFormModal.classList.add(
+            'flex'
+        );
 
-    elements.applicationRemoveLogo.checked =
-        false;
+        elements.applicationFormModal.setAttribute(
+            'aria-hidden',
+            'false'
+        );
 
-    showExistingImage(
-        elements
-            .applicationLogoPreviewWrapper,
+        lockBodyScroll();
 
-        elements
-            .applicationLogoPreview,
-
-        application.logo_url
-    );
-
-    elements.applicationFormTitle.textContent =
-        'Ubah Aplikasi';
-
-    setButtonContent(
-        elements
-            .applicationSubmitButton,
-
-        'bi-pencil-square',
-
-        'Perbarui Aplikasi'
-    );
-
-    openApplicationModal();
-}
-
-function openApplicationModal() {
-    elements.applicationFormModal.classList.remove(
-        'hidden'
-    );
-
-    elements.applicationFormModal.classList.add(
-        'flex'
-    );
-
-    elements.applicationFormModal.setAttribute(
-        'aria-hidden',
-        'false'
-    );
-
-    lockBodyScroll();
-
-    window.setTimeout(
-        () => {
+        window.setTimeout(() => {
             elements.applicationName.focus();
-        },
-        50
-    );
-}
-
-function closeApplicationModal() {
-    elements.applicationFormModal.classList.add(
-        'hidden'
-    );
-
-    elements.applicationFormModal.classList.remove(
-        'flex'
-    );
-
-    elements.applicationFormModal.setAttribute(
-        'aria-hidden',
-        'true'
-    );
-
-    resetApplicationForm();
-    unlockBodyScroll();
-}
-
-function resetApplicationForm() {
-    elements.applicationForm.reset();
-
-    elements.applicationId.value =
-        '';
-
-    elements.applicationStatus.value =
-        'active';
-
-    elements.applicationLogo.value =
-        '';
-
-    elements.applicationRemoveLogo.checked =
-        false;
-
-    elements.applicationLogoPreview.src =
-        '';
-
-    elements.applicationLogoPreviewWrapper.classList.add(
-        'hidden'
-    );
-
-    elements.applicationFormTitle.textContent =
-        'Tambah Aplikasi';
-
-    setButtonContent(
-        elements.applicationSubmitButton,
-        'bi-plus-lg',
-        'Simpan Aplikasi'
-    );
-
-    setApplicationButtonLoading(
-        false
-    );
-}
-
-/**
- * Create or update an application.
- */
-async function submitApplication(
-    event
-) {
-    event.preventDefault();
-
-    const applicationId =
-        elements.applicationId.value;
-
-    const isEditing =
-        applicationId !== '';
-
-    const formData =
-        new FormData();
-
-    formData.append(
-        'name',
-        elements.applicationName.value.trim()
-    );
-
-    formData.append(
-        'description',
-        elements.applicationDescription.value.trim()
-    );
-
-    formData.append(
-        'category_name',
-        elements.applicationCategory.value.trim()
-    );
-
-    formData.append(
-        'status',
-        elements.applicationStatus.value
-    );
-
-    formData.append(
-        'is_public',
-        elements.applicationIsPublic.checked
-            ? '1'
-            : '0'
-    );
-
-    const slug =
-        elements.applicationSlug.value.trim();
-
-    if (slug !== '') {
-        formData.append(
-            'slug',
-            slug
-        );
+        }, 50);
     }
 
-    const logo =
-        elements.applicationLogo.files[0];
-
-    if (logo) {
-        formData.append(
-            'logo',
-            logo
+    function closeApplicationModal() {
+        elements.applicationFormModal.classList.add(
+            'hidden'
         );
+
+        elements.applicationFormModal.classList.remove(
+            'flex'
+        );
+
+        elements.applicationFormModal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        resetApplicationForm();
+        unlockBodyScroll();
     }
 
-    if (
-        elements.applicationRemoveLogo.checked
-    ) {
-        formData.append(
-            'remove_logo',
-            '1'
+    function resetApplicationForm() {
+        elements.applicationForm.reset();
+
+        elements.applicationId.value = '';
+
+        elements.applicationStatus.value =
+            'active';
+
+        elements.applicationLogo.value = '';
+
+        elements.applicationRemoveLogo.checked =
+            false;
+
+        elements.applicationLogoPreview.src = '';
+
+        elements.applicationLogoPreviewWrapper.classList.add(
+            'hidden'
         );
+
+        elements.applicationFormTitle.textContent =
+            'Tambah Aplikasi';
+
+        setButtonContent(
+            elements.applicationSubmitButton,
+            'bi-plus-lg',
+            'Simpan Aplikasi'
+        );
+
+        setApplicationButtonLoading(false);
     }
 
-    let url =
-        `${API_BASE_URL}/applications`;
+    async function submitApplication(event) {
+        event.preventDefault();
 
-    if (isEditing) {
-        url =
-            `${API_BASE_URL}/applications/${applicationId}`;
+        const applicationId =
+            elements.applicationId.value;
+
+        const isEditing =
+            applicationId !== '';
+
+        const formData = new FormData();
 
         formData.append(
-            '_method',
-            'PUT'
+            'name',
+            elements.applicationName.value.trim()
         );
-    }
 
-    setApplicationButtonLoading(
-        true
-    );
+        formData.append(
+            'description',
+            elements.applicationDescription.value.trim()
+        );
 
-    try {
-        const response =
-            await fetch(
-                url,
-                {
-                    method: 'POST',
+        formData.append(
+            'category_name',
+            elements.applicationCategory.value.trim()
+        );
 
-                    headers: {
-                        Accept:
-                            'application/json',
-                    },
+        formData.append(
+            'status',
+            elements.applicationStatus.value
+        );
 
-                    body:
-                        formData,
-                }
+        formData.append(
+            'is_public',
+            elements.applicationIsPublic.checked
+                ? '1'
+                : '0'
+        );
+
+        const slug =
+            elements.applicationSlug.value.trim();
+
+        if (slug !== '') {
+            formData.append('slug', slug);
+        }
+
+        const logo =
+            elements.applicationLogo.files[0];
+
+        if (logo) {
+            formData.append('logo', logo);
+        }
+
+        if (
+            elements.applicationRemoveLogo.checked
+        ) {
+            formData.append(
+                'remove_logo',
+                '1'
             );
+        }
 
-        const result =
-            await parseResponse(
-                response
-            );
+        let url =
+            `${API_BASE_URL}/applications`;
 
-        closeApplicationModal();
+        if (isEditing) {
+            url =
+                `${API_BASE_URL}/applications/${applicationId}`;
 
-        await fetchApplications(
-            isEditing
-                ? state.currentPage
-                : 1
-        );
+            formData.append('_method', 'PUT');
+        }
 
-        showNotification(
-            result.message ||
-            (
+        setApplicationButtonLoading(true);
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+
+                headers: {
+                    Accept: 'application/json',
+                },
+
+                body: formData,
+            });
+
+            const result =
+                await parseResponse(response);
+
+            closeApplicationModal();
+
+            await fetchApplications(
                 isEditing
-                    ? 'Aplikasi berhasil diperbarui.'
-                    : 'Aplikasi berhasil ditambahkan.'
-            ),
-            'success'
-        );
-    } catch (error) {
-        showNotification(
-            error.message,
-            'error'
-        );
-    } finally {
-        setApplicationButtonLoading(
-            false
-        );
-    }
-}
+                    ? state.currentPage
+                    : 1
+            );
 
-/**
- * Delete an application.
- */
-async function deleteApplication(
-    applicationId
-) {
-    const application =
-        findApplication(
-            applicationId
-        );
-
-    if (!application) {
-        showNotification(
-            'Data aplikasi tidak ditemukan.',
-            'error'
-        );
-
-        return;
+            showNotification(
+                result.message ||
+                (
+                    isEditing
+                        ? 'Aplikasi berhasil diperbarui.'
+                        : 'Aplikasi berhasil ditambahkan.'
+                ),
+                'success'
+            );
+        } catch (error) {
+            showNotification(
+                error.message,
+                'error'
+            );
+        } finally {
+            setApplicationButtonLoading(false);
+        }
     }
 
-    const confirmed =
-        window.confirm(
+    async function deleteApplication(applicationId) {
+        const application =
+            findApplication(applicationId);
+
+        if (!application) {
+            showNotification(
+                'Data aplikasi tidak ditemukan.',
+                'error'
+            );
+
+            return;
+        }
+
+        const confirmed = window.confirm(
             `Apakah Anda yakin ingin menghapus aplikasi "${application.name}"?`
         );
 
-    if (!confirmed) {
-        return;
-    }
+        if (!confirmed) {
+            return;
+        }
 
-    try {
-        const response =
-            await fetch(
+        try {
+            const response = await fetch(
                 `${API_BASE_URL}/applications/${applicationId}`,
                 {
                     method: 'DELETE',
 
                     headers: {
-                        Accept:
-                            'application/json',
+                        Accept: 'application/json',
                     },
                 }
             );
 
-        const result =
-            await parseResponse(
-                response
+            const result =
+                await parseResponse(response);
+
+            const targetPage =
+                state.applications.length === 1 &&
+                state.currentPage > 1
+                    ? state.currentPage - 1
+                    : state.currentPage;
+
+            await fetchApplications(targetPage);
+
+            showNotification(
+                result.message ||
+                'Aplikasi berhasil dihapus.',
+                'success'
+            );
+        } catch (error) {
+            showNotification(
+                error.message,
+                'error'
+            );
+        }
+    }
+
+    function openVersionModal(applicationId) {
+        const application =
+            findApplication(applicationId);
+
+        if (!application) {
+            showNotification(
+                'Data aplikasi tidak ditemukan.',
+                'error'
             );
 
-        const shouldMoveToPreviousPage =
-            state.applications.length ===
-                1 &&
-            state.currentPage > 1;
+            return;
+        }
 
-        const targetPage =
-            shouldMoveToPreviousPage
-                ? state.currentPage - 1
-                : state.currentPage;
-
-        await fetchApplications(
-            targetPage
-        );
-
-        showNotification(
-            result.message ||
-            'Aplikasi berhasil dihapus.',
-            'success'
-        );
-    } catch (error) {
-        showNotification(
-            error.message,
-            'error'
-        );
-    }
-}
-
-/**
- * Open the version management modal.
- */
-function openVersionModal(
-    applicationId
-) {
-    const application =
-        findApplication(
-            applicationId
-        );
-
-    if (!application) {
-        showNotification(
-            'Data aplikasi tidak ditemukan.',
-            'error'
-        );
-
-        return;
-    }
-
-    state.activeApplicationId =
-        Number(applicationId);
-
-    resetVersionForm();
-
-    elements.versionApplicationId.value =
-        application.id;
-
-    renderVersionModal(
-        application.id
-    );
-
-    elements.versionModal.classList.remove(
-        'hidden'
-    );
-
-    elements.versionModal.classList.add(
-        'flex'
-    );
-
-    elements.versionModal.setAttribute(
-        'aria-hidden',
-        'false'
-    );
-
-    lockBodyScroll();
-}
-
-function closeVersionModal() {
-    state.activeApplicationId =
-        null;
-
-    elements.versionModal.classList.add(
-        'hidden'
-    );
-
-    elements.versionModal.classList.remove(
-        'flex'
-    );
-
-    elements.versionModal.setAttribute(
-        'aria-hidden',
-        'true'
-    );
-
-    resetVersionForm();
-    unlockBodyScroll();
-}
-
-function refreshOpenedVersionModal() {
-    if (
-        state.activeApplicationId ===
-        null
-    ) {
-        return;
-    }
-
-    const application =
-        findApplication(
-            state.activeApplicationId
-        );
-
-    if (!application) {
-        closeVersionModal();
-
-        return;
-    }
-
-    renderVersionModal(
-        application.id
-    );
-}
-
-function renderVersionModal(
-    applicationId
-) {
-    const application =
-        findApplication(
-            applicationId
-        );
-
-    if (!application) {
-        return;
-    }
-
-    elements.versionModalApplicationName.textContent =
-        application.name;
-
-    elements.versionApplicationId.value =
-        application.id;
-
-    const versions =
-        Array.isArray(
-            application.versions
-        )
-            ? application.versions
-            : [];
-
-    if (versions.length === 0) {
-        elements.versionList.innerHTML =
-            '';
-
-        elements.versionEmpty.classList.remove(
-            'hidden'
-        );
-
-        return;
-    }
-
-    elements.versionEmpty.classList.add(
-        'hidden'
-    );
-
-    elements.versionList.innerHTML =
-        versions
-            .map(createVersionItem)
-            .join('');
-}
-
-function createVersionItem(version) {
-    const currentBadge =
-        version.is_current
-            ? `
-                <span class="border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                    Versi Saat Ini
-                </span>
-            `
-            : '';
-
-    return `
-        <article class="border border-slate-200 bg-white p-4">
-            <div class="flex items-start justify-between gap-4">
-                <div class="min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h4 class="font-bold text-slate-950">
-                            v${escapeHtml(
-                                version.version_number
-                            )}
-                        </h4>
-
-                        ${currentBadge}
-
-                        <span class="border px-2.5 py-1 text-xs font-semibold ${getVersionStatusClass(
-                            version.status
-                        )}">
-                            ${escapeHtml(
-                                getVersionStatusLabel(
-                                    version.status
-                                )
-                            )}
-                        </span>
-                    </div>
-
-                    <p class="mt-2 text-xs text-slate-500">
-                        ${escapeHtml(
-                            formatDate(
-                                version.release_date
-                            )
-                        )}
-                    </p>
-
-                    <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
-                        ${escapeHtml(
-                            version.release_notes ||
-                            'Belum ada catatan rilis.'
-                        )}
-                    </p>
-                </div>
-
-                <div class="flex shrink-0 gap-2">
-                    <button
-                        type="button"
-                        class="version-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50"
-                        data-id="${version.id}"
-                        title="Ubah versi"
-                    >
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-
-                    <button
-                        type="button"
-                        class="version-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
-                        data-id="${version.id}"
-                        title="Hapus versi"
-                    >
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-        </article>
-    `;
-}
-
-/**
- * Create or update an application version.
- */
-async function submitVersion(event) {
-    event.preventDefault();
-
-    const applicationId =
-        elements.versionApplicationId.value ||
-        state.activeApplicationId;
-
-    const versionId =
-        elements.versionId.value;
-
-    const isEditing =
-        versionId !== '';
-
-    const payload = {
-        version_number:
-            elements.versionNumber.value.trim(),
-
-        release_date:
-            elements.versionReleaseDate.value ||
-            null,
-
-        release_notes:
-            elements.versionReleaseNotes.value.trim() ||
-            null,
-
-        status:
-            elements.versionStatus.value,
-
-        is_current:
-            elements.versionIsCurrent.checked,
-    };
-
-    const url =
-        isEditing
-            ? `${API_BASE_URL}/application-versions/${versionId}`
-            : `${API_BASE_URL}/applications/${applicationId}/versions`;
-
-    setVersionButtonLoading(
-        true
-    );
-
-    try {
-        const response =
-            await fetch(
-                url,
-                {
-                    method:
-                        isEditing
-                            ? 'PUT'
-                            : 'POST',
-
-                    headers: {
-                        Accept:
-                            'application/json',
-
-                        'Content-Type':
-                            'application/json',
-                    },
-
-                    body:
-                        JSON.stringify(
-                            payload
-                        ),
-                }
-            );
-
-        const result =
-            await parseResponse(
-                response
-            );
+        state.activeApplicationId =
+            Number(applicationId);
 
         resetVersionForm();
 
-        await fetchApplications(
-            state.currentPage
+        elements.versionApplicationId.value =
+            application.id;
+
+        renderVersionModal(application.id);
+
+        elements.versionModal.classList.remove(
+            'hidden'
         );
 
-        showNotification(
-            result.message ||
-            (
-                isEditing
-                    ? 'Versi berhasil diperbarui.'
-                    : 'Versi berhasil ditambahkan.'
-            ),
-            'success'
+        elements.versionModal.classList.add(
+            'flex'
         );
-    } catch (error) {
-        showNotification(
-            error.message,
-            'error'
+
+        elements.versionModal.setAttribute(
+            'aria-hidden',
+            'false'
         );
-    } finally {
-        setVersionButtonLoading(
-            false
-        );
+
+        lockBodyScroll();
     }
-}
 
-function startVersionEdit(
-    versionId
-) {
-    const application =
-        findApplication(
-            state.activeApplicationId
+    function closeVersionModal() {
+        state.activeApplicationId = null;
+
+        elements.versionModal.classList.add(
+            'hidden'
         );
 
-    const version =
-        application
-            ?.versions
-            ?.find(
+        elements.versionModal.classList.remove(
+            'flex'
+        );
+
+        elements.versionModal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        resetVersionForm();
+        unlockBodyScroll();
+    }
+
+    function refreshOpenedVersionModal() {
+        if (
+            state.activeApplicationId === null
+        ) {
+            return;
+        }
+
+        const application =
+            findApplication(
+                state.activeApplicationId
+            );
+
+        if (!application) {
+            closeVersionModal();
+            return;
+        }
+
+        renderVersionModal(application.id);
+    }
+
+    function renderVersionModal(applicationId) {
+        const application =
+            findApplication(applicationId);
+
+        if (!application) {
+            return;
+        }
+
+        elements.versionModalApplicationName.textContent =
+            application.name;
+
+        elements.versionApplicationId.value =
+            application.id;
+
+        const versions =
+            Array.isArray(application.versions)
+                ? application.versions
+                : [];
+
+        if (versions.length === 0) {
+            elements.versionList.innerHTML = '';
+
+            elements.versionEmpty.classList.remove(
+                'hidden'
+            );
+
+            return;
+        }
+
+        elements.versionEmpty.classList.add(
+            'hidden'
+        );
+
+        elements.versionList.innerHTML =
+            versions
+                .map(createVersionItem)
+                .join('');
+    }
+
+    function createVersionItem(version) {
+        const currentBadge =
+            version.is_current
+                ? `
+                    <span class="border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        Versi Saat Ini
+                    </span>
+                `
+                : '';
+
+        return `
+            <article class="border border-slate-200 bg-white p-4">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h4 class="font-bold text-slate-950">
+                                v${escapeHtml(
+                                    version.version_number
+                                )}
+                            </h4>
+
+                            ${currentBadge}
+
+                            <span class="border px-2.5 py-1 text-xs font-semibold ${getVersionStatusClass(
+                                version.status
+                            )}">
+                                ${escapeHtml(
+                                    getVersionStatusLabel(
+                                        version.status
+                                    )
+                                )}
+                            </span>
+                        </div>
+
+                        <p class="mt-2 text-xs text-slate-500">
+                            ${escapeHtml(
+                                formatDate(
+                                    version.release_date
+                                )
+                            )}
+                        </p>
+
+                        <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600">
+                            ${escapeHtml(
+                                version.release_notes ||
+                                'Belum ada catatan rilis.'
+                            )}
+                        </p>
+                    </div>
+
+                    <div class="flex shrink-0 gap-2">
+                        <button
+                            type="button"
+                            class="version-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50"
+                            data-id="${version.id}"
+                            title="Ubah versi"
+                        >
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="version-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
+                            data-id="${version.id}"
+                            title="Hapus versi"
+                        >
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    async function submitVersion(event) {
+        event.preventDefault();
+
+        const applicationId =
+            elements.versionApplicationId.value ||
+            state.activeApplicationId;
+
+        const versionId =
+            elements.versionId.value;
+
+        const isEditing =
+            versionId !== '';
+
+        const payload = {
+            version_number:
+                elements.versionNumber.value.trim(),
+
+            release_date:
+                elements.versionReleaseDate.value ||
+                null,
+
+            release_notes:
+                elements.versionReleaseNotes.value.trim() ||
+                null,
+
+            status:
+                elements.versionStatus.value,
+
+            is_current:
+                elements.versionIsCurrent.checked,
+        };
+
+        const url = isEditing
+            ? `${API_BASE_URL}/application-versions/${versionId}`
+            : `${API_BASE_URL}/applications/${applicationId}/versions`;
+
+        setVersionButtonLoading(true);
+
+        try {
+            const response = await fetch(url, {
+                method:
+                    isEditing
+                        ? 'PUT'
+                        : 'POST',
+
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+
+                body: JSON.stringify(payload),
+            });
+
+            const result =
+                await parseResponse(response);
+
+            resetVersionForm();
+
+            await fetchApplications(
+                state.currentPage
+            );
+
+            showNotification(
+                result.message ||
+                (
+                    isEditing
+                        ? 'Versi berhasil diperbarui.'
+                        : 'Versi berhasil ditambahkan.'
+                ),
+                'success'
+            );
+        } catch (error) {
+            showNotification(
+                error.message,
+                'error'
+            );
+        } finally {
+            setVersionButtonLoading(false);
+        }
+    }
+
+    function startVersionEdit(versionId) {
+        const application =
+            findApplication(
+                state.activeApplicationId
+            );
+
+        const version =
+            application?.versions?.find(
                 (item) =>
                     Number(item.id) ===
                     Number(versionId)
             );
 
-    if (!version) {
-        showNotification(
-            'Data versi tidak ditemukan.',
-            'error'
+        if (!version) {
+            showNotification(
+                'Data versi tidak ditemukan.',
+                'error'
+            );
+
+            return;
+        }
+
+        elements.versionId.value =
+            version.id;
+
+        elements.versionApplicationId.value =
+            application.id;
+
+        elements.versionNumber.value =
+            version.version_number || '';
+
+        elements.versionReleaseDate.value =
+            version.release_date
+                ? String(
+                    version.release_date
+                ).slice(0, 10)
+                : '';
+
+        elements.versionStatus.value =
+            version.status || 'draft';
+
+        elements.versionReleaseNotes.value =
+            version.release_notes || '';
+
+        elements.versionIsCurrent.checked =
+            Boolean(version.is_current);
+
+        elements.versionFormTitle.textContent =
+            'Ubah Versi';
+
+        elements.versionCancelButton.classList.remove(
+            'hidden'
         );
 
-        return;
+        elements.versionCancelButton.classList.add(
+            'inline-flex'
+        );
+
+        setButtonContent(
+            elements.versionSubmitButton,
+            'bi-pencil-square',
+            'Perbarui Versi'
+        );
+
+        elements.versionNumber.focus();
     }
 
-    elements.versionId.value =
-        version.id;
+    function resetVersionForm() {
+        elements.versionForm.reset();
 
-    elements.versionApplicationId.value =
-        application.id;
+        elements.versionId.value = '';
 
-    elements.versionNumber.value =
-        version.version_number ||
-        '';
+        elements.versionApplicationId.value =
+            state.activeApplicationId ?? '';
 
-    elements.versionReleaseDate.value =
-        version.release_date
-            ? String(
-                version.release_date
-            ).slice(0, 10)
-            : '';
+        elements.versionStatus.value =
+            'draft';
 
-    elements.versionStatus.value =
-        version.status ||
-        'draft';
+        elements.versionFormTitle.textContent =
+            'Tambah Versi';
 
-    elements.versionReleaseNotes.value =
-        version.release_notes ||
-        '';
-
-    elements.versionIsCurrent.checked =
-        Boolean(
-            version.is_current
+        elements.versionCancelButton.classList.add(
+            'hidden'
         );
 
-    elements.versionFormTitle.textContent =
-        'Ubah Versi';
+        elements.versionCancelButton.classList.remove(
+            'inline-flex'
+        );
 
-    elements.versionCancelButton.classList.remove(
-        'hidden'
-    );
+        setButtonContent(
+            elements.versionSubmitButton,
+            'bi-plus-lg',
+            'Simpan Versi'
+        );
 
-    elements.versionCancelButton.classList.add(
-        'inline-flex'
-    );
+        setVersionButtonLoading(false);
+    }
 
-    setButtonContent(
-        elements.versionSubmitButton,
-        'bi-pencil-square',
-        'Perbarui Versi'
-    );
-
-    elements.versionNumber.focus();
-}
-
-function resetVersionForm() {
-    elements.versionForm.reset();
-
-    elements.versionId.value =
-        '';
-
-    elements.versionApplicationId.value =
-        state.activeApplicationId ??
-        '';
-
-    elements.versionStatus.value =
-        'draft';
-
-    elements.versionFormTitle.textContent =
-        'Tambah Versi';
-
-    elements.versionCancelButton.classList.add(
-        'hidden'
-    );
-
-    elements.versionCancelButton.classList.remove(
-        'inline-flex'
-    );
-
-    setButtonContent(
-        elements.versionSubmitButton,
-        'bi-plus-lg',
-        'Simpan Versi'
-    );
-
-    setVersionButtonLoading(
-        false
-    );
-}
-
-async function deleteVersion(
-    versionId
-) {
-    const confirmed =
-        window.confirm(
+    async function deleteVersion(versionId) {
+        const confirmed = window.confirm(
             'Apakah Anda yakin ingin menghapus versi ini?'
         );
 
-    if (!confirmed) {
-        return;
-    }
+        if (!confirmed) {
+            return;
+        }
 
-    try {
-        const response =
-            await fetch(
+        try {
+            const response = await fetch(
                 `${API_BASE_URL}/application-versions/${versionId}`,
                 {
                     method: 'DELETE',
 
                     headers: {
-                        Accept:
-                            'application/json',
+                        Accept: 'application/json',
                     },
                 }
             );
 
-        const result =
-            await parseResponse(
-                response
+            const result =
+                await parseResponse(response);
+
+            await fetchApplications(
+                state.currentPage
             );
 
-        await fetchApplications(
-            state.currentPage
-        );
-
-        showNotification(
-            result.message ||
-            'Versi berhasil dihapus.',
-            'success'
-        );
-    } catch (error) {
-        showNotification(
-            error.message,
-            'error'
-        );
-    }
-}
-
-/**
- * UI state helpers.
- */
-function showApplicationLoading() {
-    elements.applicationLoading.classList.remove(
-        'hidden'
-    );
-
-    elements.applicationEmpty.classList.add(
-        'hidden'
-    );
-
-    elements.applicationError.classList.add(
-        'hidden'
-    );
-
-    elements.applicationTableWrapper.classList.add(
-        'hidden'
-    );
-
-    elements.paginationWrapper.classList.add(
-        'hidden'
-    );
-}
-
-function hideApplicationStates() {
-    elements.applicationLoading.classList.add(
-        'hidden'
-    );
-
-    elements.applicationEmpty.classList.add(
-        'hidden'
-    );
-
-    elements.applicationError.classList.add(
-        'hidden'
-    );
-}
-
-function showApplicationError(message) {
-    elements.applicationLoading.classList.add(
-        'hidden'
-    );
-
-    elements.applicationTableWrapper.classList.add(
-        'hidden'
-    );
-
-    elements.applicationEmpty.classList.add(
-        'hidden'
-    );
-
-    elements.applicationError.classList.remove(
-        'hidden'
-    );
-
-    elements.paginationWrapper.classList.add(
-        'hidden'
-    );
-
-    elements.applicationErrorMessage.textContent =
-        message;
-
-    elements.applicationCount.textContent =
-        'Data gagal dimuat';
-}
-
-function setApplicationButtonLoading(
-    isLoading
-) {
-    elements.applicationSubmitButton.disabled =
-        isLoading;
-
-    if (isLoading) {
-        setButtonContent(
-            elements.applicationSubmitButton,
-            'bi-arrow-repeat animate-spin',
-            'Menyimpan...'
-        );
-    }
-}
-
-function setVersionButtonLoading(
-    isLoading
-) {
-    elements.versionSubmitButton.disabled =
-        isLoading;
-
-    if (isLoading) {
-        setButtonContent(
-            elements.versionSubmitButton,
-            'bi-arrow-repeat animate-spin',
-            'Menyimpan...'
-        );
-    }
-}
-
-function lockBodyScroll() {
-    document.body.classList.add(
-        'overflow-hidden'
-    );
-}
-
-function unlockBodyScroll() {
-    const applicationModalOpen =
-        !elements
-            .applicationFormModal
-            .classList
-            .contains('hidden');
-
-    const versionModalOpen =
-        !elements
-            .versionModal
-            .classList
-            .contains('hidden');
-
-    if (
-        !applicationModalOpen &&
-        !versionModalOpen
-    ) {
-        document.body.classList.remove(
-            'overflow-hidden'
-        );
-    }
-}
-
-/**
- * Request and utility helpers.
- */
-async function parseResponse(response) {
-    const result =
-        await response
-            .json()
-            .catch(
-                () => ({})
+            showNotification(
+                result.message ||
+                'Versi berhasil dihapus.',
+                'success'
             );
-
-    if (response.ok) {
-        return result;
-    }
-
-    if (result.errors) {
-        throw new Error(
-            Object.values(
-                result.errors
-            )
-                .flat()
-                .join(' ')
-        );
-    }
-
-    throw new Error(
-        result.message ||
-        `Permintaan gagal (${response.status}).`
-    );
-}
-
-function findApplication(
-    applicationId
-) {
-    return state.applications.find(
-        (application) =>
-            Number(
-                application.id
-            ) ===
-            Number(
-                applicationId
-            )
-    );
-}
-
-function previewSelectedImage(
-    input,
-    wrapper,
-    preview
-) {
-    const file =
-        input.files[0];
-
-    if (!file) {
-        return;
-    }
-
-    const temporaryUrl =
-        URL.createObjectURL(
-            file
-        );
-
-    preview.src =
-        temporaryUrl;
-
-    wrapper.classList.remove(
-        'hidden'
-    );
-
-    preview.onload =
-        () => {
-            URL.revokeObjectURL(
-                temporaryUrl
+        } catch (error) {
+            showNotification(
+                error.message,
+                'error'
             );
-        };
-}
+        }
+    }
 
-function showExistingImage(
-    wrapper,
-    preview,
-    url
-) {
-    if (!url) {
-        preview.src =
-            '';
-
-        wrapper.classList.add(
+    function showApplicationLoading() {
+        elements.applicationLoading.classList.remove(
             'hidden'
         );
 
-        return;
-    }
-
-    preview.src =
-        url;
-
-    wrapper.classList.remove(
-        'hidden'
-    );
-}
-
-function getApplicationStatusClass(
-    status
-) {
-    return {
-        active:
-            'border-emerald-200 bg-emerald-50 text-emerald-700',
-
-        inactive:
-            'border-amber-200 bg-amber-50 text-amber-700',
-
-        archived:
-            'border-slate-300 bg-slate-100 text-slate-600',
-    }[status] ||
-        'border-slate-200 bg-slate-100 text-slate-600';
-}
-
-function getApplicationStatusLabel(
-    status
-) {
-    return {
-        active:
-            'Aktif',
-
-        inactive:
-            'Tidak Aktif',
-
-        archived:
-            'Diarsipkan',
-    }[status] ||
-        status ||
-        'Tidak diketahui';
-}
-
-function getVersionStatusClass(
-    status
-) {
-    return {
-        draft:
-            'border-slate-200 bg-slate-100 text-slate-600',
-
-        beta:
-            'border-amber-200 bg-amber-50 text-amber-700',
-
-        stable:
-            'border-emerald-200 bg-emerald-50 text-emerald-700',
-
-        deprecated:
-            'border-red-200 bg-red-50 text-red-600',
-    }[status] ||
-        'border-slate-200 bg-slate-100 text-slate-600';
-}
-
-function getVersionStatusLabel(
-    status
-) {
-    return {
-        draft:
-            'Draf',
-
-        beta:
-            'Beta',
-
-        stable:
-            'Stabil',
-
-        deprecated:
-            'Tidak Digunakan',
-    }[status] ||
-        status ||
-        'Tidak diketahui';
-}
-
-function setButtonContent(
-    button,
-    iconClass,
-    label
-) {
-    button.innerHTML = `
-        <i class="bi ${iconClass}"></i>
-        <span>
-            ${escapeHtml(label)}
-        </span>
-    `;
-}
-
-function showNotification(
-    message,
-    type = 'success'
-) {
-    const styles = {
-        success:
-            'border-emerald-200 bg-emerald-50 text-emerald-700',
-
-        error:
-            'border-red-200 bg-red-50 text-red-700',
-    };
-
-    window.clearTimeout(
-        notificationTimeout
-    );
-
-    elements.notification.className =
-        `border px-4 py-3 text-sm ${styles[type]}`;
-
-    elements.notification.textContent =
-        message;
-
-    elements.notification.classList.remove(
-        'hidden'
-    );
-
-    notificationTimeout =
-        window.setTimeout(
-            () => {
-                elements.notification.classList.add(
-                    'hidden'
-                );
-            },
-            5000
+        elements.applicationEmpty.classList.add(
+            'hidden'
         );
-}
 
-function formatDate(value) {
-    if (!value) {
-        return 'Tanggal belum ditentukan';
+        elements.applicationError.classList.add(
+            'hidden'
+        );
+
+        elements.applicationTableWrapper.classList.add(
+            'hidden'
+        );
+
+        elements.paginationWrapper.classList.add(
+            'hidden'
+        );
     }
 
-    const date =
-        new Date(value);
+    function hideApplicationStates() {
+        elements.applicationLoading.classList.add(
+            'hidden'
+        );
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
+        elements.applicationEmpty.classList.add(
+            'hidden'
+        );
+
+        elements.applicationError.classList.add(
+            'hidden'
+        );
+    }
+
+    function showApplicationError(message) {
+        elements.applicationLoading.classList.add(
+            'hidden'
+        );
+
+        elements.applicationTableWrapper.classList.add(
+            'hidden'
+        );
+
+        elements.applicationEmpty.classList.add(
+            'hidden'
+        );
+
+        elements.applicationError.classList.remove(
+            'hidden'
+        );
+
+        elements.paginationWrapper.classList.add(
+            'hidden'
+        );
+
+        elements.applicationErrorMessage.textContent =
+            message;
+
+        elements.applicationCount.textContent =
+            'Data gagal dimuat';
+    }
+
+    function setApplicationButtonLoading(isLoading) {
+        elements.applicationSubmitButton.disabled =
+            isLoading;
+
+        if (isLoading) {
+            setButtonContent(
+                elements.applicationSubmitButton,
+                'bi-arrow-repeat animate-spin',
+                'Menyimpan...'
+            );
+        }
+    }
+
+    function setVersionButtonLoading(isLoading) {
+        elements.versionSubmitButton.disabled =
+            isLoading;
+
+        if (isLoading) {
+            setButtonContent(
+                elements.versionSubmitButton,
+                'bi-arrow-repeat animate-spin',
+                'Menyimpan...'
+            );
+        }
+    }
+
+    function previewSelectedImage() {
+        const file =
+            elements.applicationLogo.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const temporaryUrl =
+            URL.createObjectURL(file);
+
+        elements.applicationLogoPreview.src =
+            temporaryUrl;
+
+        elements.applicationLogoPreviewWrapper.classList.remove(
+            'hidden'
+        );
+
+        elements.applicationLogoPreview.onload = () => {
+            URL.revokeObjectURL(temporaryUrl);
+        };
+    }
+
+    function showExistingImage(url) {
+        if (!url) {
+            elements.applicationLogoPreview.src = '';
+
+            elements.applicationLogoPreviewWrapper.classList.add(
+                'hidden'
+            );
+
+            return;
+        }
+
+        elements.applicationLogoPreview.src = url;
+
+        elements.applicationLogoPreviewWrapper.classList.remove(
+            'hidden'
+        );
+    }
+
+    function lockBodyScroll() {
+        document.body.classList.add(
+            'overflow-hidden'
+        );
+    }
+
+    function unlockBodyScroll() {
+        const applicationModalOpen =
+            !elements.applicationFormModal.classList.contains(
+                'hidden'
+            );
+
+        const versionModalOpen =
+            !elements.versionModal.classList.contains(
+                'hidden'
+            );
+
+        if (
+            !applicationModalOpen &&
+            !versionModalOpen
+        ) {
+            document.body.classList.remove(
+                'overflow-hidden'
+            );
+        }
+    }
+
+    async function parseResponse(response) {
+        const result = await response
+            .json()
+            .catch(() => ({}));
+
+        if (response.ok) {
+            return result;
+        }
+
+        if (result.errors) {
+            throw new Error(
+                Object.values(result.errors)
+                    .flat()
+                    .join(' ')
+            );
+        }
+
+        throw new Error(
+            result.message ||
+            `Permintaan gagal (${response.status}).`
+        );
+    }
+
+    function findApplication(applicationId) {
+        return state.applications.find(
+            (application) =>
+                Number(application.id) ===
+                Number(applicationId)
+        );
+    }
+
+    function getApplicationStatusClass(status) {
+        return {
+            active:
+                'border-emerald-200 bg-emerald-50 text-emerald-700',
+
+            inactive:
+                'border-amber-200 bg-amber-50 text-amber-700',
+
+            archived:
+                'border-slate-300 bg-slate-100 text-slate-600',
+        }[status] ||
+            'border-slate-200 bg-slate-100 text-slate-600';
+    }
+
+    function getApplicationStatusLabel(status) {
+        return {
+            active: 'Aktif',
+            inactive: 'Tidak Aktif',
+            archived: 'Diarsipkan',
+        }[status] ||
+            status ||
+            'Tidak diketahui';
+    }
+
+    function getVersionStatusClass(status) {
+        return {
+            draft:
+                'border-slate-200 bg-slate-100 text-slate-600',
+
+            beta:
+                'border-amber-200 bg-amber-50 text-amber-700',
+
+            stable:
+                'border-emerald-200 bg-emerald-50 text-emerald-700',
+
+            deprecated:
+                'border-red-200 bg-red-50 text-red-600',
+        }[status] ||
+            'border-slate-200 bg-slate-100 text-slate-600';
+    }
+
+    function getVersionStatusLabel(status) {
+        return {
+            draft: 'Draf',
+            beta: 'Beta',
+            stable: 'Stabil',
+            deprecated: 'Tidak Digunakan',
+        }[status] ||
+            status ||
+            'Tidak diketahui';
+    }
+
+    function setButtonContent(
+        button,
+        iconClass,
+        label
     ) {
-        return 'Tanggal tidak valid';
+        button.innerHTML = `
+            <i class="bi ${iconClass}"></i>
+            <span>${escapeHtml(label)}</span>
+        `;
     }
 
-    return new Intl.DateTimeFormat(
-        'id-ID',
-        {
-            year:
-                'numeric',
+    function showNotification(
+        message,
+        type = 'success'
+    ) {
+        const styles = {
+            success:
+                'border-emerald-200 bg-emerald-50 text-emerald-700',
 
-            month:
-                'long',
+            error:
+                'border-red-200 bg-red-50 text-red-700',
+        };
 
-            day:
-                'numeric',
-        }
-    ).format(date);
-}
+        window.clearTimeout(notificationTimeout);
 
-function escapeHtml(value) {
-    return String(
-        value ?? ''
-    )
-        .replaceAll(
-            '&',
-            '&amp;'
-        )
-        .replaceAll(
-            '<',
-            '&lt;'
-        )
-        .replaceAll(
-            '>',
-            '&gt;'
-        )
-        .replaceAll(
-            '"',
-            '&quot;'
-        )
-        .replaceAll(
-            "'",
-            '&#039;'
+        elements.notification.className =
+            `border px-4 py-3 text-sm ${styles[type]}`;
+
+        elements.notification.textContent =
+            message;
+
+        elements.notification.classList.remove(
+            'hidden'
         );
-}
 
-function escapeAttribute(value) {
-    return escapeHtml(value);
-}
-
-/**
- * Event listeners.
- */
-elements.openApplicationFormButton
-    ?.addEventListener(
-        'click',
-        openCreateApplicationModal
-    );
-
-elements.applicationFormModalClose
-    ?.addEventListener(
-        'click',
-        closeApplicationModal
-    );
-
-elements.applicationCancelButton
-    ?.addEventListener(
-        'click',
-        closeApplicationModal
-    );
-
-elements.applicationForm
-    ?.addEventListener(
-        'submit',
-        submitApplication
-    );
-
-elements.applicationSearch
-    ?.addEventListener(
-        'input',
-        (event) => {
-            state.search =
-                event.target.value.trim();
-
-            window.clearTimeout(
-                searchTimeout
+        notificationTimeout = window.setTimeout(() => {
+            elements.notification.classList.add(
+                'hidden'
             );
-
-            searchTimeout =
-                window.setTimeout(
-                    () => {
-                        fetchApplications(
-                            1
-                        );
-                    },
-                    400
-                );
-        }
-    );
-
-elements.pagination
-    ?.addEventListener(
-        'click',
-        (event) => {
-            const button =
-                event.target.closest(
-                    '.pagination-button'
-                );
-
-            if (
-                !button ||
-                button.disabled
-            ) {
-                return;
-            }
-
-            changePage(
-                Number(
-                    button.dataset.page
-                )
-            );
-        }
-    );
-
-elements.applicationRetryButton
-    ?.addEventListener(
-        'click',
-        () =>
-            fetchApplications(
-                state.currentPage
-            )
-    );
-
-elements.applicationTableBody
-    ?.addEventListener(
-        'click',
-        (event) => {
-            const editButton =
-                event.target.closest(
-                    '.application-edit-button'
-                );
-
-            const versionButton =
-                event.target.closest(
-                    '.application-version-button'
-                );
-
-            const deleteButton =
-                event.target.closest(
-                    '.application-delete-button'
-                );
-
-            if (editButton) {
-                startApplicationEdit(
-                    editButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (versionButton) {
-                openVersionModal(
-                    versionButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (deleteButton) {
-                deleteApplication(
-                    deleteButton.dataset.id
-                );
-            }
-        }
-    );
-
-elements.applicationLogo
-    ?.addEventListener(
-        'change',
-        () => {
-            previewSelectedImage(
-                elements.applicationLogo,
-
-                elements
-                    .applicationLogoPreviewWrapper,
-
-                elements
-                    .applicationLogoPreview
-            );
-        }
-    );
-
-elements.versionForm
-    ?.addEventListener(
-        'submit',
-        submitVersion
-    );
-
-elements.versionCancelButton
-    ?.addEventListener(
-        'click',
-        resetVersionForm
-    );
-
-elements.versionModalClose
-    ?.addEventListener(
-        'click',
-        closeVersionModal
-    );
-
-elements.versionList
-    ?.addEventListener(
-        'click',
-        (event) => {
-            const editButton =
-                event.target.closest(
-                    '.version-edit-button'
-                );
-
-            const deleteButton =
-                event.target.closest(
-                    '.version-delete-button'
-                );
-
-            if (editButton) {
-                startVersionEdit(
-                    editButton.dataset.id
-                );
-
-                return;
-            }
-
-            if (deleteButton) {
-                deleteVersion(
-                    deleteButton.dataset.id
-                );
-            }
-        }
-    );
-
-// Close application modal by clicking its backdrop.
-elements.applicationFormModal
-    ?.addEventListener(
-        'click',
-        (event) => {
-            if (
-                event.target ===
-                elements.applicationFormModal
-            ) {
-                closeApplicationModal();
-            }
-        }
-    );
-
-// Close version modal by clicking its backdrop.
-elements.versionModal
-    ?.addEventListener(
-        'click',
-        (event) => {
-            if (
-                event.target ===
-                elements.versionModal
-            ) {
-                closeVersionModal();
-            }
-        }
-    );
-
-// Close the currently opened modal with Escape.
-document.addEventListener(
-    'keydown',
-    (event) => {
-        if (
-            event.key !==
-            'Escape'
-        ) {
-            return;
-        }
-
-        if (
-            !elements
-                .versionModal
-                .classList
-                .contains('hidden')
-        ) {
-            closeVersionModal();
-
-            return;
-        }
-
-        if (
-            !elements
-                .applicationFormModal
-                .classList
-                .contains('hidden')
-        ) {
-            closeApplicationModal();
-        }
+        }, 5000);
     }
-);
 
-/**
- * Initial page load.
- */
-function initializePage() {
-    resetApplicationForm();
-    resetVersionForm();
-    fetchApplications();
+    function formatDate(value) {
+        if (!value) {
+            return 'Tanggal belum ditentukan';
+        }
+
+        const date = new Date(value);
+
+        if (
+            Number.isNaN(date.getTime())
+        ) {
+            return 'Tanggal tidak valid';
+        }
+
+        return new Intl.DateTimeFormat(
+            'id-ID',
+            {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            }
+        ).format(date);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttribute(value) {
+        return escapeHtml(value);
+    }
 }
-
-initializePage();
