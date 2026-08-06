@@ -1,6 +1,7 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const API_BASE_URL = '/api/admin';
+const MATERIAL_PAGE_URL = '/admin/Materi-demo';
 const DEFAULT_LOGO_URL = '/images/Logo.png';
 
 const page = document.getElementById('application-page');
@@ -13,12 +14,17 @@ function initializeApplicationPage() {
     const state = {
         applications: [],
         search: '',
+        sort: 'latest',
         currentPage: 1,
         lastPage: 1,
         total: 0,
         from: null,
         to: null,
         activeApplicationId: null,
+        menuApplicationId: null,
+        sourceMaterialTree: [],
+        selectedSourceNodeIds: new Set(),
+        pendingVersionPayload: null,
     };
 
     const elements = {
@@ -38,6 +44,10 @@ function initializeApplicationPage() {
 
         statInactiveApplications: document.getElementById(
             'stat-inactive-applications'
+        ),
+
+        applicationSort: document.getElementById(
+            'application-sort'
         ),
 
         applicationSearch: document.getElementById(
@@ -86,6 +96,14 @@ function initializeApplicationPage() {
 
         pageInfo: document.getElementById(
             'application-page-info'
+        ),
+
+        rowMenu: document.getElementById(
+            'application-row-menu'
+        ),
+
+        viewMaterialButton: document.getElementById(
+            'application-view-material'
         ),
 
         applicationFormModal: document.getElementById(
@@ -208,6 +226,66 @@ function initializeApplicationPage() {
             'version-is-current'
         ),
 
+        versionCopySection: document.getElementById(
+            'version-copy-section'
+        ),
+
+        versionCopyMaterials: document.getElementById(
+            'version-copy-materials'
+        ),
+
+        versionCopyOptions: document.getElementById(
+            'version-copy-options'
+        ),
+
+        versionSourceSelect: document.getElementById(
+            'version-source-select'
+        ),
+
+        versionCopySelectedCount: document.getElementById(
+            'version-copy-selected-count'
+        ),
+
+        versionCopySelectAll: document.getElementById(
+            'version-copy-select-all'
+        ),
+
+        versionCopyClearAll: document.getElementById(
+            'version-copy-clear-all'
+        ),
+
+        versionCopyTreeLoading: document.getElementById(
+            'version-copy-tree-loading'
+        ),
+
+        versionCopyTreeEmpty: document.getElementById(
+            'version-copy-tree-empty'
+        ),
+
+        versionCopyTreeError: document.getElementById(
+            'version-copy-tree-error'
+        ),
+
+        versionCopyTree: document.getElementById(
+            'version-copy-tree'
+        ),
+
+        versionCopyConfirmationModal: document.getElementById(
+            'version-copy-confirmation-modal'
+        ),
+
+        versionCopyConfirmationText: document.getElementById(
+            'version-copy-confirmation-text'
+        ),
+
+        versionCopyConfirmationCancel: document.getElementById(
+            'version-copy-confirmation-cancel'
+        ),
+
+        versionCopyConfirmationSubmit: document.getElementById(
+            'version-copy-confirmation-submit'
+        ),
+
         versionSubmitButton: document.getElementById(
             'version-submit-button'
         ),
@@ -244,7 +322,13 @@ function initializeApplicationPage() {
     bindEvents();
     resetApplicationForm();
     resetVersionForm();
+    initializeFilters();
     fetchApplications();
+
+    function initializeFilters() {
+        elements.applicationSort.value = state.sort;
+        elements.applicationSearch.value = state.search;
+    }
 
     function bindEvents() {
         elements.openApplicationFormButton.addEventListener(
@@ -267,6 +351,18 @@ function initializeApplicationPage() {
             submitApplication
         );
 
+        elements.applicationSort.addEventListener(
+            'change',
+            (event) => {
+                state.sort = normalizeSort(
+                    event.target.value
+                );
+
+                closeRowMenu();
+                fetchApplications(1);
+            }
+        );
+
         elements.applicationSearch.addEventListener(
             'input',
             (event) => {
@@ -275,6 +371,7 @@ function initializeApplicationPage() {
                 window.clearTimeout(searchTimeout);
 
                 searchTimeout = window.setTimeout(() => {
+                    closeRowMenu();
                     fetchApplications(1);
                 }, 400);
             }
@@ -300,59 +397,78 @@ function initializeApplicationPage() {
         elements.applicationRetryButton.addEventListener(
             'click',
             () => {
+                closeRowMenu();
                 fetchApplications(state.currentPage);
             }
         );
 
         elements.applicationTableBody.addEventListener(
             'click',
-            (event) => {
-                const editButton = event.target.closest(
-                    '.application-edit-button'
-                );
+            handleApplicationTableClick
+        );
 
-                const versionButton = event.target.closest(
-                    '.application-version-button'
-                );
-
-                const deleteButton = event.target.closest(
-                    '.application-delete-button'
-                );
-
-                if (editButton) {
-                    startApplicationEdit(
-                        editButton.dataset.id
-                    );
-
-                    return;
-                }
-
-                if (versionButton) {
-                    openVersionModal(
-                        versionButton.dataset.id
-                    );
-
-                    return;
-                }
-
-                if (deleteButton) {
-                    deleteApplication(
-                        deleteButton.dataset.id
-                    );
-                }
+        elements.viewMaterialButton.addEventListener(
+            'click',
+            () => {
+                goToSelectedApplicationMaterials();
             }
         );
 
         elements.applicationLogo.addEventListener(
             'change',
-            () => {
-                previewSelectedImage();
-            }
+            previewSelectedImage
         );
 
         elements.versionForm.addEventListener(
             'submit',
             submitVersion
+        );
+
+        elements.versionCopyMaterials.addEventListener(
+            'change',
+            handleVersionCopyToggle
+        );
+
+        elements.versionSourceSelect.addEventListener(
+            'change',
+            handleSourceVersionChange
+        );
+
+        elements.versionCopyTree.addEventListener(
+            'change',
+            handleSourceTreeSelectionChange
+        );
+
+        elements.versionCopySelectAll.addEventListener(
+            'click',
+            selectAllSourceMaterials
+        );
+
+        elements.versionCopyClearAll.addEventListener(
+            'click',
+            clearAllSourceMaterials
+        );
+
+        elements.versionCopyConfirmationCancel.addEventListener(
+            'click',
+            closeVersionCopyConfirmation
+        );
+
+        elements.versionCopyConfirmationSubmit.addEventListener(
+            'click',
+            confirmVersionCreationWithCopy
+        );
+
+        elements.versionCopyConfirmationModal.addEventListener(
+            'click',
+            (event) => {
+                if (
+                    event.target ===
+                    elements.versionCopyConfirmationModal
+                ) {
+                    closeVersionCopyConfirmation();
+                }
+            }
         );
 
         elements.versionCancelButton.addEventListener(
@@ -367,29 +483,7 @@ function initializeApplicationPage() {
 
         elements.versionList.addEventListener(
             'click',
-            (event) => {
-                const editButton = event.target.closest(
-                    '.version-edit-button'
-                );
-
-                const deleteButton = event.target.closest(
-                    '.version-delete-button'
-                );
-
-                if (editButton) {
-                    startVersionEdit(
-                        editButton.dataset.id
-                    );
-
-                    return;
-                }
-
-                if (deleteButton) {
-                    deleteVersion(
-                        deleteButton.dataset.id
-                    );
-                }
-            }
+            handleVersionListClick
         );
 
         elements.applicationFormModal.addEventListener(
@@ -417,30 +511,300 @@ function initializeApplicationPage() {
         );
 
         document.addEventListener(
-            'keydown',
-            (event) => {
-                if (event.key !== 'Escape') {
-                    return;
-                }
-
-                if (
-                    !elements.versionModal.classList.contains(
-                        'hidden'
-                    )
-                ) {
-                    closeVersionModal();
-                    return;
-                }
-
-                if (
-                    !elements.applicationFormModal.classList.contains(
-                        'hidden'
-                    )
-                ) {
-                    closeApplicationModal();
-                }
-            }
+            'click',
+            handleDocumentClick
         );
+
+        document.addEventListener(
+            'keydown',
+            handleEscapeKey
+        );
+
+        window.addEventListener(
+            'scroll',
+            closeRowMenu,
+            true
+        );
+
+        window.addEventListener(
+            'resize',
+            closeRowMenu
+        );
+    }
+
+    function handleApplicationTableClick(event) {
+        const row = event.target.closest(
+            '.application-row'
+        );
+
+        if (!row) {
+            return;
+        }
+
+        const editButton = event.target.closest(
+            '.application-edit-button'
+        );
+
+        const versionButton = event.target.closest(
+            '.application-version-button'
+        );
+
+        const deleteButton = event.target.closest(
+            '.application-delete-button'
+        );
+
+        const menuButton = event.target.closest(
+            '.application-menu-button'
+        );
+
+        if (editButton) {
+            closeRowMenu();
+
+            startApplicationEdit(
+                editButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (versionButton) {
+            closeRowMenu();
+
+            openVersionModal(
+                versionButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (deleteButton) {
+            closeRowMenu();
+
+            deleteApplication(
+                deleteButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (menuButton) {
+            event.stopPropagation();
+
+            openRowMenuFromButton(
+                menuButton,
+                menuButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (event.target.closest('button, a, input, select, textarea, label')) {
+            return;
+        }
+
+        openRowMenuAtPoint(
+            event.clientX,
+            event.clientY,
+            row.dataset.id
+        );
+    }
+
+    function handleVersionListClick(event) {
+        const editButton = event.target.closest(
+            '.version-edit-button'
+        );
+
+        const deleteButton = event.target.closest(
+            '.version-delete-button'
+        );
+
+        if (editButton) {
+            startVersionEdit(
+                editButton.dataset.id
+            );
+
+            return;
+        }
+
+        if (deleteButton) {
+            deleteVersion(
+                deleteButton.dataset.id
+            );
+        }
+    }
+
+    function handleDocumentClick(event) {
+        if (elements.rowMenu.classList.contains('hidden')) {
+            return;
+        }
+
+        if (
+            elements.rowMenu.contains(event.target) ||
+            event.target.closest('.application-menu-button')
+        ) {
+            return;
+        }
+
+        closeRowMenu();
+    }
+
+    function handleEscapeKey(event) {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        if (!elements.rowMenu.classList.contains('hidden')) {
+            closeRowMenu();
+            return;
+        }
+
+        if (
+            !elements.versionCopyConfirmationModal.classList.contains(
+                'hidden'
+            )
+        ) {
+            closeVersionCopyConfirmation();
+            return;
+        }
+
+        if (
+            !elements.versionModal.classList.contains(
+                'hidden'
+            )
+        ) {
+            closeVersionModal();
+            return;
+        }
+
+        if (
+            !elements.applicationFormModal.classList.contains(
+                'hidden'
+            )
+        ) {
+            closeApplicationModal();
+        }
+    }
+
+    function openRowMenuFromButton(button, applicationId) {
+        const rectangle = button.getBoundingClientRect();
+
+        openRowMenuAtPoint(
+            rectangle.right,
+            rectangle.bottom + 6,
+            applicationId,
+            true
+        );
+    }
+
+    function openRowMenuAtPoint(
+        x,
+        y,
+        applicationId,
+        alignRight = false
+    ) {
+        const id = Number(applicationId);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return;
+        }
+
+        state.menuApplicationId = id;
+
+        elements.rowMenu.classList.remove('hidden');
+        elements.rowMenu.setAttribute(
+            'aria-hidden',
+            'false'
+        );
+
+        const menuWidth =
+            elements.rowMenu.offsetWidth || 176;
+
+        const menuHeight =
+            elements.rowMenu.offsetHeight || 48;
+
+        const viewportPadding = 12;
+
+        let left = alignRight
+            ? x - menuWidth
+            : x;
+
+        let top = y;
+
+        if (
+            left + menuWidth >
+            window.innerWidth - viewportPadding
+        ) {
+            left =
+                window.innerWidth -
+                menuWidth -
+                viewportPadding;
+        }
+
+        if (left < viewportPadding) {
+            left = viewportPadding;
+        }
+
+        if (
+            top + menuHeight >
+            window.innerHeight - viewportPadding
+        ) {
+            top =
+                window.innerHeight -
+                menuHeight -
+                viewportPadding;
+        }
+
+        if (top < viewportPadding) {
+            top = viewportPadding;
+        }
+
+        elements.rowMenu.style.left =
+            `${Math.round(left)}px`;
+
+        elements.rowMenu.style.top =
+            `${Math.round(top)}px`;
+    }
+
+    function closeRowMenu() {
+        state.menuApplicationId = null;
+
+        elements.rowMenu.classList.add('hidden');
+
+        elements.rowMenu.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        elements.rowMenu.style.left = '';
+        elements.rowMenu.style.top = '';
+    }
+
+    function goToSelectedApplicationMaterials() {
+        const applicationId =
+            Number(state.menuApplicationId);
+
+        if (
+            !Number.isInteger(applicationId) ||
+            applicationId <= 0
+        ) {
+            closeRowMenu();
+
+            showNotification(
+                'Aplikasi tidak ditemukan.',
+                'error'
+            );
+
+            return;
+        }
+
+        const parameters = new URLSearchParams({
+            application_id: String(applicationId),
+        });
+
+        closeRowMenu();
+
+        window.location.href =
+            `${MATERIAL_PAGE_URL}?${parameters.toString()}`;
     }
 
     async function fetchApplications(pageNumber = 1) {
@@ -449,10 +813,14 @@ function initializeApplicationPage() {
         try {
             const parameters = new URLSearchParams({
                 page: String(pageNumber),
+                sort: state.sort,
             });
 
             if (state.search !== '') {
-                parameters.set('search', state.search);
+                parameters.set(
+                    'search',
+                    state.search
+                );
             }
 
             const response = await fetch(
@@ -483,15 +851,32 @@ function initializeApplicationPage() {
                 state.applications.length
             );
 
-            state.from = result.meta?.from ?? null;
-            state.to = result.meta?.to ?? null;
+            state.from =
+                result.meta?.from ?? null;
+
+            state.to =
+                result.meta?.to ?? null;
+
+            if (result.filters?.sort) {
+                state.sort = normalizeSort(
+                    result.filters.sort
+                );
+
+                elements.applicationSort.value =
+                    state.sort;
+            }
 
             renderApplications();
             renderPagination();
-            renderStatistics(result.summary ?? null);
+            renderStatistics(
+                result.summary ?? null
+            );
+
             refreshOpenedVersionModal();
         } catch (error) {
-            showApplicationError(error.message);
+            showApplicationError(
+                error.message
+            );
         }
     }
 
@@ -567,7 +952,10 @@ function initializeApplicationPage() {
                 : 'Belum ada';
 
         return `
-            <tr class="transition hover:bg-slate-50">
+            <tr
+                class="application-row cursor-pointer transition hover:bg-slate-50"
+                data-id="${application.id}"
+            >
                 <td class="whitespace-nowrap px-5 py-4 align-middle">
                     <div class="flex h-12 w-12 items-center justify-center border border-slate-200 bg-white">
                         <img
@@ -645,6 +1033,9 @@ function initializeApplicationPage() {
                             class="application-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50"
                             data-id="${application.id}"
                             title="Ubah aplikasi"
+                            aria-label="Ubah aplikasi ${escapeAttribute(
+                                application.name
+                            )}"
                         >
                             <i class="bi bi-pencil-square"></i>
                         </button>
@@ -654,6 +1045,9 @@ function initializeApplicationPage() {
                             class="application-version-button flex h-9 w-9 items-center justify-center border border-violet-200 text-violet-700 transition hover:bg-violet-50"
                             data-id="${application.id}"
                             title="Kelola versi"
+                            aria-label="Kelola versi ${escapeAttribute(
+                                application.name
+                            )}"
                         >
                             <i class="bi bi-tags"></i>
                         </button>
@@ -663,8 +1057,24 @@ function initializeApplicationPage() {
                             class="application-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
                             data-id="${application.id}"
                             title="Hapus aplikasi"
+                            aria-label="Hapus aplikasi ${escapeAttribute(
+                                application.name
+                            )}"
                         >
                             <i class="bi bi-trash3"></i>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="application-menu-button flex h-9 w-9 items-center justify-center border border-slate-300 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+                            data-id="${application.id}"
+                            title="Menu lainnya"
+                            aria-label="Menu lainnya untuk ${escapeAttribute(
+                                application.name
+                            )}"
+                            aria-haspopup="menu"
+                        >
+                            <i class="bi bi-three-dots-vertical"></i>
                         </button>
                     </div>
                 </td>
@@ -892,10 +1302,12 @@ function initializeApplicationPage() {
             return;
         }
 
+        closeRowMenu();
         fetchApplications(targetPage);
     }
 
     function openCreateApplicationModal() {
+        closeRowMenu();
         resetApplicationForm();
         openApplicationModal();
     }
@@ -941,7 +1353,9 @@ function initializeApplicationPage() {
         elements.applicationRemoveLogo.checked =
             false;
 
-        showExistingImage(application.logo_url);
+        showExistingImage(
+            application.logo_url
+        );
 
         elements.applicationFormTitle.textContent =
             'Ubah Aplikasi';
@@ -998,15 +1412,9 @@ function initializeApplicationPage() {
         elements.applicationForm.reset();
 
         elements.applicationId.value = '';
-
-        elements.applicationStatus.value =
-            'active';
-
+        elements.applicationStatus.value = 'active';
         elements.applicationLogo.value = '';
-
-        elements.applicationRemoveLogo.checked =
-            false;
-
+        elements.applicationRemoveLogo.checked = false;
         elements.applicationLogoPreview.src = '';
 
         elements.applicationLogoPreviewWrapper.classList.add(
@@ -1237,6 +1645,20 @@ function initializeApplicationPage() {
 
     function closeVersionModal() {
         state.activeApplicationId = null;
+        state.pendingVersionPayload = null;
+
+        elements.versionCopyConfirmationModal.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyConfirmationModal.classList.remove(
+            'flex'
+        );
+
+        elements.versionCopyConfirmationModal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
 
         elements.versionModal.classList.add(
             'hidden'
@@ -1293,6 +1715,10 @@ function initializeApplicationPage() {
             Array.isArray(application.versions)
                 ? application.versions
                 : [];
+
+        populateSourceVersionOptions(
+            versions
+        );
 
         if (versions.length === 0) {
             elements.versionList.innerHTML = '';
@@ -1388,6 +1814,528 @@ function initializeApplicationPage() {
         `;
     }
 
+    function populateSourceVersionOptions(
+        versions
+    ) {
+        const currentValue =
+            elements.versionSourceSelect.value;
+
+        elements.versionSourceSelect.innerHTML =
+            [
+                `
+                    <option value="">
+                        Pilih versi sumber
+                    </option>
+                `,
+
+                ...versions.map(
+                    (version) => `
+                        <option value="${version.id}">
+                            v${escapeHtml(
+                                version.version_number
+                            )}
+                            ${
+                                version.is_current
+                                    ? ' — Saat Ini'
+                                    : ''
+                            }
+                        </option>
+                    `
+                ),
+            ].join('');
+
+        if (
+            versions.some(
+                (version) =>
+                    String(version.id) ===
+                    String(currentValue)
+            )
+        ) {
+            elements.versionSourceSelect.value =
+                currentValue;
+        }
+    }
+
+    function handleVersionCopyToggle() {
+        const enabled =
+            elements.versionCopyMaterials.checked;
+
+        elements.versionCopyOptions.classList.toggle(
+            'hidden',
+            !enabled
+        );
+
+        if (!enabled) {
+            resetSourceMaterialSelection();
+        }
+    }
+
+    async function handleSourceVersionChange() {
+        resetSourceMaterialSelection(
+            false
+        );
+
+        const sourceVersionId = Number(
+            elements.versionSourceSelect.value
+        );
+
+        if (
+            !Number.isInteger(sourceVersionId) ||
+            sourceVersionId <= 0
+        ) {
+            return;
+        }
+
+        await fetchSourceMaterialTree(
+            sourceVersionId
+        );
+    }
+
+    async function fetchSourceMaterialTree(
+        sourceVersionId
+    ) {
+        const applicationId = Number(
+            elements.versionApplicationId.value ||
+            state.activeApplicationId
+        );
+
+        showSourceTreeState('loading');
+
+        try {
+            const parameters =
+                new URLSearchParams({
+                    application_id:
+                        String(applicationId),
+
+                    application_version_id:
+                        String(sourceVersionId),
+                });
+
+            const response = await fetch(
+                `${API_BASE_URL}/tutorial-nodes/tree?${parameters.toString()}`,
+                {
+                    headers: {
+                        Accept:
+                            'application/json',
+                    },
+                }
+            );
+
+            const result =
+                await parseResponse(response);
+
+            state.sourceMaterialTree =
+                Array.isArray(result.data)
+                    ? result.data
+                    : [];
+
+            state.selectedSourceNodeIds =
+                new Set();
+
+            renderSourceMaterialTree();
+        } catch (error) {
+            state.sourceMaterialTree = [];
+            state.selectedSourceNodeIds =
+                new Set();
+
+            showSourceTreeState(
+                'error',
+                error.message
+            );
+
+            updateSourceSelectionCount();
+        }
+    }
+
+    function renderSourceMaterialTree() {
+        if (
+            state.sourceMaterialTree.length === 0
+        ) {
+            elements.versionCopyTree.innerHTML =
+                '';
+
+            showSourceTreeState('empty');
+            updateSourceSelectionCount();
+
+            return;
+        }
+
+        elements.versionCopyTree.innerHTML =
+            state.sourceMaterialTree
+                .map(
+                    (node) =>
+                        createSourceMaterialNodeHtml(
+                            node,
+                            0
+                        )
+                )
+                .join('');
+
+        showSourceTreeState('tree');
+        applySourceCheckboxStates();
+        updateSourceSelectionCount();
+    }
+
+    function createSourceMaterialNodeHtml(
+        node,
+        depth
+    ) {
+        const children =
+            getSourceNodeChildren(node);
+
+        return `
+            <div
+                class="source-material-node"
+                data-source-node-id="${node.id}"
+            >
+                <label
+                    class="flex cursor-pointer items-start gap-3 border border-slate-200 bg-white px-3 py-3 transition hover:bg-blue-50"
+                    style="margin-left: ${depth * 18}px"
+                >
+                    <input
+                        type="checkbox"
+                        class="source-material-checkbox mt-0.5 h-4 w-4 border-slate-300 text-blue-900 focus:ring-blue-900"
+                        data-id="${node.id}"
+                    >
+
+                    <span class="min-w-0">
+                        <span class="block text-sm font-semibold text-slate-800">
+                            ${escapeHtml(
+                                node.title
+                            )}
+                        </span>
+
+                        <span class="mt-1 block text-xs text-slate-500">
+                            ${escapeHtml(
+                                getSourceNodeTypeLabel(
+                                    node.node_type
+                                )
+                            )}
+                            ${
+                                children.length > 0
+                                    ? ` • ${children.length} child`
+                                    : ''
+                            }
+                        </span>
+                    </span>
+                </label>
+
+                ${
+                    children.length > 0
+                        ? `
+                            <div class="mt-2 space-y-2">
+                                ${children
+                                    .map(
+                                        (child) =>
+                                            createSourceMaterialNodeHtml(
+                                                child,
+                                                depth + 1
+                                            )
+                                    )
+                                    .join('')}
+                            </div>
+                        `
+                        : ''
+                }
+            </div>
+        `;
+    }
+
+    function handleSourceTreeSelectionChange(
+        event
+    ) {
+        const checkbox =
+            event.target.closest(
+                '.source-material-checkbox'
+            );
+
+        if (!checkbox) {
+            return;
+        }
+
+        const nodeId = Number(
+            checkbox.dataset.id
+        );
+
+        const node =
+            findSourceNode(nodeId);
+
+        if (!node) {
+            return;
+        }
+
+        const affectedIds = [
+            Number(node.id),
+            ...getSourceDescendantIds(
+                node
+            ),
+        ];
+
+        affectedIds.forEach((id) => {
+            if (checkbox.checked) {
+                state.selectedSourceNodeIds.add(
+                    id
+                );
+            } else {
+                state.selectedSourceNodeIds.delete(
+                    id
+                );
+            }
+        });
+
+        synchronizeSourceAncestors();
+        applySourceCheckboxStates();
+        updateSourceSelectionCount();
+    }
+
+    function synchronizeSourceAncestors() {
+        const nodes =
+            flattenSourceTree(
+                state.sourceMaterialTree
+            );
+
+        nodes
+            .slice()
+            .reverse()
+            .forEach((node) => {
+                const children =
+                    getSourceNodeChildren(node);
+
+                if (children.length === 0) {
+                    return;
+                }
+
+                const descendantIds =
+                    getSourceDescendantIds(
+                        node
+                    );
+
+                const allSelected =
+                    descendantIds.length > 0 &&
+                    descendantIds.every(
+                        (id) =>
+                            state.selectedSourceNodeIds.has(
+                                id
+                            )
+                    );
+
+                if (allSelected) {
+                    state.selectedSourceNodeIds.add(
+                        Number(node.id)
+                    );
+                } else {
+                    state.selectedSourceNodeIds.delete(
+                        Number(node.id)
+                    );
+                }
+            });
+    }
+
+    function applySourceCheckboxStates() {
+        elements.versionCopyTree
+            .querySelectorAll(
+                '.source-material-checkbox'
+            )
+            .forEach((checkbox) => {
+                const nodeId = Number(
+                    checkbox.dataset.id
+                );
+
+                const node =
+                    findSourceNode(
+                        nodeId
+                    );
+
+                const descendantIds =
+                    node
+                        ? getSourceDescendantIds(
+                            node
+                        )
+                        : [];
+
+                const selectedDescendantCount =
+                    descendantIds.filter(
+                        (id) =>
+                            state.selectedSourceNodeIds.has(
+                                id
+                            )
+                    ).length;
+
+                checkbox.checked =
+                    state.selectedSourceNodeIds.has(
+                        nodeId
+                    );
+
+                checkbox.indeterminate =
+                    !checkbox.checked &&
+                    selectedDescendantCount > 0;
+            });
+    }
+
+    function selectAllSourceMaterials() {
+        flattenSourceTree(
+            state.sourceMaterialTree
+        ).forEach((node) => {
+            state.selectedSourceNodeIds.add(
+                Number(node.id)
+            );
+        });
+
+        applySourceCheckboxStates();
+        updateSourceSelectionCount();
+    }
+
+    function clearAllSourceMaterials() {
+        state.selectedSourceNodeIds =
+            new Set();
+
+        applySourceCheckboxStates();
+        updateSourceSelectionCount();
+    }
+
+    function resetSourceMaterialSelection(
+        resetSourceSelect = true
+    ) {
+        state.sourceMaterialTree = [];
+        state.selectedSourceNodeIds =
+            new Set();
+
+        if (resetSourceSelect) {
+            elements.versionSourceSelect.value =
+                '';
+        }
+
+        elements.versionCopyTree.innerHTML =
+            '';
+
+        showSourceTreeState('none');
+        updateSourceSelectionCount();
+    }
+
+    function showSourceTreeState(
+        stateName,
+        errorMessage = ''
+    ) {
+        elements.versionCopyTreeLoading.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyTreeEmpty.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyTreeError.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyTree.classList.add(
+            'hidden'
+        );
+
+        if (stateName === 'loading') {
+            elements.versionCopyTreeLoading.classList.remove(
+                'hidden'
+            );
+        }
+
+        if (stateName === 'empty') {
+            elements.versionCopyTreeEmpty.classList.remove(
+                'hidden'
+            );
+        }
+
+        if (stateName === 'error') {
+            elements.versionCopyTreeError.textContent =
+                errorMessage;
+
+            elements.versionCopyTreeError.classList.remove(
+                'hidden'
+            );
+        }
+
+        if (stateName === 'tree') {
+            elements.versionCopyTree.classList.remove(
+                'hidden'
+            );
+        }
+
+        const hasTree =
+            state.sourceMaterialTree.length > 0;
+
+        elements.versionCopySelectAll.disabled =
+            !hasTree;
+
+        elements.versionCopyClearAll.disabled =
+            !hasTree;
+    }
+
+    function updateSourceSelectionCount() {
+        const selectedCount =
+            state.selectedSourceNodeIds.size;
+
+        elements.versionCopySelectedCount.textContent =
+            `${selectedCount} node materi dipilih`;
+    }
+
+    function getSourceNodeChildren(node) {
+        if (
+            Array.isArray(
+                node.children_recursive
+            )
+        ) {
+            return node.children_recursive;
+        }
+
+        if (
+            Array.isArray(node.children)
+        ) {
+            return node.children;
+        }
+
+        return [];
+    }
+
+    function flattenSourceTree(nodes) {
+        return nodes.flatMap(
+            (node) => [
+                node,
+                ...flattenSourceTree(
+                    getSourceNodeChildren(node)
+                ),
+            ]
+        );
+    }
+
+    function findSourceNode(nodeId) {
+        return flattenSourceTree(
+            state.sourceMaterialTree
+        ).find(
+            (node) =>
+                Number(node.id) ===
+                Number(nodeId)
+        );
+    }
+
+    function getSourceDescendantIds(node) {
+        return getSourceNodeChildren(node)
+            .flatMap(
+                (child) => [
+                    Number(child.id),
+                    ...getSourceDescendantIds(
+                        child
+                    ),
+                ]
+            );
+    }
+
+    function getSourceNodeTypeLabel(type) {
+        return {
+            kategori: 'Kategori',
+            bagian: 'Bagian',
+            materi: 'Materi',
+        }[type] || type || 'Node';
+    }
+
     async function submitVersion(event) {
         event.preventDefault();
 
@@ -1420,6 +2368,180 @@ function initializeApplicationPage() {
                 elements.versionIsCurrent.checked,
         };
 
+        const wantsCopy =
+            !isEditing &&
+            elements.versionCopyMaterials.checked;
+
+        if (wantsCopy) {
+            const sourceVersionId = Number(
+                elements.versionSourceSelect.value
+            );
+
+            if (
+                !Number.isInteger(sourceVersionId) ||
+                sourceVersionId <= 0
+            ) {
+                showNotification(
+                    'Pilih versi sumber materi terlebih dahulu.',
+                    'error'
+                );
+
+                elements.versionSourceSelect.focus();
+                return;
+            }
+
+            const selectedNodeIds = [
+                ...state.selectedSourceNodeIds,
+            ];
+
+            if (selectedNodeIds.length === 0) {
+                showNotification(
+                    'Pilih minimal satu materi yang akan disalin.',
+                    'error'
+                );
+
+                return;
+            }
+
+            payload.copy_materials = true;
+            payload.source_version_id =
+                sourceVersionId;
+
+            payload.selected_node_ids =
+                selectedNodeIds;
+
+            state.pendingVersionPayload = {
+                applicationId:
+                    Number(applicationId),
+
+                payload,
+            };
+
+            openVersionCopyConfirmation();
+            return;
+        }
+
+        await saveVersion(
+            applicationId,
+            versionId,
+            isEditing,
+            payload
+        );
+    }
+
+    function openVersionCopyConfirmation() {
+        const application =
+            findApplication(
+                state.activeApplicationId
+            );
+
+        const sourceVersion =
+            application?.versions?.find(
+                (version) =>
+                    Number(version.id) ===
+                    Number(
+                        elements.versionSourceSelect.value
+                    )
+            );
+
+        const targetVersion =
+            elements.versionNumber.value.trim();
+
+        const selectedCount =
+            state.selectedSourceNodeIds.size;
+
+        elements.versionCopyConfirmationText.textContent =
+            [
+                `Apakah Anda yakin ingin membawa ${selectedCount} node materi dari`,
+                `“${application?.name || 'Aplikasi'}” versi ${sourceVersion?.version_number || '-'}`,
+                `ke versi baru ${targetVersion || '-'}?`,
+                '',
+                'Materi terpilih, seluruh child dari parent yang dipilih, parent yang diperlukan, serta isi kontennya akan dibuat sebagai data baru.',
+            ].join('\\n');
+
+        elements.versionCopyConfirmationModal.classList.remove(
+            'hidden'
+        );
+
+        elements.versionCopyConfirmationModal.classList.add(
+            'flex'
+        );
+
+        elements.versionCopyConfirmationModal.setAttribute(
+            'aria-hidden',
+            'false'
+        );
+
+        lockBodyScroll();
+    }
+
+    function closeVersionCopyConfirmation() {
+        state.pendingVersionPayload = null;
+
+        elements.versionCopyConfirmationModal.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyConfirmationModal.classList.remove(
+            'flex'
+        );
+
+        elements.versionCopyConfirmationModal.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+    }
+
+    async function confirmVersionCreationWithCopy() {
+        const pending =
+            state.pendingVersionPayload;
+
+        if (!pending) {
+            closeVersionCopyConfirmation();
+            return;
+        }
+
+        const {
+            applicationId,
+            payload,
+        } = pending;
+
+        elements.versionCopyConfirmationSubmit.disabled =
+            true;
+
+        setButtonContent(
+            elements.versionCopyConfirmationSubmit,
+            'bi-arrow-repeat animate-spin',
+            'Menyalin Materi...'
+        );
+
+        try {
+            await saveVersion(
+                applicationId,
+                '',
+                false,
+                payload,
+                true
+            );
+        } finally {
+            elements.versionCopyConfirmationSubmit.disabled =
+                false;
+
+            setButtonContent(
+                elements.versionCopyConfirmationSubmit,
+                'bi-files',
+                'Ya, Salin Materi dan Buat Versi'
+            );
+        }
+    }
+
+    async function saveVersion(
+        applicationId,
+        versionId,
+        isEditing,
+        payload,
+        closeConfirmationAfter = false
+    ) {
         const url = isEditing
             ? `${API_BASE_URL}/application-versions/${versionId}`
             : `${API_BASE_URL}/applications/${applicationId}/versions`;
@@ -1444,19 +2566,33 @@ function initializeApplicationPage() {
             const result =
                 await parseResponse(response);
 
+            if (closeConfirmationAfter) {
+                closeVersionCopyConfirmation();
+            }
+
             resetVersionForm();
 
             await fetchApplications(
                 state.currentPage
             );
 
+            const copySummary =
+                result.copy_summary;
+
+            const summaryMessage =
+                copySummary
+                    ? ` ${copySummary.copied_nodes ?? 0} node, ${copySummary.copied_content_blocks ?? 0} blok konten, dan ${copySummary.copied_files ?? 0} file berhasil disalin.`
+                    : '';
+
             showNotification(
-                result.message ||
                 (
-                    isEditing
-                        ? 'Versi berhasil diperbarui.'
-                        : 'Versi berhasil ditambahkan.'
-                ),
+                    result.message ||
+                    (
+                        isEditing
+                            ? 'Versi berhasil diperbarui.'
+                            : 'Versi berhasil ditambahkan.'
+                    )
+                ) + summaryMessage,
                 'success'
             );
         } catch (error) {
@@ -1516,6 +2652,19 @@ function initializeApplicationPage() {
         elements.versionIsCurrent.checked =
             Boolean(version.is_current);
 
+        elements.versionCopySection.classList.add(
+            'hidden'
+        );
+
+        elements.versionCopyMaterials.checked =
+            false;
+
+        elements.versionCopyOptions.classList.add(
+            'hidden'
+        );
+
+        resetSourceMaterialSelection();
+
         elements.versionFormTitle.textContent =
             'Ubah Versi';
 
@@ -1544,8 +2693,20 @@ function initializeApplicationPage() {
         elements.versionApplicationId.value =
             state.activeApplicationId ?? '';
 
-        elements.versionStatus.value =
-            'draft';
+        elements.versionStatus.value = 'draft';
+
+        elements.versionCopySection.classList.remove(
+            'hidden'
+        );
+
+        elements.versionCopyMaterials.checked =
+            false;
+
+        elements.versionCopyOptions.classList.add(
+            'hidden'
+        );
+
+        resetSourceMaterialSelection();
 
         elements.versionFormTitle.textContent =
             'Tambah Versi';
@@ -1609,6 +2770,8 @@ function initializeApplicationPage() {
     }
 
     function showApplicationLoading() {
+        closeRowMenu();
+
         elements.applicationLoading.classList.remove(
             'hidden'
         );
@@ -1682,7 +2845,22 @@ function initializeApplicationPage() {
                 'bi-arrow-repeat animate-spin',
                 'Menyimpan...'
             );
+
+            return;
         }
+
+        const isEditing =
+            elements.applicationId.value !== '';
+
+        setButtonContent(
+            elements.applicationSubmitButton,
+            isEditing
+                ? 'bi-pencil-square'
+                : 'bi-plus-lg',
+            isEditing
+                ? 'Perbarui Aplikasi'
+                : 'Simpan Aplikasi'
+        );
     }
 
     function setVersionButtonLoading(isLoading) {
@@ -1695,7 +2873,22 @@ function initializeApplicationPage() {
                 'bi-arrow-repeat animate-spin',
                 'Menyimpan...'
             );
+
+            return;
         }
+
+        const isEditing =
+            elements.versionId.value !== '';
+
+        setButtonContent(
+            elements.versionSubmitButton,
+            isEditing
+                ? 'bi-pencil-square'
+                : 'bi-plus-lg',
+            isEditing
+                ? 'Perbarui Versi'
+                : 'Simpan Versi'
+        );
     }
 
     function previewSelectedImage() {
@@ -1715,6 +2908,9 @@ function initializeApplicationPage() {
         elements.applicationLogoPreviewWrapper.classList.remove(
             'hidden'
         );
+
+        elements.applicationRemoveLogo.checked =
+            false;
 
         elements.applicationLogoPreview.onload = () => {
             URL.revokeObjectURL(temporaryUrl);
@@ -1797,6 +2993,19 @@ function initializeApplicationPage() {
         );
     }
 
+    function normalizeSort(value) {
+        const allowedSorts = [
+            'latest',
+            'oldest',
+            'name_asc',
+            'name_desc',
+        ];
+
+        return allowedSorts.includes(value)
+            ? value
+            : 'latest';
+    }
+
     function getApplicationStatusClass(status) {
         return {
             active:
@@ -1872,10 +3081,14 @@ function initializeApplicationPage() {
                 'border-red-200 bg-red-50 text-red-700',
         };
 
+        const selectedStyle =
+            styles[type] ||
+            styles.success;
+
         window.clearTimeout(notificationTimeout);
 
         elements.notification.className =
-            `border px-4 py-3 text-sm ${styles[type]}`;
+            `border px-4 py-3 text-sm ${selectedStyle}`;
 
         elements.notification.textContent =
             message;
@@ -1898,9 +3111,7 @@ function initializeApplicationPage() {
 
         const date = new Date(value);
 
-        if (
-            Number.isNaN(date.getTime())
-        ) {
+        if (Number.isNaN(date.getTime())) {
             return 'Tanggal tidak valid';
         }
 

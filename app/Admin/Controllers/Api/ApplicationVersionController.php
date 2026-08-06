@@ -12,13 +12,10 @@ use Illuminate\Http\JsonResponse;
 
 class ApplicationVersionController extends Controller
 {
-private ApplicationVersionService $service;
-
-public function __construct(
-    ApplicationVersionService $service
-) {
-    $this->service = $service;
-}
+    public function __construct(
+        private readonly ApplicationVersionService $service
+    ) {
+    }
 
     public function index(
         Application $application
@@ -32,7 +29,9 @@ public function __construct(
         return response()->json([
             'message' =>
                 'Application versions retrieved successfully.',
-            'data' => $versions,
+
+            'data' =>
+                $versions,
         ]);
     }
 
@@ -45,22 +44,41 @@ public function __construct(
             $request->validated()
         );
 
+        $copySummary =
+            $version->getAttribute(
+                'copy_summary'
+            );
+
+        $message =
+            $request->boolean('copy_materials')
+                ? 'Versi aplikasi dan materi terpilih berhasil dibuat.'
+                : 'Versi aplikasi berhasil dibuat.';
+
         return response()->json([
             'message' =>
-                'Application version created successfully.',
-            'data' => $version,
+                $message,
+
+            'data' =>
+                $version,
+
+            'copy_summary' =>
+                $copySummary,
         ], 201);
     }
 
     public function show(
         ApplicationVersion $applicationVersion
     ): JsonResponse {
-        $applicationVersion->load('application');
+        $applicationVersion->load(
+            'application'
+        );
 
         return response()->json([
             'message' =>
                 'Application version retrieved successfully.',
-            'data' => $applicationVersion,
+
+            'data' =>
+                $applicationVersion,
         ]);
     }
 
@@ -76,7 +94,9 @@ public function __construct(
         return response()->json([
             'message' =>
                 'Application version updated successfully.',
-            'data' => $version,
+
+            'data' =>
+                $version,
         ]);
     }
 

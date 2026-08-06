@@ -8,10 +8,7 @@
 @endpush
 
 @section('content')
-    <div
-        id="application-page"
-        class="space-y-6"
-    >
+    <div id="application-page" class="space-y-6">
         {{-- Notifikasi --}}
         <div
             id="notification"
@@ -152,20 +149,40 @@
                         </p>
                     </div>
 
-                    <div class="relative w-full md:w-80">
-                        <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <div class="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+                        <div class="relative w-full sm:w-52">
+                            <i class="bi bi-sort-down pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
 
-                        <input
-                            id="application-search"
-                            type="search"
-                            placeholder="Cari aplikasi..."
-                            autocomplete="off"
-                            class="w-full border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
-                        >
+                            <select
+                                id="application-sort"
+                                class="w-full appearance-none border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                                aria-label="Urutkan aplikasi"
+                            >
+                                <option value="latest">Terbaru</option>
+                                <option value="oldest">Terlama</option>
+                                <option value="name_asc">Nama A–Z</option>
+                                <option value="name_desc">Nama Z–A</option>
+                            </select>
+
+                            <i class="bi bi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                        </div>
+
+                        <div class="relative w-full md:w-80">
+                            <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                            <input
+                                id="application-search"
+                                type="search"
+                                placeholder="Cari aplikasi..."
+                                autocomplete="off"
+                                class="w-full border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                            >
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {{-- Loading --}}
             <div
                 id="application-loading"
                 class="py-16 text-center text-sm text-slate-500"
@@ -174,6 +191,7 @@
                 Memuat data aplikasi...
             </div>
 
+            {{-- Empty --}}
             <div
                 id="application-empty"
                 class="hidden px-5 py-16 text-center"
@@ -191,6 +209,7 @@
                 </p>
             </div>
 
+            {{-- Error --}}
             <div
                 id="application-error"
                 class="hidden px-5 py-16 text-center"
@@ -218,6 +237,7 @@
                 </button>
             </div>
 
+            {{-- Tabel --}}
             <div
                 id="application-table-wrapper"
                 class="hidden overflow-x-auto"
@@ -249,7 +269,7 @@
                                 Versi
                             </th>
 
-                            <th class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
+                            <th class="min-w-56 px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">
                                 Aksi
                             </th>
                         </tr>
@@ -262,6 +282,7 @@
                 </table>
             </div>
 
+            {{-- Pagination --}}
             <div
                 id="application-pagination-wrapper"
                 class="hidden border-t border-slate-200 px-5 py-5 sm:px-6"
@@ -281,6 +302,23 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    {{-- Menu aksi baris --}}
+    <div
+        id="application-row-menu"
+        class="fixed z-[90] hidden w-44 border border-slate-200 bg-white py-1 shadow-xl"
+        role="menu"
+        aria-hidden="true"
+    >
+        <button
+            id="application-view-material"
+            type="button"
+            class="block w-full px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950"
+            role="menuitem"
+        >
+            Lihat Materi
+        </button>
     </div>
 
     {{-- Modal aplikasi --}}
@@ -323,10 +361,7 @@
                 class="space-y-6 p-5 sm:p-6"
                 enctype="multipart/form-data"
             >
-                <input
-                    id="application-id"
-                    type="hidden"
-                >
+                <input id="application-id" type="hidden">
 
                 <div class="grid gap-5 md:grid-cols-2">
                     <div>
@@ -400,17 +435,9 @@
                             required
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="active">
-                                Aktif
-                            </option>
-
-                            <option value="inactive">
-                                Tidak Aktif
-                            </option>
-
-                            <option value="archived">
-                                Diarsipkan
-                            </option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Tidak Aktif</option>
+                            <option value="archived">Diarsipkan</option>
                         </select>
                     </div>
                 </div>
@@ -555,15 +582,8 @@
                     id="version-form"
                     class="h-fit space-y-4 border border-slate-200 bg-slate-50 p-5"
                 >
-                    <input
-                        id="version-id"
-                        type="hidden"
-                    >
-
-                    <input
-                        id="version-application-id"
-                        type="hidden"
-                    >
+                    <input id="version-id" type="hidden">
+                    <input id="version-application-id" type="hidden">
 
                     <div>
                         <h3
@@ -624,21 +644,10 @@
                             id="version-status"
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="draft">
-                                Draf
-                            </option>
-
-                            <option value="beta">
-                                Beta
-                            </option>
-
-                            <option value="stable">
-                                Stabil
-                            </option>
-
-                            <option value="deprecated">
-                                Tidak Digunakan
-                            </option>
+                            <option value="draft">Draf</option>
+                            <option value="beta">Beta</option>
+                            <option value="stable">Stabil</option>
+                            <option value="deprecated">Tidak Digunakan</option>
                         </select>
                     </div>
 
@@ -669,6 +678,119 @@
                             Jadikan versi saat ini
                         </span>
                     </label>
+
+                    {{-- Copy material from another version --}}
+                    <div
+                        id="version-copy-section"
+                        class="border border-slate-200 bg-white p-4"
+                    >
+                        <label class="flex cursor-pointer items-start gap-3">
+                            <input
+                                id="version-copy-materials"
+                                type="checkbox"
+                                class="mt-0.5 h-5 w-5 border-slate-300 text-blue-900 focus:ring-blue-900"
+                            >
+
+                            <span>
+                                <span class="block text-sm font-semibold text-slate-800">
+                                    Salin materi dari versi lain
+                                </span>
+
+                                <span class="mt-1 block text-xs leading-5 text-slate-500">
+                                    Pilih versi sumber dan materi yang ingin dibawa ke versi baru.
+                                </span>
+                            </span>
+                        </label>
+
+                        <div
+                            id="version-copy-options"
+                            class="mt-4 hidden space-y-4 border-t border-slate-200 pt-4"
+                        >
+                            <div>
+                                <label
+                                    for="version-source-select"
+                                    class="mb-2 block text-sm font-semibold text-slate-700"
+                                >
+                                    Versi Sumber
+                                </label>
+
+                                <select
+                                    id="version-source-select"
+                                    class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                                >
+                                    <option value="">
+                                        Pilih versi sumber
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-700">
+                                            Materi yang Disalin
+                                        </p>
+
+                                        <p
+                                            id="version-copy-selected-count"
+                                            class="mt-1 text-xs text-slate-500"
+                                        >
+                                            0 materi dipilih
+                                        </p>
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <button
+                                            id="version-copy-select-all"
+                                            type="button"
+                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                            disabled
+                                        >
+                                            Pilih Semua
+                                        </button>
+
+                                        <button
+                                            id="version-copy-clear-all"
+                                            type="button"
+                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                            disabled
+                                        >
+                                            Hapus Pilihan
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div
+                                    id="version-copy-tree-loading"
+                                    class="mt-3 hidden border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
+                                >
+                                    <i class="bi bi-arrow-repeat mr-2 inline-block animate-spin"></i>
+                                    Memuat materi versi sumber...
+                                </div>
+
+                                <div
+                                    id="version-copy-tree-empty"
+                                    class="mt-3 hidden border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500"
+                                >
+                                    Versi sumber belum memiliki materi.
+                                </div>
+
+                                <div
+                                    id="version-copy-tree-error"
+                                    class="mt-3 hidden border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700"
+                                ></div>
+
+                                <div
+                                    id="version-copy-tree"
+                                    class="mt-3 hidden max-h-80 space-y-2 overflow-y-auto border border-slate-200 bg-slate-50 p-3"
+                                ></div>
+
+                                <p class="mt-2 text-xs leading-5 text-slate-500">
+                                    Memilih parent akan memilih seluruh child. Parent yang diperlukan akan tetap disalin agar struktur tidak rusak.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="flex gap-3">
                         <button
@@ -710,4 +832,60 @@
             </div>
         </div>
     </div>
+
+    {{-- Confirmation modal for copying materials --}}
+    <div
+        id="version-copy-confirmation-modal"
+        class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-950/60 p-4"
+        aria-hidden="true"
+    >
+        <div class="w-full max-w-xl border border-slate-200 bg-white shadow-2xl">
+            <div class="border-b border-slate-200 p-5 sm:p-6">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                    Konfirmasi Penyalinan Materi
+                </p>
+
+                <h2 class="mt-2 text-xl font-bold text-slate-950">
+                    Salin materi ke versi baru?
+                </h2>
+            </div>
+
+            <div class="space-y-4 p-5 sm:p-6">
+                <p
+                    id="version-copy-confirmation-text"
+                    class="whitespace-pre-line text-sm leading-6 text-slate-600"
+                ></p>
+
+                <div class="border border-blue-200 bg-blue-50 p-4">
+                    <p class="text-sm font-semibold text-blue-950">
+                        Materi sumber tidak akan berubah.
+                    </p>
+
+                    <p class="mt-1 text-xs leading-5 text-blue-700">
+                        Sistem akan membuat node, content block, serta salinan fisik file gambar dan PDF sebagai data baru.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-200 p-5 sm:flex-row sm:justify-end sm:p-6">
+                <button
+                    id="version-copy-confirmation-cancel"
+                    type="button"
+                    class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                    Batal
+                </button>
+
+                <button
+                    id="version-copy-confirmation-submit"
+                    type="button"
+                    class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    <i class="bi bi-files"></i>
+                    <span>Ya, Salin Materi dan Buat Versi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 @endsection
