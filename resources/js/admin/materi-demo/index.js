@@ -2,6 +2,14 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const API_BASE_URL = '/api/admin';
 
+const pageParameters = new URLSearchParams(
+    window.location.search
+);
+
+const requestedApplicationId = Number(
+    pageParameters.get('application_id')
+);
+
 document.addEventListener('DOMContentLoaded', () => {
     const state = {
         applications: [],
@@ -300,7 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
         bindEvents();
         resetNodeForm();
         showInitialState();
+
         await fetchApplications();
+        await applyApplicationFromUrl();
     }
 
     function bindEvents() {
@@ -529,6 +539,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function applyApplicationFromUrl() {
+        if (
+            !Number.isInteger(requestedApplicationId) ||
+            requestedApplicationId <= 0
+        ) {
+            return;
+        }
+
+        const application =
+            state.applications.find(
+                (item) =>
+                    Number(item.id) ===
+                    requestedApplicationId
+            );
+
+        if (!application) {
+            showNotification(
+                'Aplikasi yang dipilih tidak ditemukan.',
+                'error'
+            );
+
+            return;
+        }
+
+        selectApplication(
+            application.id,
+            {
+                selectLatestVersion: true,
+            }
+        );
+    }
+
     function extractApplications(result) {
         if (Array.isArray(result?.data)) {
             return result.data;
@@ -734,7 +776,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function selectApplication(
-        applicationId
+        applicationId,
+        options = {}
     ) {
         const application =
             state.applications.find(
@@ -746,6 +789,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!application) {
             return;
         }
+
+        const {
+            selectLatestVersion = false,
+        } = options;
 
         state.selectedApplicationId =
             Number(application.id);
@@ -762,6 +809,10 @@ document.addEventListener('DOMContentLoaded', () => {
             'hidden'
         );
 
+        elements.applicationVersionError.classList.add(
+            'hidden'
+        );
+
         closeApplicationDropdown();
 
         populateVersionSelector(
@@ -772,6 +823,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateContextDisplay();
         updateActionAvailability();
         showInitialState();
+
+        if (selectLatestVersion) {
+            selectLatestApplicationVersion(
+                application
+            );
+        }
     }
 
     function populateVersionSelector(
@@ -821,6 +878,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.applicationVersionHelp.textContent =
             `${versions.length} versi tersedia untuk aplikasi ini.`;
+    }
+
+    function selectLatestApplicationVersion(
+        application
+    ) {
+        const latestVersion =
+            getLatestApplicationVersion(
+                application
+            );
+
+        if (!latestVersion) {
+            showNotification(
+                `Aplikasi "${application.name}" belum memiliki versi.`,
+                'error'
+            );
+
+            return;
+        }
+
+        state.selectedVersionId =
+            Number(latestVersion.id);
+
+        elements.applicationVersionSelect.value =
+            String(latestVersion.id);
+
+        elements.applicationVersionError.classList.add(
+            'hidden'
+        );
+
+        updateContextDisplay();
+        updateActionAvailability();
+
+        fetchTree();
+    }
+
+    function getLatestApplicationVersion(
+        application
+    ) {
+        const versions =
+            getApplicationVersions(
+                application
+            );
+
+        if (versions.length === 0) {
+            return null;
+        }
+
+        const currentVersion =
+            versions.find(
+                (version) =>
+                    Boolean(version.is_current)
+            );
+
+        if (currentVersion) {
+            return currentVersion;
+        }
+
+        return [...versions].sort(
+            compareVersionsNewestFirst
+        )[0];
+    }
+
+    function compareVersionsNewestFirst(
+        firstVersion,
+        secondVersion
+    ) {
+        const firstDate =
+            getVersionTimestamp(
+                firstVersion
+            );
+
+        const secondDate =
+            getVersionTimestamp(
+                secondVersion
+            );
+
+        if (firstDate !== secondDate) {
+            return secondDate - firstDate;
+        }
+
+        return (
+            Number(secondVersion.id) -
+            Number(firstVersion.id)
+        );
+    }
+
+    function getVersionTimestamp(
+        version
+    ) {
+        const dateValue =
+            version.release_date ||
+            version.created_at ||
+            null;
+
+        if (!dateValue) {
+            return 0;
+        }
+
+        const timestamp =
+            new Date(dateValue).getTime();
+
+        return Number.isNaN(timestamp)
+            ? 0
+            : timestamp;
     }
 
     function handleVersionChange(event) {
