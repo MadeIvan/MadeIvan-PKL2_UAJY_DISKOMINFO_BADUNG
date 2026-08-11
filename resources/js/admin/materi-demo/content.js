@@ -560,6 +560,10 @@ document.addEventListener('DOMContentLoaded', () => {
             state.node?.application?.name ??
             'Aplikasi tidak diketahui';
 
+        const versionNumber =
+            state.node?.application_version?.version_number ??
+            'Tidak diketahui';
+
         const parentTitle =
             state.node?.parent?.title ??
             'Tanpa parent';
@@ -570,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
         elements.nodeMeta.textContent =
-            `${applicationName} • ${parentTitle} • ${nodeType}`;
+            `${applicationName} • v${versionNumber} • ${parentTitle} • ${nodeType}`;
     }
 
     function renderBlocks() {

@@ -1,14 +1,13 @@
 <?php
 
+use App\Http\Controllers\PublicApplicationPageController;
 use App\Http\Controllers\TutorialContentPageController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 /*
-|--------------------------------------------------------------------------
 | Public Pages
-|--------------------------------------------------------------------------
 */
 
 Route::view('/', 'welcome')->name('home');
@@ -17,17 +16,19 @@ Route::view('/app-list', 'app_index')->name('applications.list');
 Route::view('/applications-demo', 'Public_View.showApp')->name('applications.index');
 
 /*
-|--------------------------------------------------------------------------
+| Public Application Documentation
+*/
+
+Route::get('/applications/{application:slug}', [PublicApplicationPageController::class, 'show'])->name('applications.show');
+
+/*
 | Public Material
-|--------------------------------------------------------------------------
 */
 
 Route::get('/materi/{tutorialNode:slug}', [TutorialContentPageController::class, 'publicShow'])->name('materi.Materi');
 
 /*
-|--------------------------------------------------------------------------
 | Admin Pages
-|--------------------------------------------------------------------------
 */
 
 Route::view('/admin/input', 'Admin.input_content')->name('admin.input');
@@ -39,21 +40,15 @@ Route::view('/admin/Materi-demo', 'Admin.materi-demo.index')->name('admin.materi
 Route::view('/admin/aplikasi-demo', 'Admin.applications.index')->name('admin.applications.index');
 
 /*
-|--------------------------------------------------------------------------
 | Admin Material Content
-|--------------------------------------------------------------------------
 */
 
 Route::get('/admin/Materi-demo/{tutorialNode}/content', [TutorialContentPageController::class, 'edit'])->whereNumber('tutorialNode')->name('admin.materi-demo.content');
+
 Route::get('/admin/Materi-demo/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi-demo.preview');
 
 /*
-|--------------------------------------------------------------------------
 | Development Utilities
-|--------------------------------------------------------------------------
-|
-| Hapus route ini ketika aplikasi sudah masuk production.
-|
 */
 
 Route::get('/db-check', function (): array {

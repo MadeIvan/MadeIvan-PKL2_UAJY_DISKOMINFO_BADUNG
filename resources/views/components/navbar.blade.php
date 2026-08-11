@@ -37,7 +37,7 @@
                 </a>
 
                 <a
-                    href="admin/content-index"
+                    href="/admin/Materi-demo"
                     class="font-medium text-slate-600 transition hover:text-blue-900 text-decoration-none"
                 >
                     Admin View

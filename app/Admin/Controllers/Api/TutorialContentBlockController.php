@@ -16,17 +16,16 @@ class TutorialContentBlockController extends Controller
 {
     private TutorialContentBlockService $service;
 
-    public function __construct(
-        TutorialContentBlockService $service
-    ) {
+    public function __construct(TutorialContentBlockService $service)
+    {
         $this->service = $service;
     }
 
-    public function index(
-        TutorialNode $tutorialNode
-    ): JsonResponse {
+    public function index(TutorialNode $tutorialNode): JsonResponse
+    {
         $tutorialNode->load([
             'application:id,name',
+            'applicationVersion:id,application_id,version_number',
             'parent:id,title',
             'contentBlocks',
         ]);
