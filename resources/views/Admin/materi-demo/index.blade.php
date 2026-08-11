@@ -12,7 +12,7 @@
         {{-- Notification --}}
         <div
             id="notification"
-            class="hidden border px-4 py-3 text-sm"
+            classA="hidden border px-4 py-3 text-sm"
             role="alert"
         ></div>
 

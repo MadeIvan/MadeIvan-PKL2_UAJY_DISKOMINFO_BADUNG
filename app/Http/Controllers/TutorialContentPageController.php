@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TutorialNode;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class TutorialContentPageController extends Controller
@@ -11,20 +12,13 @@ class TutorialContentPageController extends Controller
     /**
      * Membuka halaman editor content block.
      */
-    public function edit(
-        TutorialNode $tutorialNode
-    ): View {
-        $this->ensureMaterialNode(
-            $tutorialNode
-        );
+    public function edit(TutorialNode $tutorialNode): View
+    {
+        $this->ensureMaterialNode($tutorialNode);
 
-        return view(
-            'Admin.materi-demo.content',
-            [
-                'tutorialNode' =>
-                    $tutorialNode->id,
-            ]
-        );
+        return view('Admin.materi-demo.content', [
+            'tutorialNode' => $tutorialNode->id,
+        ]);
     }
 
     /**
@@ -33,78 +27,72 @@ class TutorialContentPageController extends Controller
      * Preview admin tetap dapat membuka materi yang masih
      * berstatus draf, diarsipkan, atau belum publik.
      */
-    public function preview(
-        TutorialNode $tutorialNode
-    ): View {
-        $this->ensureMaterialNode(
-            $tutorialNode
-        );
+    public function preview(TutorialNode $tutorialNode): View
+    {
+        $this->ensureMaterialNode($tutorialNode);
 
-        $this->loadMaterialRelations(
-            $tutorialNode
-        );
+        $this->loadMaterialRelations($tutorialNode);
 
-        return view(
-            'Admin.materi-demo.preview',
-            [
-                'tutorialNode' =>
-                    $tutorialNode,
-            ]
-        );
+        return view('Admin.materi-demo.preview', [
+            'tutorialNode' => $tutorialNode,
+        ]);
     }
 
     /**
-     * Membuka halaman materi untuk pengguna publik.
+     * Membuka materi publik melalui halaman dokumentasi aplikasi.
      *
-     * Halaman hanya dapat dibuka ketika materi:
-     * - berstatus published
-     * - is_public bernilai true
+     * Dengan cara ini pengguna selalu mendapatkan:
+     * - sidebar
+     * - version selector
+     * - struktur kategori / bagian / materi
+     * - content block
+     * - previous / next navigation
      */
-    public function publicShow(
-        TutorialNode $tutorialNode
-    ): View {
-        $this->ensureMaterialNode(
-            $tutorialNode
-        );
+    public function publicShow(TutorialNode $tutorialNode): RedirectResponse
+    {
+        $this->ensureMaterialNode($tutorialNode);
 
         abort_unless(
-            $tutorialNode->status ===
-                'published' &&
+            $tutorialNode->status === 'published' &&
             (bool) $tutorialNode->is_public,
             Response::HTTP_NOT_FOUND
         );
 
-        $this->loadMaterialRelations(
-            $tutorialNode
+        $tutorialNode->load([
+            'application:id,name,slug,status,is_public',
+            'applicationVersion:id,application_id,version_number',
+        ]);
+
+        abort_unless(
+            $tutorialNode->application &&
+            $tutorialNode->application->status === 'active' &&
+            (bool) $tutorialNode->application->is_public,
+            Response::HTTP_NOT_FOUND
         );
 
-        return view(
-            'Public.materi.show',
-            [
-                'tutorialNode' =>
-                    $tutorialNode,
-            ]
+        abort_unless(
+            $tutorialNode->applicationVersion,
+            Response::HTTP_NOT_FOUND
         );
+
+        return redirect()->route('applications.show', [
+            'application' => $tutorialNode->application->slug,
+            'version' => $tutorialNode->applicationVersion->id,
+            'materi' => $tutorialNode->id,
+        ]);
     }
 
     /**
-     * Memuat seluruh data yang dibutuhkan oleh preview
-     * dan halaman publik.
+     * Memuat seluruh data yang dibutuhkan oleh preview admin.
      */
-    private function loadMaterialRelations(
-        TutorialNode $tutorialNode
-    ): void {
+    private function loadMaterialRelations(TutorialNode $tutorialNode): void
+    {
         $tutorialNode->load([
             'application:id,name,slug',
-
             'applicationVersion:id,application_id,version_number',
-
             'parent:id,title,slug',
-
             'contentBlocks' => function ($query): void {
-                $query
-                    ->orderBy('sort_order')
-                    ->orderBy('id');
+                $query->orderBy('sort_order')->orderBy('id');
             },
         ]);
     }
@@ -112,9 +100,8 @@ class TutorialContentPageController extends Controller
     /**
      * Hanya node berjenis Materi yang dapat memiliki konten.
      */
-    private function ensureMaterialNode(
-        TutorialNode $tutorialNode
-    ): void {
+    private function ensureMaterialNode(TutorialNode $tutorialNode): void
+    {
         abort_unless(
             $tutorialNode->isMateri(),
             Response::HTTP_NOT_FOUND
