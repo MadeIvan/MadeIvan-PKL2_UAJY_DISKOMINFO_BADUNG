@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\ApplicationVersion;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,14 @@ class PublicApplicationController extends Controller
                 (string) $request->query(
                     'search',
                     ''
+                )
+            );
+
+        $sort =
+            $this->normalizeSort(
+                (string) $request->query(
+                    'sort',
+                    'latest'
                 )
             );
 
@@ -51,13 +60,13 @@ class PublicApplicationController extends Controller
                 ->when(
                     $search !== '',
                     function (
-                        $query
+                        Builder $query
                     ) use (
                         $search
                     ): void {
                         $query->where(
                             function (
-                                $query
+                                Builder $query
                             ) use (
                                 $search
                             ): void {
@@ -80,9 +89,17 @@ class PublicApplicationController extends Controller
                             }
                         );
                     }
-                )
-                ->orderBy('name')
-                ->paginate(9);
+                );
+
+        $this->applySort(
+            $applications,
+            $sort
+        );
+
+        $applications =
+            $applications->paginate(
+                9
+            );
 
         $applications->setCollection(
             $applications
@@ -92,10 +109,9 @@ class PublicApplicationController extends Controller
                         Application $application
                     ): array {
                         $displayVersion =
-                            $this
-                                ->getPreferredVersion(
-                                    $application->versions
-                                );
+                            $this->getPreferredVersion(
+                                $application->versions
+                            );
 
                         return [
                             'id' =>
@@ -123,16 +139,6 @@ class PublicApplicationController extends Controller
                                         'images/Logo.png'
                                     ),
 
-                            /*
-                             * Tetap menggunakan nama
-                             * current_version supaya
-                             * JavaScript publik yang
-                             * sekarang tidak perlu diubah.
-                             *
-                             * Nilainya:
-                             * 1. versi is_current
-                             * 2. jika tidak ada, versi terbaru
-                             */
                             'current_version' =>
                                 $displayVersion
                                     ? [
@@ -174,30 +180,102 @@ class PublicApplicationController extends Controller
 
             'meta' => [
                 'current_page' =>
-                    $applications
-                        ->currentPage(),
+                    $applications->currentPage(),
 
                 'last_page' =>
-                    $applications
-                        ->lastPage(),
+                    $applications->lastPage(),
 
                 'per_page' =>
-                    $applications
-                        ->perPage(),
+                    $applications->perPage(),
 
                 'total' =>
-                    $applications
-                        ->total(),
+                    $applications->total(),
 
                 'from' =>
-                    $applications
-                        ->firstItem(),
+                    $applications->firstItem(),
 
                 'to' =>
-                    $applications
-                        ->lastItem(),
+                    $applications->lastItem(),
+            ],
+
+            'filters' => [
+                'search' =>
+                    $search,
+
+                'sort' =>
+                    $sort,
             ],
         ]);
+    }
+
+    private function applySort(
+        Builder $query,
+        string $sort
+    ): void {
+        match ($sort) {
+            'oldest' =>
+                $query
+                    ->orderBy(
+                        'created_at',
+                        'asc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'asc'
+                    ),
+
+            'name_asc' =>
+                $query
+                    ->orderBy(
+                        'name',
+                        'asc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'asc'
+                    ),
+
+            'name_desc' =>
+                $query
+                    ->orderBy(
+                        'name',
+                        'desc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'desc'
+                    ),
+
+            default =>
+                $query
+                    ->orderBy(
+                        'created_at',
+                        'desc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'desc'
+                    ),
+        };
+    }
+
+    private function normalizeSort(
+        string $sort
+    ): string {
+        $allowedSorts = [
+            'latest',
+            'oldest',
+            'name_asc',
+            'name_desc',
+        ];
+
+        return in_array(
+            $sort,
+            $allowedSorts,
+            true
+        )
+            ? $sort
+            : 'latest';
     }
 
     private function getPreferredVersion(

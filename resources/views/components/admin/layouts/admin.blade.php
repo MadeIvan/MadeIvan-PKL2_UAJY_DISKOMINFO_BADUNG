@@ -25,12 +25,14 @@
 
     <div
         id="admin-main"
-        class="min-h-screen transition-all duration-300 lg:ml-64"
+        class="min-h-screen transition-[margin] duration-300 ease-in-out lg:ml-20"
     >
         @include('components.admin.topbar')
 
         <main class="p-4 sm:p-6 lg:p-8">
-            @yield('content')
+            <div class="mx-auto max-w-[1600px]">
+                @yield('content')
+            </div>
         </main>
     </div>
 </body>

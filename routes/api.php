@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PublicApplicationController;
 use App\Admin\Controllers\Api\TutorialContentBlockController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
 
 Route::get('/user', fn (Request $request) => $request->user())->middleware('auth:sanctum');
 
@@ -35,3 +36,9 @@ Route::put('/tutorial-nodes/{tutorialNode}/content-blocks/reorder', [TutorialCon
 });
 
 Route::get('/applications', [PublicApplicationController::class, 'index'])->name('api.applications.index');
+
+
+
+Route::post('/auth/login', [AuthController::class, 'login'])->name('api.auth.login');
+Route::middleware('auth:sanctum')->get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
+Route::middleware('auth:sanctum')->post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');
