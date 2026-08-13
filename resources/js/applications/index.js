@@ -5,6 +5,7 @@ const API_URL = '/api/applications';
 const state = {
     applications: [],
     search: '',
+    sort: 'latest',
     currentPage: 1,
     lastPage: 1,
     total: 0,
@@ -13,13 +14,37 @@ const state = {
 };
 
 const elements = {
-    search: document.getElementById('applicationSearch'),
-    grid: document.getElementById('applicationGrid'),
-    loading: document.getElementById('applicationLoading'),
-    empty: document.getElementById('emptyResult'),
-    error: document.getElementById('applicationError'),
-    retry: document.getElementById('applicationRetry'),
-    count: document.getElementById('applicationCount'),
+    search: document.getElementById(
+        'applicationSearch'
+    ),
+
+    sort: document.getElementById(
+        'applicationSort'
+    ),
+
+    grid: document.getElementById(
+        'applicationGrid'
+    ),
+
+    loading: document.getElementById(
+        'applicationLoading'
+    ),
+
+    empty: document.getElementById(
+        'emptyResult'
+    ),
+
+    error: document.getElementById(
+        'applicationError'
+    ),
+
+    retry: document.getElementById(
+        'applicationRetry'
+    ),
+
+    count: document.getElementById(
+        'applicationCount'
+    ),
 
     paginationWrapper: document.getElementById(
         'applicationPaginationWrapper'
@@ -42,10 +67,14 @@ async function fetchApplications(page = 1) {
     try {
         const parameters = new URLSearchParams({
             page: String(page),
+            sort: state.sort,
         });
 
         if (state.search !== '') {
-            parameters.set('search', state.search);
+            parameters.set(
+                'search',
+                state.search
+            );
         }
 
         const response = await fetch(
@@ -57,11 +86,14 @@ async function fetchApplications(page = 1) {
             }
         );
 
-        const result = await parseResponse(response);
+        const result = await parseResponse(
+            response
+        );
 
-        state.applications = Array.isArray(result.data)
-            ? result.data
-            : [];
+        state.applications =
+            Array.isArray(result.data)
+                ? result.data
+                : [];
 
         state.currentPage = Number(
             result.meta?.current_page ?? 1
@@ -75,13 +107,27 @@ async function fetchApplications(page = 1) {
             result.meta?.total ?? 0
         );
 
-        state.from = result.meta?.from ?? null;
-        state.to = result.meta?.to ?? null;
+        state.from =
+            result.meta?.from ?? null;
+
+        state.to =
+            result.meta?.to ?? null;
+
+        if (result.filters?.sort) {
+            state.sort = normalizeSort(
+                result.filters.sort
+            );
+
+            elements.sort.value =
+                state.sort;
+        }
 
         renderApplications();
         renderPagination();
     } catch (error) {
-        showError(error.message);
+        showError(
+            error.message
+        );
     }
 }
 
@@ -91,52 +137,73 @@ function renderApplications() {
     elements.count.textContent =
         `${state.total} aplikasi ditemukan`;
 
-    if (state.applications.length === 0) {
-        elements.grid.innerHTML = '';
-        elements.empty.classList.remove('hidden');
-        elements.paginationWrapper.classList.add('hidden');
+    if (
+        state.applications.length === 0
+    ) {
+        elements.grid.innerHTML =
+            '';
+
+        elements.empty.classList.remove(
+            'hidden'
+        );
+
+        elements.paginationWrapper.classList.add(
+            'hidden'
+        );
 
         return;
     }
 
-    elements.grid.innerHTML = state.applications
-        .map(createApplicationCard)
-        .join('');
+    elements.grid.innerHTML =
+        state.applications
+            .map(
+                createApplicationCard
+            )
+            .join('');
 }
 
-function createApplicationCard(application) {
+function createApplicationCard(
+    application
+) {
     const logoUrl =
-        application.logo_url || '/images/Logo.png';
+        application.logo_url ||
+        '/images/Logo.png';
 
     const category =
-        application.category_name || 'Tanpa Kategori';
+        application.category_name ||
+        'Tanpa Kategori';
 
     const description =
         application.description ||
         'Belum ada deskripsi untuk aplikasi ini.';
 
-    const versionBadge = application.current_version
-        ? `
-            <span
-                class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700"
-                title="Versi aplikasi yang sedang digunakan"
-            >
-                v${escapeHtml(
-                    application.current_version.version_number
-                )}
-            </span>
-        `
-        : `
-            <span
-                class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500"
-            >
-                Belum ada versi
-            </span>
-        `;
+    const versionBadge =
+        application.current_version
+            ? `
+                <span
+                    class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                    title="Versi aplikasi yang sedang digunakan"
+                >
+                    v${escapeHtml(
+                        application.current_version
+                            .version_number
+                    )}
+                </span>
+            `
+            : `
+                <span
+                    class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500"
+                >
+                    Belum ada versi
+                </span>
+            `;
 
-    const applicationUrl = application.slug
-        ? `/applications/${encodeURIComponent(application.slug)}`
-        : '#';
+    const applicationUrl =
+        application.slug
+            ? `/applications/${encodeURIComponent(
+                application.slug
+            )}`
+            : '#';
 
     return `
         <article
@@ -144,8 +211,12 @@ function createApplicationCard(application) {
         >
             <div class="flex aspect-video items-center justify-center overflow-hidden bg-slate-50">
                 <img
-                    src="${escapeAttribute(logoUrl)}"
-                    alt="${escapeAttribute(application.name)}"
+                    src="${escapeAttribute(
+                        logoUrl
+                    )}"
+                    alt="${escapeAttribute(
+                        application.name
+                    )}"
                     class="h-full w-full object-contain p-10 transition duration-300 group-hover:scale-105"
                     loading="lazy"
                     onerror="this.onerror=null;this.src='/images/Logo.png';"
@@ -155,24 +226,32 @@ function createApplicationCard(application) {
             <div class="flex flex-1 flex-col px-6 py-5">
                 <div class="mb-3">
                     <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
-                        ${escapeHtml(category)}
+                        ${escapeHtml(
+                            category
+                        )}
                     </span>
                 </div>
 
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                     <h2 class="text-xl font-bold text-slate-900">
-                        ${escapeHtml(application.name)}
+                        ${escapeHtml(
+                            application.name
+                        )}
                     </h2>
 
                     ${versionBadge}
                 </div>
 
                 <p class="flex-1 text-base leading-7 text-slate-600">
-                    ${escapeHtml(description)}
+                    ${escapeHtml(
+                        description
+                    )}
                 </p>
 
                 <a
-                    href="${escapeAttribute(applicationUrl)}"
+                    href="${escapeAttribute(
+                        applicationUrl
+                    )}"
                     class="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-900 px-4 py-3 text-sm font-semibold text-white no-underline transition hover:bg-blue-950"
                 >
                     Lihat Tutorial
@@ -189,13 +268,19 @@ function renderPagination() {
         state.total === 0 ||
         state.lastPage <= 1
     ) {
-        elements.paginationWrapper.classList.add('hidden');
-        elements.pagination.innerHTML = '';
+        elements.paginationWrapper.classList.add(
+            'hidden'
+        );
+
+        elements.pagination.innerHTML =
+            '';
 
         return;
     }
 
-    elements.paginationWrapper.classList.remove('hidden');
+    elements.paginationWrapper.classList.remove(
+        'hidden'
+    );
 
     elements.pageInfo.textContent =
         `Menampilkan ${state.from ?? 0}–${state.to ?? 0} dari ${state.total} aplikasi`;
@@ -204,47 +289,71 @@ function renderPagination() {
 
     buttons.push(
         createPaginationButton({
-            label: '<i class="bi bi-chevron-left"></i>',
-            page: state.currentPage - 1,
-            disabled: state.currentPage === 1,
-            title: 'Halaman sebelumnya',
+            label:
+                '<i class="bi bi-chevron-left"></i>',
+
+            page:
+                state.currentPage - 1,
+
+            disabled:
+                state.currentPage === 1,
+
+            title:
+                'Halaman sebelumnya',
         })
     );
 
-    getVisiblePages().forEach((page) => {
-        if (page === '...') {
-            buttons.push(`
-                <span
-                    class="flex h-10 min-w-10 items-center justify-center px-2 text-sm text-slate-400"
-                >
-                    ...
-                </span>
-            `);
+    getVisiblePages().forEach(
+        (page) => {
+            if (page === '...') {
+                buttons.push(`
+                    <span
+                        class="flex h-10 min-w-10 items-center justify-center px-2 text-sm text-slate-400"
+                    >
+                        ...
+                    </span>
+                `);
 
-            return;
+                return;
+            }
+
+            buttons.push(
+                createPaginationButton({
+                    label:
+                        String(page),
+
+                    page,
+
+                    active:
+                        page ===
+                        state.currentPage,
+
+                    title:
+                        `Halaman ${page}`,
+                })
+            );
         }
-
-        buttons.push(
-            createPaginationButton({
-                label: String(page),
-                page,
-                active: page === state.currentPage,
-                title: `Halaman ${page}`,
-            })
-        );
-    });
+    );
 
     buttons.push(
         createPaginationButton({
-            label: '<i class="bi bi-chevron-right"></i>',
-            page: state.currentPage + 1,
+            label:
+                '<i class="bi bi-chevron-right"></i>',
+
+            page:
+                state.currentPage + 1,
+
             disabled:
-                state.currentPage === state.lastPage,
-            title: 'Halaman berikutnya',
+                state.currentPage ===
+                state.lastPage,
+
+            title:
+                'Halaman berikutnya',
         })
     );
 
-    elements.pagination.innerHTML = buttons.join('');
+    elements.pagination.innerHTML =
+        buttons.join('');
 }
 
 function createPaginationButton({
@@ -254,19 +363,23 @@ function createPaginationButton({
     disabled = false,
     title = '',
 }) {
-    const activeClass = active
-        ? 'border-blue-900 bg-blue-900 text-white'
-        : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50';
+    const activeClass =
+        active
+            ? 'border-blue-900 bg-blue-900 text-white'
+            : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50';
 
-    const disabledClass = disabled
-        ? 'cursor-not-allowed opacity-40'
-        : '';
+    const disabledClass =
+        disabled
+            ? 'cursor-not-allowed opacity-40'
+            : '';
 
     return `
         <button
             type="button"
             data-page="${page}"
-            title="${escapeAttribute(title)}"
+            title="${escapeAttribute(
+                title
+            )}"
             ${disabled ? 'disabled' : ''}
             class="pagination-button flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition ${activeClass} ${disabledClass}"
         >
@@ -276,13 +389,19 @@ function createPaginationButton({
 }
 
 function getVisiblePages() {
-    const current = state.currentPage;
-    const last = state.lastPage;
+    const current =
+        state.currentPage;
+
+    const last =
+        state.lastPage;
 
     if (last <= 7) {
         return Array.from(
-            { length: last },
-            (_, index) => index + 1
+            {
+                length: last,
+            },
+            (_, index) =>
+                index + 1
         );
     }
 
@@ -298,7 +417,10 @@ function getVisiblePages() {
         ];
     }
 
-    if (current >= last - 3) {
+    if (
+        current >=
+        last - 3
+    ) {
         return [
             1,
             '...',
@@ -339,8 +461,30 @@ function changePage(page) {
     });
 }
 
-async function parseResponse(response) {
-    const result = await response.json().catch(() => ({}));
+function normalizeSort(value) {
+    const allowedSorts = [
+        'latest',
+        'oldest',
+        'name_asc',
+        'name_desc',
+    ];
+
+    return allowedSorts.includes(
+        value
+    )
+        ? value
+        : 'latest';
+}
+
+async function parseResponse(
+    response
+) {
+    const result =
+        await response
+            .json()
+            .catch(
+                () => ({})
+            );
 
     if (response.ok) {
         return result;
@@ -353,87 +497,178 @@ async function parseResponse(response) {
 }
 
 function showLoading() {
-    elements.loading.classList.remove('hidden');
-    elements.empty.classList.add('hidden');
-    elements.error.classList.add('hidden');
-    elements.paginationWrapper.classList.add('hidden');
+    elements.loading.classList.remove(
+        'hidden'
+    );
 
-    elements.grid.innerHTML = '';
-    elements.count.textContent = 'Memuat aplikasi...';
+    elements.empty.classList.add(
+        'hidden'
+    );
+
+    elements.error.classList.add(
+        'hidden'
+    );
+
+    elements.paginationWrapper.classList.add(
+        'hidden'
+    );
+
+    elements.grid.innerHTML =
+        '';
+
+    elements.count.textContent =
+        'Memuat aplikasi...';
 }
 
 function hideStates() {
-    elements.loading.classList.add('hidden');
-    elements.empty.classList.add('hidden');
-    elements.error.classList.add('hidden');
+    elements.loading.classList.add(
+        'hidden'
+    );
+
+    elements.empty.classList.add(
+        'hidden'
+    );
+
+    elements.error.classList.add(
+        'hidden'
+    );
 }
 
 function showError(message) {
-    elements.loading.classList.add('hidden');
-    elements.empty.classList.add('hidden');
-    elements.error.classList.remove('hidden');
-    elements.paginationWrapper.classList.add('hidden');
-
-    elements.grid.innerHTML = '';
-    elements.count.textContent = 'Data gagal dimuat';
-
-    const errorMessage = elements.error.querySelector(
-        '[data-error-message]'
+    elements.loading.classList.add(
+        'hidden'
     );
 
+    elements.empty.classList.add(
+        'hidden'
+    );
+
+    elements.error.classList.remove(
+        'hidden'
+    );
+
+    elements.paginationWrapper.classList.add(
+        'hidden'
+    );
+
+    elements.grid.innerHTML =
+        '';
+
+    elements.count.textContent =
+        'Data gagal dimuat';
+
+    const errorMessage =
+        elements.error.querySelector(
+            '[data-error-message]'
+        );
+
     if (errorMessage) {
-        errorMessage.textContent = message;
+        errorMessage.textContent =
+            message;
     }
 }
 
 function escapeHtml(value) {
-    return String(value ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+    return String(
+        value ?? ''
+    )
+        .replaceAll(
+            '&',
+            '&amp;'
+        )
+        .replaceAll(
+            '<',
+            '&lt;'
+        )
+        .replaceAll(
+            '>',
+            '&gt;'
+        )
+        .replaceAll(
+            '"',
+            '&quot;'
+        )
+        .replaceAll(
+            "'",
+            '&#039;'
+        );
 }
 
 function escapeAttribute(value) {
-    return escapeHtml(value);
+    return escapeHtml(
+        value
+    );
 }
 
 elements.search.addEventListener(
     'input',
     (event) => {
-        state.search = event.target.value.trim();
+        state.search =
+            event.target.value.trim();
 
-        window.clearTimeout(searchTimeout);
+        window.clearTimeout(
+            searchTimeout
+        );
 
-        searchTimeout = window.setTimeout(() => {
-            fetchApplications(1);
-        }, 400);
+        searchTimeout =
+            window.setTimeout(
+                () => {
+                    fetchApplications(
+                        1
+                    );
+                },
+                400
+            );
+    }
+);
+
+elements.sort.addEventListener(
+    'change',
+    (event) => {
+        state.sort =
+            normalizeSort(
+                event.target.value
+            );
+
+        fetchApplications(
+            1
+        );
     }
 );
 
 elements.pagination.addEventListener(
     'click',
     (event) => {
-        const button = event.target.closest(
-            '.pagination-button'
-        );
+        const button =
+            event.target.closest(
+                '.pagination-button'
+            );
 
-        if (!button || button.disabled) {
+        if (
+            !button ||
+            button.disabled
+        ) {
             return;
         }
 
-        const page = Number(button.dataset.page);
+        const page =
+            Number(
+                button.dataset.page
+            );
 
-        changePage(page);
+        changePage(
+            page
+        );
     }
 );
 
 elements.retry.addEventListener(
     'click',
     () => {
-        fetchApplications(state.currentPage);
+        fetchApplications(
+            state.currentPage
+        );
     }
 );
 
-fetchApplications();   
+fetchApplications();

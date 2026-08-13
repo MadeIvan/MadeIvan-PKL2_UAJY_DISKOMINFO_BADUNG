@@ -24,7 +24,7 @@
             <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
 
                 {{-- Header --}}
-                <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div class="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                     <div>
                         <h1 class="text-2xl font-bold text-slate-900">
                             Semua Aplikasi
@@ -42,16 +42,50 @@
                         </p>
                     </div>
 
-                    <div class="relative w-full md:w-80">
-                        <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    {{-- Search + Sort --}}
+                    <div class="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
 
-                        <input
-                            id="applicationSearch"
-                            type="search"
-                            placeholder="Cari aplikasi..."
-                            autocomplete="off"
-                            class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
-                        >
+                        {{-- Sort --}}
+                        <div class="relative w-full sm:w-52">
+                            <i class="bi bi-sort-down pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                            <select
+                                id="applicationSort"
+                                class="w-full appearance-none rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-10 text-sm text-slate-700 outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                                aria-label="Urutkan aplikasi"
+                            >
+                                <option value="latest">
+                                    Terbaru
+                                </option>
+
+                                <option value="oldest">
+                                    Terlama
+                                </option>
+
+                                <option value="name_asc">
+                                    Nama A–Z
+                                </option>
+
+                                <option value="name_desc">
+                                    Nama Z–A
+                                </option>
+                            </select>
+
+                            <i class="bi bi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                        </div>
+
+                        {{-- Search --}}
+                        <div class="relative w-full sm:w-80">
+                            <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+
+                            <input
+                                id="applicationSearch"
+                                type="search"
+                                placeholder="Cari aplikasi..."
+                                autocomplete="off"
+                                class="w-full rounded-xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-900 focus:ring-4 focus:ring-blue-900/10"
+                            >
+                        </div>
                     </div>
                 </div>
 

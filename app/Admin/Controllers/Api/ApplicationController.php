@@ -21,39 +21,36 @@ class ApplicationController extends Controller
         $this->service = $service;
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $sort = $this->normalizeSort(
-            (string) $request->query('sort', 'latest')
-        );
-
-        $query = Application::query()
-            ->with('currentVersion');
-
-        $this->applySorting($query, $sort);
-
-        $applications = $query->paginate(15);
+        $applications = Application::query()
+            ->with('currentVersion')
+            ->latest()
+            ->paginate(15);
 
         return response()->json([
             'message' =>
                 'Applications retrieved successfully.',
 
-            'data' => $applications,
+            'data' =>
+                $applications,
         ]);
     }
 
     public function store(
         StoreApplicationRequest $request
     ): JsonResponse {
-        $application = $this->service->create(
-            $request->validated()
-        );
+        $application =
+            $this->service->create(
+                $request->validated()
+            );
 
         return response()->json([
             'message' =>
                 'Application created successfully.',
 
-            'data' => $application,
+            'data' =>
+                $application,
         ], 201);
     }
 
@@ -69,7 +66,8 @@ class ApplicationController extends Controller
             'message' =>
                 'Application retrieved successfully.',
 
-            'data' => $application,
+            'data' =>
+                $application,
         ]);
     }
 
@@ -77,23 +75,27 @@ class ApplicationController extends Controller
         UpdateApplicationRequest $request,
         Application $application
     ): JsonResponse {
-        $application = $this->service->update(
-            $application,
-            $request->validated()
-        );
+        $application =
+            $this->service->update(
+                $application,
+                $request->validated()
+            );
 
         return response()->json([
             'message' =>
                 'Application updated successfully.',
 
-            'data' => $application,
+            'data' =>
+                $application,
         ]);
     }
 
     public function destroy(
         Application $application
     ): JsonResponse {
-        $this->service->delete($application);
+        $this->service->delete(
+            $application
+        );
 
         return response()->json([
             'message' =>
@@ -104,71 +106,94 @@ class ApplicationController extends Controller
     public function getAllWithVersions(
         Request $request
     ): JsonResponse {
-        $search = trim(
-            (string) $request->query('search', '')
-        );
-
-        $sort = $this->normalizeSort(
-            (string) $request->query('sort', 'latest')
-        );
-
-        $query = Application::query()
-            ->with([
-                'versions' => function ($query): void {
-                    $query
-                        ->latest('release_date')
-                        ->latest('id');
-                },
-
-                'currentVersion',
-            ])
-            ->when(
-                $search !== '',
-                function (Builder $query) use ($search): void {
-                    $query->where(
-                        function (Builder $query) use ($search): void {
-                            $query
-                                ->where(
-                                    'name',
-                                    'like',
-                                    "%{$search}%"
-                                )
-                                ->orWhere(
-                                    'slug',
-                                    'like',
-                                    "%{$search}%"
-                                )
-                                ->orWhere(
-                                    'description',
-                                    'like',
-                                    "%{$search}%"
-                                )
-                                ->orWhere(
-                                    'category_name',
-                                    'like',
-                                    "%{$search}%"
-                                )
-                                ->orWhere(
-                                    'status',
-                                    'like',
-                                    "%{$search}%"
-                                );
-                        }
-                    );
-                }
+        $search =
+            trim(
+                (string) $request->query(
+                    'search',
+                    ''
+                )
             );
 
-        $this->applySorting($query, $sort);
+        $sort =
+            $this->normalizeSort(
+                (string) $request->query(
+                    'sort',
+                    'latest'
+                )
+            );
 
-        $applications = $query
-            ->paginate(9)
-            ->withQueryString();
+        $applications =
+            Application::query()
+                ->with([
+                    'versions' => function ($query): void {
+                        $query
+                            ->latest('release_date')
+                            ->latest('id');
+                    },
+
+                    'currentVersion',
+                ])
+                ->when(
+                    $search !== '',
+                    function (
+                        Builder $query
+                    ) use (
+                        $search
+                    ): void {
+                        $query->where(
+                            function (
+                                Builder $query
+                            ) use (
+                                $search
+                            ): void {
+                                $query
+                                    ->where(
+                                        'name',
+                                        'like',
+                                        "%{$search}%"
+                                    )
+                                    ->orWhere(
+                                        'slug',
+                                        'like',
+                                        "%{$search}%"
+                                    )
+                                    ->orWhere(
+                                        'description',
+                                        'like',
+                                        "%{$search}%"
+                                    )
+                                    ->orWhere(
+                                        'category_name',
+                                        'like',
+                                        "%{$search}%"
+                                    )
+                                    ->orWhere(
+                                        'status',
+                                        'like',
+                                        "%{$search}%"
+                                    );
+                            }
+                        );
+                    }
+                );
+
+        $this->applySort(
+            $applications,
+            $sort
+        );
+
+        $applications =
+            $applications->paginate(
+                9
+            );
 
         $applications->setCollection(
             $applications
                 ->getCollection()
                 ->map(
-                    function (Application $application): array {
+                    function (
+                        Application $application
+                    ): array {
                         return [
                             ...$application->toArray(),
 
@@ -185,30 +210,6 @@ class ApplicationController extends Controller
                     }
                 )
         );
-
-        /*
-         * Statistics are calculated from all application records,
-         * not only the currently opened pagination page.
-         */
-        $summary = [
-            'total_applications' =>
-                Application::query()->count(),
-
-            'active_applications' =>
-                Application::query()
-                    ->where('status', 'active')
-                    ->count(),
-
-            'public_applications' =>
-                Application::query()
-                    ->where('is_public', true)
-                    ->count(),
-
-            'inactive_applications' =>
-                Application::query()
-                    ->where('status', 'inactive')
-                    ->count(),
-        ];
 
         return response()->json([
             'message' =>
@@ -237,43 +238,101 @@ class ApplicationController extends Controller
                     $applications->lastItem(),
             ],
 
-            'summary' => $summary,
-
             'filters' => [
-                'search' => $search,
-                'sort' => $sort,
+                'search' =>
+                    $search,
+
+                'sort' =>
+                    $sort,
             ],
         ]);
     }
 
     public function options(): JsonResponse
     {
-        $applications = Application::query()
-            ->select([
-                'id',
-                'name',
-                'description',
-            ])
-            ->with([
-                'versions' => function ($query): void {
-                    $query
-                        ->select([
-                            'id',
-                            'application_id',
-                            'version_number',
-                        ])
-                        ->orderByDesc('id');
-                },
-            ])
-            ->orderBy('name')
-            ->get();
+        $applications =
+            Application::query()
+                ->select([
+                    'id',
+                    'name',
+                    'description',
+                ])
+                ->with([
+                    'versions' => function ($query): void {
+                        $query
+                            ->select([
+                                'id',
+                                'application_id',
+                                'version_number',
+                            ])
+                            ->orderByDesc(
+                                'id'
+                            );
+                    },
+                ])
+                ->orderBy(
+                    'name'
+                )
+                ->get();
 
         return response()->json([
             'message' =>
                 'Pilihan aplikasi berhasil diambil.',
 
-            'data' => $applications,
+            'data' =>
+                $applications,
         ]);
+    }
+
+    private function applySort(
+        Builder $query,
+        string $sort
+    ): void {
+        match ($sort) {
+            'oldest' =>
+                $query
+                    ->orderBy(
+                        'created_at',
+                        'asc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'asc'
+                    ),
+
+            'name_asc' =>
+                $query
+                    ->orderBy(
+                        'name',
+                        'asc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'asc'
+                    ),
+
+            'name_desc' =>
+                $query
+                    ->orderBy(
+                        'name',
+                        'desc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'desc'
+                    ),
+
+            default =>
+                $query
+                    ->orderBy(
+                        'created_at',
+                        'desc'
+                    )
+                    ->orderBy(
+                        'id',
+                        'desc'
+                    ),
+        };
     }
 
     private function normalizeSort(
@@ -293,28 +352,5 @@ class ApplicationController extends Controller
         )
             ? $sort
             : 'latest';
-    }
-
-    private function applySorting(
-        Builder $query,
-        string $sort
-    ): void {
-        match ($sort) {
-            'oldest' => $query
-                ->orderBy('created_at', 'asc')
-                ->orderBy('id', 'asc'),
-
-            'name_asc' => $query
-                ->orderBy('name', 'asc')
-                ->orderBy('id', 'asc'),
-
-            'name_desc' => $query
-                ->orderBy('name', 'desc')
-                ->orderBy('id', 'desc'),
-
-            default => $query
-                ->orderBy('created_at', 'desc')
-                ->orderBy('id', 'desc'),
-        };
     }
 }

@@ -1,179 +1,167 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const sidebar = document.getElementById(
-    'admin-sidebar'
-);
+const sidebar =
+    document.getElementById(
+        'admin-sidebar'
+    );
 
-const adminMain = document.getElementById(
-    'admin-main'
-);
+const adminMain =
+    document.getElementById(
+        'admin-main'
+    );
 
-const collapseButton = document.getElementById(
-    'sidebar-collapse'
-);
+const pinButton =
+    document.getElementById(
+        'sidebar-collapse'
+    );
 
-const collapseIcon = document.getElementById(
-    'sidebar-collapse-icon'
-);
+const pinIcon =
+    document.getElementById(
+        'sidebar-collapse-icon'
+    );
 
-const collapseLabel = document.getElementById(
-    'sidebar-collapse-label'
-);
+const pinLabel =
+    document.getElementById(
+        'sidebar-collapse-label'
+    );
 
-const openMobileButton = document.getElementById(
-    'sidebar-open-mobile'
-);
+const openMobileButton =
+    document.getElementById(
+        'sidebar-open-mobile'
+    );
 
-const closeMobileButton = document.getElementById(
-    'sidebar-close-mobile'
-);
+const closeMobileButton =
+    document.getElementById(
+        'sidebar-close-mobile'
+    );
 
-const overlay = document.getElementById(
-    'sidebar-overlay'
-);
+const overlay =
+    document.getElementById(
+        'sidebar-overlay'
+    );
 
-const sidebarLabels = document.querySelectorAll(
-    '[data-sidebar-label]'
-);
+const sidebarLabels =
+    document.querySelectorAll(
+        '[data-sidebar-label]'
+    );
 
-const desktopMediaQuery = window.matchMedia(
-    '(min-width: 1024px)'
-);
-
-const SIDEBAR_STORAGE_KEY =
+const SIDEBAR_PIN_KEY =
     'admin-sidebar-pinned';
 
-const state = {
-    pinned:
-        localStorage.getItem(
-            SIDEBAR_STORAGE_KEY
-        ) === 'true',
+let sidebarPinned =
+    localStorage.getItem(
+        SIDEBAR_PIN_KEY
+    ) === 'true';
 
-    hovered: false,
-    mobileOpen: false,
-};
+let sidebarHovered = false;
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function isDesktop() {
-    return desktopMediaQuery.matches;
+    return window.innerWidth >= 1024;
 }
 
-function shouldExpandDesktopSidebar() {
-    return state.pinned || state.hovered;
-}
-
-function showSidebarLabels() {
+function setLabelsVisible(visible) {
     sidebarLabels.forEach((label) => {
-        label.classList.remove(
-            'w-0',
-            'opacity-0',
-            'pointer-events-none'
+        label.classList.toggle(
+            'hidden',
+            !visible
         );
 
-        label.classList.add(
-            'opacity-100'
+        label.classList.toggle(
+            'opacity-0',
+            !visible
+        );
+
+        label.classList.toggle(
+            'opacity-100',
+            visible
         );
     });
-}
-
-function hideSidebarLabels() {
-    sidebarLabels.forEach((label) => {
-        label.classList.remove(
-            'opacity-100'
-        );
-
-        label.classList.add(
-            'w-0',
-            'opacity-0',
-            'pointer-events-none'
-        );
-    });
-}
-
-function setMainExpanded(expanded) {
-    if (!adminMain) {
-        return;
-    }
-
-    if (expanded) {
-        adminMain.classList.remove(
-            'lg:ml-20'
-        );
-
-        adminMain.classList.add(
-            'lg:ml-64'
-        );
-
-        return;
-    }
-
-    adminMain.classList.remove(
-        'lg:ml-64'
-    );
-
-    adminMain.classList.add(
-        'lg:ml-20'
-    );
-}
-
-function setDesktopSidebarExpanded(
-    expanded
-) {
-    if (!sidebar || !isDesktop()) {
-        return;
-    }
-
-    sidebar.classList.remove(
-        expanded
-            ? 'lg:w-20'
-            : 'lg:w-64'
-    );
-
-    sidebar.classList.add(
-        expanded
-            ? 'lg:w-64'
-            : 'lg:w-20'
-    );
-
-    if (expanded) {
-        showSidebarLabels();
-    } else {
-        hideSidebarLabels();
-    }
-
-    setMainExpanded(expanded);
-
-    sidebar.dataset.sidebarPinned =
-        state.pinned ? 'true' : 'false';
 }
 
 function updatePinButton() {
+    if (!pinButton) {
+        return;
+    }
+
+    pinButton.setAttribute(
+        'aria-pressed',
+        String(sidebarPinned)
+    );
+
+    pinButton.setAttribute(
+        'title',
+        sidebarPinned
+            ? 'Lepas kunci sidebar'
+            : 'Kunci sidebar'
+    );
+
+    if (pinLabel) {
+        pinLabel.textContent =
+            sidebarPinned
+                ? 'Lepas Kunci'
+                : 'Kunci Sidebar';
+    }
+
+    if (pinIcon) {
+        pinIcon.classList.toggle(
+            'bi-pin-angle',
+            !sidebarPinned
+        );
+
+        pinIcon.classList.toggle(
+            'bi-pin-angle-fill',
+            sidebarPinned
+        );
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Desktop Sidebar State
+|--------------------------------------------------------------------------
+*/
+
+function setDesktopExpanded(expanded) {
     if (
-        !collapseButton ||
-        !collapseIcon ||
-        !collapseLabel
+        !sidebar ||
+        !adminMain ||
+        !isDesktop()
     ) {
         return;
     }
 
-    collapseButton.setAttribute(
-        'aria-expanded',
-        state.pinned ? 'true' : 'false'
+    sidebar.classList.toggle(
+        'lg:w-72',
+        expanded
     );
 
-    collapseIcon.className =
-        state.pinned
-            ? 'bi bi-pin-angle-fill text-lg'
-            : 'bi bi-pin-angle text-lg';
+    sidebar.classList.toggle(
+        'lg:w-20',
+        !expanded
+    );
 
-    collapseLabel.textContent =
-        state.pinned
-            ? 'Lepas Sidebar'
-            : 'Kunci Sidebar';
+    adminMain.classList.toggle(
+        'lg:ml-72',
+        expanded
+    );
 
-    collapseButton.title =
-        state.pinned
-            ? 'Biarkan sidebar menutup otomatis'
-            : 'Buka sidebar secara permanen';
+    adminMain.classList.toggle(
+        'lg:ml-20',
+        !expanded
+    );
+
+    setLabelsVisible(
+        expanded
+    );
+
+    sidebar.dataset.sidebarExpanded =
+        String(expanded);
 }
 
 function refreshDesktopSidebar() {
@@ -181,57 +169,92 @@ function refreshDesktopSidebar() {
         return;
     }
 
-    setDesktopSidebarExpanded(
-        shouldExpandDesktopSidebar()
+    const shouldExpand =
+        sidebarPinned ||
+        sidebarHovered;
+
+    setDesktopExpanded(
+        shouldExpand
     );
-
-    updatePinButton();
 }
 
-function toggleSidebarPin() {
-    state.pinned = !state.pinned;
+/*
+|--------------------------------------------------------------------------
+| Hover Behavior
+|--------------------------------------------------------------------------
+*/
 
-    localStorage.setItem(
-        SIDEBAR_STORAGE_KEY,
-        state.pinned ? 'true' : 'false'
-    );
+sidebar?.addEventListener(
+    'mouseenter',
+    () => {
+        if (!isDesktop()) {
+            return;
+        }
 
-    refreshDesktopSidebar();
-}
+        sidebarHovered = true;
 
-function handleSidebarMouseEnter() {
-    if (!isDesktop()) {
-        return;
+        refreshDesktopSidebar();
     }
+);
 
-    state.hovered = true;
+sidebar?.addEventListener(
+    'mouseleave',
+    () => {
+        if (!isDesktop()) {
+            return;
+        }
 
-    refreshDesktopSidebar();
-}
+        sidebarHovered = false;
 
-function handleSidebarMouseLeave() {
-    if (!isDesktop()) {
-        return;
+        refreshDesktopSidebar();
     }
+);
 
-    state.hovered = false;
+/*
+|--------------------------------------------------------------------------
+| Pin Behavior
+|--------------------------------------------------------------------------
+*/
 
-    refreshDesktopSidebar();
-}
+pinButton?.addEventListener(
+    'click',
+    () => {
+        if (!isDesktop()) {
+            return;
+        }
+
+        sidebarPinned =
+            !sidebarPinned;
+
+        localStorage.setItem(
+            SIDEBAR_PIN_KEY,
+            String(sidebarPinned)
+        );
+
+        sidebar.dataset.sidebarPinned =
+            String(sidebarPinned);
+
+        updatePinButton();
+        refreshDesktopSidebar();
+    }
+);
+
+/*
+|--------------------------------------------------------------------------
+| Mobile Sidebar
+|--------------------------------------------------------------------------
+*/
 
 function openMobileSidebar() {
-    if (!sidebar || isDesktop()) {
+    if (
+        !sidebar ||
+        isDesktop()
+    ) {
         return;
     }
-
-    state.mobileOpen = true;
 
     sidebar.classList.remove(
         '-translate-x-full'
-    );
-
-    sidebar.classList.add(
-        'translate-x-0'
     );
 
     overlay?.classList.remove(
@@ -241,20 +264,15 @@ function openMobileSidebar() {
     document.body.classList.add(
         'overflow-hidden'
     );
-
-    showSidebarLabels();
 }
 
 function closeMobileSidebar() {
-    if (!sidebar || isDesktop()) {
+    if (
+        !sidebar ||
+        isDesktop()
+    ) {
         return;
     }
-
-    state.mobileOpen = false;
-
-    sidebar.classList.remove(
-        'translate-x-0'
-    );
 
     sidebar.classList.add(
         '-translate-x-full'
@@ -268,94 +286,6 @@ function closeMobileSidebar() {
         'overflow-hidden'
     );
 }
-
-function handleBreakpointChange() {
-    if (isDesktop()) {
-        state.mobileOpen = false;
-
-        sidebar?.classList.remove(
-            '-translate-x-full',
-            'translate-x-0'
-        );
-
-        sidebar?.classList.add(
-            'lg:translate-x-0'
-        );
-
-        overlay?.classList.add(
-            'hidden'
-        );
-
-        document.body.classList.remove(
-            'overflow-hidden'
-        );
-
-        state.hovered = false;
-
-        refreshDesktopSidebar();
-
-        return;
-    }
-
-    sidebar?.classList.remove(
-        'lg:w-20',
-        'lg:w-64'
-    );
-
-    sidebar?.classList.add(
-        'w-72',
-        '-translate-x-full'
-    );
-
-    setMainExpanded(false);
-    showSidebarLabels();
-    updatePinButton();
-}
-
-function closeMobileAfterNavigation(
-    event
-) {
-    const menuLink = event.target.closest(
-        'a'
-    );
-
-    if (!menuLink || isDesktop()) {
-        return;
-    }
-
-    const href =
-        menuLink.getAttribute('href');
-
-    if (
-        !href ||
-        href === '#' ||
-        href.startsWith('javascript:')
-    ) {
-        return;
-    }
-
-    closeMobileSidebar();
-}
-
-sidebar?.addEventListener(
-    'mouseenter',
-    handleSidebarMouseEnter
-);
-
-sidebar?.addEventListener(
-    'mouseleave',
-    handleSidebarMouseLeave
-);
-
-sidebar?.addEventListener(
-    'click',
-    closeMobileAfterNavigation
-);
-
-collapseButton?.addEventListener(
-    'click',
-    toggleSidebarPin
-);
 
 openMobileButton?.addEventListener(
     'click',
@@ -377,16 +307,74 @@ document.addEventListener(
     (event) => {
         if (
             event.key === 'Escape' &&
-            state.mobileOpen
+            !isDesktop()
         ) {
             closeMobileSidebar();
         }
     }
 );
 
-desktopMediaQuery.addEventListener(
-    'change',
-    handleBreakpointChange
+/*
+|--------------------------------------------------------------------------
+| Responsive
+|--------------------------------------------------------------------------
+*/
+
+function handleResponsiveState() {
+    if (!sidebar) {
+        return;
+    }
+
+    if (isDesktop()) {
+        sidebar.classList.remove(
+            '-translate-x-full'
+        );
+
+        overlay?.classList.add(
+            'hidden'
+        );
+
+        document.body.classList.remove(
+            'overflow-hidden'
+        );
+
+        refreshDesktopSidebar();
+
+        return;
+    }
+
+    sidebar.classList.add(
+        '-translate-x-full'
+    );
+
+    overlay?.classList.add(
+        'hidden'
+    );
+
+    document.body.classList.remove(
+        'overflow-hidden'
+    );
+
+    setLabelsVisible(
+        true
+    );
+}
+
+window.addEventListener(
+    'resize',
+    handleResponsiveState
 );
 
-handleBreakpointChange();
+/*
+|--------------------------------------------------------------------------
+| Initial State
+|--------------------------------------------------------------------------
+*/
+
+sidebar?.setAttribute(
+    'data-sidebar-pinned',
+    String(sidebarPinned)
+);
+
+updatePinButton();
+handleResponsiveState();
