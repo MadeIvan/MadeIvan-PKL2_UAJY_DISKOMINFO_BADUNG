@@ -324,6 +324,28 @@ function initializeApplicationPage() {
     resetVersionForm();
     initializeFilters();
     fetchApplications();
+    fetchCategories();
+
+    async function fetchCategories() {
+        try {
+            const response = await fetch('/api/admin/categories?all=true', {
+                headers: { Accept: 'application/json' },
+            });
+            
+            if (response.ok) {
+                const categories = await response.json();
+                let html = '<option value="">Tidak ada kategori</option>';
+                categories.forEach(cat => {
+                    html += `<option value="${cat.id}">${cat.name}</option>`;
+                });
+                elements.applicationCategory.innerHTML = html;
+            } else {
+                console.error('Failed to fetch categories');
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    }
 
     function initializeFilters() {
         elements.applicationSort.value = state.sort;
@@ -920,7 +942,7 @@ function initializeApplicationPage() {
             DEFAULT_LOGO_URL;
 
         const category =
-            application.category_name ||
+            application.category?.name ||
             'Tanpa Kategori';
 
         const description =
@@ -1340,7 +1362,7 @@ function initializeApplicationPage() {
             application.description || '';
 
         elements.applicationCategory.value =
-            application.category_name || '';
+            application.category_id || '';
 
         elements.applicationStatus.value =
             application.status || 'active';
@@ -1455,8 +1477,8 @@ function initializeApplicationPage() {
         );
 
         formData.append(
-            'category_name',
-            elements.applicationCategory.value.trim()
+            'category_id',
+            elements.applicationCategory.value
         );
 
         formData.append(

@@ -412,13 +412,13 @@
                             Kategori
                         </label>
 
-                        <input
+                        <select
                             id="application-category"
-                            type="text"
-                            maxlength="150"
-                            placeholder="Contoh: Sistem Internal"
-                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                            class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
+                            <option value="">Tidak ada kategori</option>
+                            <!-- JS will populate categories here -->
+                        </select>
                     </div>
 
                     <div>

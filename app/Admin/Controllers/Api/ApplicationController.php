@@ -132,6 +132,7 @@ class ApplicationController extends Controller
                     },
 
                     'currentVersion',
+                    'category',
                 ])
                 ->when(
                     $search !== '',
@@ -162,11 +163,9 @@ class ApplicationController extends Controller
                                         'like',
                                         "%{$search}%"
                                     )
-                                    ->orWhere(
-                                        'category_name',
-                                        'like',
-                                        "%{$search}%"
-                                    )
+                                    ->orWhereHas('category', function (Builder $q) use ($search) {
+                                        $q->where('name', 'like', "%{$search}%");
+                                    })
                                     ->orWhere(
                                         'status',
                                         'like',

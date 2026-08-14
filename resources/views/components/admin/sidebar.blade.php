@@ -5,6 +5,9 @@
         request()->is('admin/applications*') ||
         request()->is('admin/aplikasi-demo*');
 
+    $categoriesActive =
+        request()->is('admin/categories*');
+
     $materialsActive =
         request()->is('admin/Materi-demo*');
 @endphp
@@ -231,7 +234,7 @@
 
             {{-- Categories --}}
             <a
-                href="#"
+                href="{{ url('/admin/categories') }}"
                 title="Kategori"
                 class="
                     group flex min-h-12 items-center gap-3

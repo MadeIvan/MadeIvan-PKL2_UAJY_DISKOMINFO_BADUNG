@@ -3,6 +3,7 @@
 use App\Admin\Controllers\Api\ApplicationController;
 use App\Admin\Controllers\Api\ApplicationVersionController;
 use App\Admin\Controllers\Api\TutorialNodeController;
+use App\Admin\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PublicApplicationController;
 use App\Admin\Controllers\Api\TutorialContentBlockController;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Api\AuthController;
 Route::get('/user', fn (Request $request) => $request->user())->middleware('auth:sanctum');
 
 Route::prefix('admin')->name('api.admin.')->group(function (): void {
+    Route::apiResource('categories', CategoryController::class);
     Route::get('/applications/options', [ApplicationController::class, 'options'])->name('applications.options');
     Route::get('/applications-with-versions', [ApplicationController::class, 'getAllWithVersions'])->name('applications.with-versions');
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Application extends Model
@@ -15,7 +16,7 @@ protected $fillable = [
     'name',
     'slug',
     'description',
-    'category_name',
+    'category_id',
     'logo_path',
     'cover_path',
     'status',
@@ -38,6 +39,11 @@ public function currentVersion(): HasOne
 {
     return $this->hasOne(ApplicationVersion::class)
         ->where('is_current', true);
+}
+
+public function category(): BelongsTo
+{
+    return $this->belongsTo(Category::class);
 }
 
     public function tutorialNodes(): HasMany
