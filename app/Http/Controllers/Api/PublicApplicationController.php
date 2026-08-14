@@ -41,6 +41,7 @@ class PublicApplicationController extends Controller
                     true
                 )
                 ->with([
+                    'category',
                     'versions' =>
                         function (
                             $query
@@ -81,10 +82,19 @@ class PublicApplicationController extends Controller
                                         'like',
                                         "%{$search}%"
                                     )
-                                    ->orWhere(
-                                        'category_name',
-                                        'like',
-                                        "%{$search}%"
+                                    ->orWhereHas(
+                                        'category',
+                                        function (
+                                            Builder $query
+                                        ) use (
+                                            $search
+                                        ): void {
+                                            $query->where(
+                                                'name',
+                                                'like',
+                                                "%{$search}%"
+                                            );
+                                        }
                                     );
                             }
                         );
@@ -96,9 +106,11 @@ class PublicApplicationController extends Controller
             $sort
         );
 
+        $perPage = min((int) $request->query('per_page', 9), 20);
+
         $applications =
             $applications->paginate(
-                9
+                $perPage
             );
 
         $applications->setCollection(
@@ -127,7 +139,7 @@ class PublicApplicationController extends Controller
                                 $application->description,
 
                             'category_name' =>
-                                $application->category_name,
+                                $application->category?->name,
 
                             'logo_url' =>
                                 $application->logo_path

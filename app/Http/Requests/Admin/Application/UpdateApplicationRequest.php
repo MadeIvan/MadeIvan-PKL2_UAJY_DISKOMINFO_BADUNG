@@ -39,11 +39,10 @@ class UpdateApplicationRequest extends FormRequest
                 'string',
             ],
 
-            'category_name' => [
+            'category_id' => [
                 'sometimes',
                 'nullable',
-                'string',
-                'max:150',
+                'exists:categories,id',
             ],
 
             'status' => [

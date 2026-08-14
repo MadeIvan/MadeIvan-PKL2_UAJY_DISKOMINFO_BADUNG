@@ -33,10 +33,9 @@ class StoreApplicationRequest extends FormRequest
                 'string',
             ],
 
-            'category_name' => [
+            'category_id' => [
                 'nullable',
-                'string',
-                'max:150',
+                'exists:categories,id',
             ],
 
             'status' => [

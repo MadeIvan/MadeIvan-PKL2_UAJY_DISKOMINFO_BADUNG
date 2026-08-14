@@ -8,391 +8,158 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Sistem Manajemen Pengetahuan</title>
+    <title>Sistem Manajemen Pengetahuan - Kabupaten Badung</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/public/welcome.js'])
 </head>
 
-<body class="min-h-screen bg-slate-50 pt-20 text-slate-900">    
+<body class="min-h-screen bg-slate-50 pt-20 text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900">    
 
     {{-- Navbar --}}
     @include('components.navbar')
 
     <main>
-
-        {{-- Hero --}}
+        {{-- Hero Section --}}
         <section
             id="beranda"
             class="relative overflow-hidden bg-cover bg-center bg-no-repeat"
             style="background-image: url('{{ asset('images/pemkab-badung_169.png') }}');"
         >
-            <div class="absolute inset-0 bg-gradient-to-b from-blue-50/70 to-white"></div>
+            {{-- Modern Background Decorative Elements --}}
+            <div class="absolute inset-0 bg-white/80 backdrop-blur-sm pointer-events-none z-0"></div>
+            <div class="absolute inset-0 pointer-events-none z-0">
+                <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-blue-100 blur-[100px] opacity-70"></div>
+                <div class="absolute top-40 -left-40 w-96 h-96 rounded-full bg-cyan-100 blur-[100px] opacity-70"></div>
+                <div class="absolute bottom-0 right-1/4 w-125 h-125 rounded-full bg-slate-100 blur-[120px] opacity-80"></div>
+            </div>
 
-            <div class="relative mx-auto max-w-5xl px-6 py-24 text-center lg:px-8 lg:py-32">
+            <div class="relative mx-auto max-w-6xl px-6 py-24 text-center lg:px-8 lg:py-36 z-10">
+                <div class="animate-fade-in-up">
+                    <span class="inline-flex rounded-full bg-blue-50 border border-blue-100 px-4 py-2 text-sm font-semibold text-blue-800 shadow-sm mb-6">
+                        <i class="bi bi-stars mr-2 text-amber-500"></i> Pusat Pengetahuan & Informasi
+                    </span>
+                </div>
 
-                <span class="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-900">
-                    Pusat informasi dan pembelajaran terintegrasi
-                </span>
-
-                <h1 class="mx-auto mt-6 max-w-4xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                    Pusat informasi dan dokumentasi untuk sistem informasi
-                    <span class="text-blue-900">
+                <h1 class="mx-auto mt-2 max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-tight">
+                    Platform Sistem Informasi
+                    <br class="hidden md:block" />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500">
                         Kabupaten Badung
                     </span>
                 </h1>
 
-                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-900">
-                    Pusat bantuan, dokumentasi, video, untuk pengguna sistem informasi Kabupaten Badung.
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-500">
+                    Satu portal untuk semua panduan, dokumentasi teknis, dan informasi aplikasi yang digunakan di lingkungan Pemerintah Kabupaten Badung.
                 </p>
 
                 {{-- Kolom Pencarian --}}
-                <div class="mx-auto mt-10 max-w-3xl">
-                    <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/50 sm:flex-row">
-
+                <div class="mx-auto mt-10 max-w-2xl">
+                    <form action="/applications-demo" method="GET" class="flex flex-col gap-2 rounded-2xl bg-white/80 backdrop-blur-xl p-2 shadow-2xl shadow-blue-900/5 ring-1 ring-slate-200 sm:flex-row transition-all hover:shadow-blue-900/10">
                         <div class="relative flex-1">
                             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5 text-slate-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"
-                                    />
-                                </svg>
+                                <i class="bi bi-search text-slate-400 text-lg"></i>
                             </div>
 
                             <input
                                 type="search"
-                                placeholder="Cari tutorial, dokumen, atau topik..."
-                                class="h-14 w-full rounded-xl border-0 bg-slate-50 pl-12 pr-4 text-slate-900 outline-none placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                                name="search"
+                                placeholder="Cari aplikasi atau panduan..."
+                                class="h-14 w-full rounded-xl border-0 bg-transparent pl-12 pr-4 text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
                             >
                         </div>
 
                         <button
-                            type="button"
-                            class="h-14 rounded-xl bg-blue-900 px-8 font-semibold text-white transition hover:bg-blue-700"
+                            type="submit"
+                            class="h-14 rounded-xl bg-blue-900 px-8 font-semibold text-white transition hover:bg-blue-800 shadow-sm hover:shadow-md"
                         >
-                            Cari
+                            Temukan
                         </button>
-                    </div>
+                    </form>
                 </div>
 
                 {{-- Pencarian Populer --}}
-                <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-sm">
-                    <span class="text-slate-500">
-                        Pencarian populer:
-                    </span>
-
-                    <a
-                        href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
-                    >
-                        SAKIP
-                    </a>
-
-                    <a
-                        href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
-                    >
-                        Website Desa
-                    </a>
-
-                    <a
-                        href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-900 transition hover:bg-blue-100 hover:text-blue-700"
-                    >
-                        OPD
-                    </a>
-
-                    <a
-                        href="#"
-                        class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600 transition hover:bg-blue-100 hover:text-blue-700"
-                    >
-                        E-Lapor
-                    </a>
+                <div class="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm">
+                    <span class="text-slate-400 font-medium">Sering dicari:</span>
+                    <a href="#" class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 shadow-sm">SAKIP</a>
+                    <a href="#" class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 shadow-sm">Website Desa</a>
+                    <a href="#" class="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-slate-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-800 shadow-sm">Kepegawaian</a>
                 </div>
             </div>
         </section>
 
-        {{-- Kategori --}}
-        <section
-            id="kategori"
-            class="mx-auto max-w-7xl px-6 py-20 lg:px-8"
-        >
-            <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-                <div>
-                    <p class="font-semibold text-blue-900">
-                        Jelajahi pengetahuan Aplikasi
-                    </p>
-
-                    <h2 class="mt-2 text-3xl font-bold tracking-tight">
-                        Temukan berdasarkan kategori
-                    </h2>
-
-                    <p class="mt-3 max-w-2xl text-slate-900">
-                        Temukan materi pembelajaran berdasarkan bidang dan topik yang tersedia.
-                    </p>
-                </div>
-
-                <a
-                    href="#"
-                    class="font-semibold text-blue-900 transition hover:text-blue-700"
-                >
-                    Lihat semua kategori →
-                </a>
-            </div>
-
-            <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-
-                {{-- Kategori 1 --}}
-                <a
-                    href="#"
-                    class="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/60"
-                >
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 font-bold text-blue-700 transition group-hover:bg-blue-600 group-hover:text-white">
-                        &lt;/&gt;
-                    </div>
-
-                    <h3 class="mt-5 text-xl font-bold">
-                        Pengembangan Sistem
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Pemrograman, framework, API, dan pengembangan perangkat lunak.
-                    </p>
-
-                    <p class="mt-5 text-sm font-semibold text-blue-900">
-                        24 tutorial
-                    </p>
-                </a>
-
-                {{-- Kategori 2 --}}
-                <a
-                    href="#"
-                    class="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/60"
-                >
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 font-bold text-blue-700 transition group-hover:bg-blue-600 group-hover:text-white">
-                        ⚙
-                    </div>
-
-                    <h3 class="mt-5 text-xl font-bold">
-                        Infrastruktur
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Docker, server, jaringan, deployment, dan DevOps.
-                    </p>
-
-                    <p class="mt-5 text-sm font-semibold text-blue-900">
-                        16 tutorial
-                    </p>
-                </a>
-
-                {{-- Kategori 3 --}}
-                <a
-                    href="#"
-                    class="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/60"
-                >
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 font-bold text-blue-700 transition group-hover:bg-blue-600 group-hover:text-white">
-                        DB
-                    </div>
-
-                    <h3 class="mt-5 text-xl font-bold">
-                        Basis Data
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        MySQL, migrasi, relasi, query, dan pengelolaan data.
-                    </p>
-
-                    <p class="mt-5 text-sm font-semibold text-blue-900">
-                        12 tutorial
-                    </p>
-                </a>
-
-                {{-- Kategori 4 --}}
-                <a
-                    href="#"
-                    class="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-slate-200/60"
-                >
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-sm font-bold text-blue-700 transition group-hover:bg-blue-600 group-hover:text-white">
-                        DOC
-                    </div>
-
-                    <h3 class="mt-5 text-xl font-bold">
-                        Dokumentasi
-                    </h3>
-
-                    <p class="mt-2 text-sm leading-6 text-slate-600">
-                        Panduan, kebijakan, alur kerja, referensi, dan manual penggunaan.
-                    </p>
-
-                    <p class="mt-5 text-sm font-semibold text-blue-900">
-                        18 tutorial
-                    </p>
-                </a>
-            </div>
-        </section>
-
-
-        <sectionid="tutorial" class="bg-white py-20">
+        {{-- Aplikasi Terbaru --}}
+        <section id="recent-apps" class="bg-slate-50 py-24 relative z-20 border-t border-slate-200/60">
             <div class="mx-auto max-w-7xl px-6 lg:px-8">
                 <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                     <div>
-                        <p class="font-semibold text-blue-600">
-                            Pengetahuan terbaru
+                        <p class="font-bold text-sm uppercase tracking-widest text-blue-600">
+                            Terbaru & Terkini
                         </p>
-
-                        <h2 class="mt-2 text-3xl font-bold tracking-tight">
-                            Apilkasi terbaru
+                        <h2 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                            Aplikasi Terbaru
                         </h2>
-
-                        <p class="mt-3 text-slate-600">
-                            Temukan materi terbaru yang dibagikan oleh pengguna.
+                        <p class="mt-3 text-slate-500 max-w-xl text-lg">
+                            Daftar aplikasi dan sistem informasi yang baru saja ditambahkan atau diperbarui dalam sistem.
                         </p>
                     </div>
 
-                    <a
-                        href="#"
-                        class="font-semibold text-blue-900 transition hover:text-blue-900"
-                    >
-                        Lihat semua Aplikasi →
+                    <a href="/applications-demo" class="inline-flex items-center gap-2 font-semibold text-blue-700 transition hover:text-blue-900 group">
+                        Lihat semua aplikasi 
+                        <i class="bi bi-arrow-right transition-transform group-hover:translate-x-1"></i>
                     </a>
                 </div>
 
-                <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {{-- JS Injected Container --}}
+                <div id="recent-apps-container" class="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 hidden">
+                    <!-- Populated by welcome.js -->
+                </div>
 
-                    {{-- Tutorial 1 --}}
-                    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
-
-                        <div class="flex h-44 items-center justify-center bg-gradient-to-br from-blue-100 via-white to-cyan-100">
-                            <div class="aspect-video overflow-hidden bg-purple-50">
-                                <img
-                                    src="{{ asset('images/Logo.png') }}"
-                                    alt="Sistem Informasi Kepegawaian"
-                                    class="h-full w-full object-contain p-8 transition duration-300 group-hover:scale-105"
-                                >
-                            </div>
+                {{-- Skeleton Loader --}}
+                <div id="recent-apps-skeleton" class="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+                    @for ($i = 0; $i < 10; $i++)
+                        <div class="flex flex-col items-center justify-center p-6 text-center rounded-2xl bg-white border border-slate-100 shadow-sm animate-pulse">
+                            <div class="mb-4 h-16 w-16 rounded-2xl bg-slate-200"></div>
+                            <div class="h-4 w-3/4 rounded bg-slate-200 mb-2"></div>
+                            <div class="h-3 w-1/2 rounded bg-slate-100 mt-2"></div>
+                            <div class="h-3 w-full rounded bg-slate-100 mt-2"></div>
                         </div>
-
-                        <div class="p-6">
-                            <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                                Pengembangan Sistem
-                            </span>
-
-                            <h3 class="mt-4 text-xl font-bold leading-7">
-                                <a href="#" class="transition hover:text-blue-900">
-                                    Cara Menginstal Laravel Menggunakan Docker
-                                </a>
-                            </h3>
-
-                            <p class="mt-3 text-sm leading-6 text-slate-600">
-                                Pelajari cara menyiapkan lingkungan pengembangan Laravel menggunakan Docker Compose.
-                            </p>
-
-                        
-                        </div>
-                    </article>
-
-                    {{-- Tutorial 2 --}}
-                    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
-
-                        <div class="flex h-44 items-center justify-center bg-blue 100">
-                            <div class="aspect-video overflow-hidden bg-blue-50">
-                                <img
-                                    src="{{ asset('images/Logo.png') }}"
-                                    alt="Sistem Informasi Kepegawaian"
-                                    class="h-full w-full object-contain p-8 transition duration-300 group-hover:scale-105"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="p-6">
-                            <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                                Website Desa
-                            </span>
-
-                            <h3 class="mt-4 text-xl font-bold leading-7">
-                                <a href="#" class="transition hover:text-blue-600">
-                                    Memahami Relasi Basis Data pada Laravel
-                                </a>
-                            </h3>
-
-                            <p class="mt-3 text-sm leading-6 text-slate-600">
-                                Panduan praktis mengenai relasi one-to-one, one-to-many, dan many-to-many.
-                            </p>
-
-                            
-                        </div>
-                    </article>
-
-                    {{-- Tutorial 3 --}}
-                    <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60">
-
-                        <div class="flex h-44 items-center justify-center bg-gradient-to-br from-blue-100 via-white to-cyan-100">
-                            <div class="aspect-video overflow-hidden bg-emerald-50">
-                                <img
-                                    src="{{ asset('images/Logo.png') }}"
-                                    alt="Sistem Informasi Kepegawaian"
-                                    class="h-full w-full object-contain p-8 transition duration-300 group-hover:scale-105"
-                                >
-                            </div>
-                        </div>
-
-                        <div class="p-6">
-                            <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-                                Infrastruktur
-                            </span>
-
-                            <h3 class="mt-4 text-xl font-bold leading-7">
-                                <a href="#" class="transition hover:text-blue-600">
-                                    Dasar-Dasar Jaringan Docker
-                                </a>
-                            </h3>
-
-                            <p class="mt-3 text-sm leading-6 text-slate-600">
-                                Pelajari jaringan container, nama service, port, dan komunikasi internal Docker.
-                            </p>
-                        </div>
-                    </article>
+                    @endfor
                 </div>
             </div>
-        </sectionid=>
+        </section>
 
-        <!-- {{-- Tentang --}}
-        <section
-            id="tentang"
-            class="mx-auto max-w-7xl px-6 py-20 lg:px-8"
-        >
+        {{-- CTA Banner --}}
+        <section class="py-24 bg-white relative overflow-hidden border-t border-slate-200/60">
+            <div class="absolute inset-0 bg-blue-900/5"></div>
+            <div class="mx-auto max-w-7xl px-6 lg:px-8 relative z-10 text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl mb-4">
+                    Tidak menemukan apa yang Anda cari?
+                </h2>
+                <p class="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
+                    Jelajahi seluruh daftar aplikasi dan layanan yang tersedia di Pemerintahan Kabupaten Badung.
+                </p>
+                <a href="/applications-demo" class="inline-flex h-14 items-center justify-center rounded-xl bg-slate-900 px-8 text-base font-semibold text-white shadow-sm transition hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900">
+                    Jelajahi Katalog Aplikasi
+                </a>
+            </div>
+        </section>
 
-        </section> -->
     </main>
 
     {{-- Footer --}}
     <footer class="border-t border-slate-200 bg-white">
-        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-            <p>
-                © 2026 Pusat Pengetahuan. Seluruh hak cipta dilindungi.
-            </p>
+        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-10 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-8 w-auto grayscale opacity-50">
+                <p>
+                    © 2026 Pemerintah Kabupaten Badung. Hak cipta dilindungi.
+                </p>
+            </div>
 
-            <div class="flex gap-5">
-                <a href="#" class="transition hover:text-blue-600">
-                    Privasi
-                </a>
-
-                <a href="#" class="transition hover:text-blue-600">
-                    Ketentuan
-                </a>
-
-                <a href="#" class="transition hover:text-blue-600">
-                    Kontak
-                </a>
+            <div class="flex gap-6 font-medium">
+                <a href="#" class="transition hover:text-blue-600">Beranda</a>
+                <a href="/applications-demo" class="transition hover:text-blue-600">Katalog</a>
+                <a href="#" class="transition hover:text-blue-600">Kontak Bantuan</a>
             </div>
         </div>
     </footer>
@@ -407,4 +174,3 @@
     </script>
 </body>
 </html>
-```

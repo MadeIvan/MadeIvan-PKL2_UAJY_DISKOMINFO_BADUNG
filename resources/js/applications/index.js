@@ -2,9 +2,11 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const API_URL = '/api/applications';
 
+const urlParams = new URLSearchParams(window.location.search);
+
 const state = {
     applications: [],
-    search: '',
+    search: urlParams.get('search') || '',
     sort: 'latest',
     currentPage: 1,
     lastPage: 1,
@@ -60,6 +62,10 @@ const elements = {
 };
 
 let searchTimeout = null;
+
+if (state.search) {
+    elements.search.value = state.search;
+}
 
 async function fetchApplications(page = 1) {
     showLoading();
