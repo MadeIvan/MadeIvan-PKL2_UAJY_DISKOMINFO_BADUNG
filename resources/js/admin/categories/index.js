@@ -1,4 +1,5 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading, showDoubleConfirmModal } from '../utils.js';
 
 // Token Authentication
 const token = localStorage.getItem('auth_token');
@@ -239,8 +240,10 @@ async function saveCategory() {
         return;
     }
 
-    saveCategoryBtn.disabled = true;
-    btnSaveText.textContent = "Menyimpan...";
+    setButtonLoading(saveCategoryBtn, true);
+    
+    const formElement = document.getElementById('categoryForm') || document.body;
+    clearValidationErrors(formElement);
 
     const method = id ? 'PUT' : 'POST';
     const url = id ? `/api/admin/categories/${id}` : '/api/admin/categories';
@@ -261,28 +264,31 @@ async function saveCategory() {
         if(res.ok) {
             closeModal();
             loadCategories(state.currentPage);
-            showNotification(id ? 'Kategori berhasil diperbarui.' : 'Kategori berhasil ditambahkan.');
+            showToast(id ? 'Kategori berhasil diperbarui.' : 'Kategori berhasil ditambahkan.');
         } else {
             let errorMsg = data.message || 'Terjadi kesalahan.';
-            if (res.status === 422 && data.errors?.name) {
-                errorMsg = 'Kategori dengan nama tersebut sudah ada. Silakan gunakan nama lain.';
+            showToast(errorMsg, 'error');
+            
+            if (res.status === 422 && data.errors) {
+                const formElement = document.getElementById('categoryForm') || document.body;
+                displayValidationErrors(data.errors, formElement, 'category');
             }
-            formError.textContent = errorMsg;
-            formError.classList.remove('hidden');
-            showNotification(errorMsg, 'error');
         }
     } catch(e) {
-        formError.textContent = "Koneksi gagal.";
-        formError.classList.remove('hidden');
+        showToast("Koneksi gagal: " + e.message, "error");
     } finally {
-        saveCategoryBtn.disabled = false;
-        btnSaveText.textContent = "Simpan";
+        setButtonLoading(saveCategoryBtn, false);
     }
 }
 
 // Delete Category
 async function deleteCategory(id, name) {
-    if(!confirm(`Hapus master data kategori "${name}"? Tindakan ini tidak dapat dibatalkan.`)) return;
+    const confirmed = await showDoubleConfirmModal(
+        'Konfirmasi Hapus Kategori',
+        name
+    );
+    
+    if (!confirmed) return;
     
     try {
         const res = await fetch(`/api/admin/categories/${id}`, {
@@ -316,27 +322,8 @@ function filterTable() {
     loadCategories(1);
 }
 
-let notificationTimeout;
 function showNotification(message, type = 'success') {
-    const notification = document.getElementById('notification');
-    if (!notification) return;
-
-    const styles = {
-        success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-        error: 'border-red-200 bg-red-50 text-red-700',
-    };
-
-    const selectedStyle = styles[type] || styles.success;
-    
-    window.clearTimeout(notificationTimeout);
-    
-    notification.className = `mb-6 rounded-sm border px-4 py-3 text-sm ${selectedStyle}`;
-    notification.textContent = message;
-    notification.classList.remove('hidden');
-
-    notificationTimeout = window.setTimeout(() => {
-        notification.classList.add('hidden');
-    }, 5000);
+    showToast(message, type);
 }
 
 // Expose functions to window for inline onclick handlers

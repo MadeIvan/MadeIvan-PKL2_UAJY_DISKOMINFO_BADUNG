@@ -1,4 +1,5 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading } from '../utils.js';
 
 import tinymce from 'tinymce';
 
@@ -47,8 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let notificationTimer = null;
 
     const elements = {
-        notification:
-            document.getElementById('notification'),
+
 
         nodeTitle:
             document.getElementById('node-title'),
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 error
             );
 
-            notify(
+            showToast(
                 'Editor teks gagal dimuat. Textarea biasa tetap dapat digunakan.',
                 'error'
             );
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             showPageState('error');
 
-            notify(
+            showToast(
                 error.message,
                 'error'
             );
@@ -1100,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
 
         if (!validTypes.includes(type)) {
-            notify(
+            showToast(
                 'Jenis blok tidak valid.',
                 'error'
             );
@@ -1138,7 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         if (!block) {
-            notify(
+            showToast(
                 'Blok tidak ditemukan.',
                 'error'
             );
@@ -1319,7 +1319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             validateBlockForm();
 
         if (validationError) {
-            notify(
+            showToast(
                 validationError,
                 'error'
             );
@@ -1384,6 +1384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         setSavingState(true);
+        clearValidationErrors(elements.blockForm);
 
         try {
             const response = await fetch(
@@ -1417,16 +1418,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await loadContent();
 
-            notify(
+            showToast(
                 result.message ||
                 'Blok berhasil disimpan.',
                 'success'
             );
         } catch (error) {
-            notify(
+            showToast(
                 error.message,
                 'error'
             );
+            
+            if (error.validationErrors) {
+                displayValidationErrors(error.validationErrors, elements.blockForm, 'block-');
+            }
         } finally {
             setSavingState(false);
         }
@@ -1522,7 +1527,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         if (!block) {
-            notify(
+            showToast(
                 'Blok tidak ditemukan.',
                 'error'
             );
@@ -1572,13 +1577,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await loadContent();
 
-            notify(
+            showToast(
                 result.message ||
                 'Blok berhasil dihapus.',
                 'success'
             );
         } catch (error) {
-            notify(
+            showToast(
                 error.message,
                 'error'
             );
@@ -1709,7 +1714,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderBlocks();
 
-            notify(
+            showToast(
                 result.message ||
                 'Urutan blok berhasil disimpan.',
                 'success'
@@ -1720,7 +1725,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             renderBlocks();
 
-            notify(
+            showToast(
                 `Urutan gagal disimpan: ${error.message}`,
                 'error'
             );
@@ -1821,7 +1826,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
         if (!title) {
-            notify(
+            showToast(
                 'Isi judul video terlebih dahulu.',
                 'error'
             );
@@ -1830,7 +1835,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!videoId) {
-            notify(
+            showToast(
                 'Tautan YouTube tidak valid.',
                 'error'
             );
@@ -2100,32 +2105,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setSavingState(isSaving) {
-        elements.submitButton.disabled =
-            isSaving;
-
         elements.cancelButton.disabled =
             isSaving;
 
         elements.modalClose.disabled =
             isSaving;
 
-        elements.submitButton.innerHTML =
-            isSaving
-                ? `
-                    <i class="bi bi-arrow-repeat animate-spin"></i>
-                    <span>Menyimpan...</span>
-                `
-                : `
-                    <i class="bi bi-floppy"></i>
+        if (!isSaving) {
+            elements.submitButton.dataset.originalHtml =
+                state.editingBlock
+                    ? `
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Perbarui Blok</span>
+                    `
+                    : `
+                        <i class="bi bi-floppy"></i>
+                        <span>Simpan Blok</span>
+                    `;
+        }
 
-                    <span>
-                        ${
-                            state.editingBlock
-                                ? 'Perbarui Blok'
-                                : 'Simpan Blok'
-                        }
-                    </span>
-                `;
+        setButtonLoading(elements.submitButton, isSaving);
     }
 
     async function parseResponse(response) {
@@ -2139,13 +2138,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (result.errors) {
-            throw new Error(
-                Object.values(
-                    result.errors
-                )
-                    .flat()
-                    .join(' ')
+            const error = new Error(
+                result.message || 'Terdapat kesalahan pada data yang dimasukkan.'
             );
+            error.validationErrors = result.errors;
+            throw error;
         }
 
         throw new Error(
@@ -2154,39 +2151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    function notify(
-        message,
-        type = 'success'
-    ) {
-        const styles = {
-            success:
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
 
-            error:
-                'border-red-200 bg-red-50 text-red-700',
-        };
-
-        window.clearTimeout(
-            notificationTimer
-        );
-
-        elements.notification.className =
-            `border px-4 py-3 text-sm ${styles[type]}`;
-
-        elements.notification.textContent =
-            message;
-
-        elements.notification.classList.remove(
-            'hidden'
-        );
-
-        notificationTimer =
-            window.setTimeout(() => {
-                elements.notification.classList.add(
-                    'hidden'
-                );
-            }, 5000);
-    }
 
     function youtubeId(value) {
         const input =

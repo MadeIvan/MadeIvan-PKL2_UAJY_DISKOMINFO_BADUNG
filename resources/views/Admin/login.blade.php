@@ -110,7 +110,7 @@
                     
                     // Redirect to dashboard after brief delay
                     setTimeout(() => {
-                        window.location.href = '/admin/Materi-demo';
+                        window.location.href = '/admin/materi';
                     }, 500);
                 } else {
                     // Handle validation or auth errors

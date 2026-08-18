@@ -254,6 +254,7 @@ class ApplicationController extends Controller
                 ->select([
                     'id',
                     'name',
+                    'slug',
                     'description',
                 ])
                 ->with([

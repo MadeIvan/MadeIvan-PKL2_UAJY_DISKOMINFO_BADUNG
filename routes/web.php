@@ -34,19 +34,19 @@ Route::get('/materi/{tutorialNode:slug}', [TutorialContentPageController::class,
 Route::view('/admin/login', 'Admin.login')->name('admin.login');
 Route::view('/admin/input', 'Admin.input_content')->name('admin.input');
 Route::view('/admin/content-index', 'Admin.content_index')->name('admin.content-index');
-Route::view('/admin/admin-dashboard', 'Admin.admin_dashboard')->name('admin.dashboard');
+Route::get('/admin', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 Route::view('/admin/add-app', 'Admin.add_app')->name('admin.applications.create');
 Route::view('/admin/categories', 'Admin.categories.index')->name('admin.categories.index');
-Route::view('/admin/Materi-demo', 'Admin.materi-demo.index')->name('admin.materi-demo.index');
-Route::view('/admin/aplikasi-demo', 'Admin.applications.index')->name('admin.applications.index');
+Route::view('/admin/materi', 'Admin.materi.index')->name('admin.materi.index');
+Route::view('/admin/aplikasi', 'Admin.applications.index')->name('admin.applications.index');
 
 /*
 | Admin Material Content
 */
 
-Route::get('/admin/Materi-demo/{tutorialNode}/content', [TutorialContentPageController::class, 'edit'])->whereNumber('tutorialNode')->name('admin.materi-demo.content');
+Route::get('/admin/materi/{tutorialNode}/content', [TutorialContentPageController::class, 'edit'])->whereNumber('tutorialNode')->name('admin.materi.content');
 
-Route::get('/admin/Materi-demo/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi-demo.preview');
+Route::get('/admin/materi/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi.preview');
 
 /*
 | Development Utilities

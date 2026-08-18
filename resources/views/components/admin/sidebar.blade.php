@@ -3,13 +3,13 @@
 
     $applicationsActive =
         request()->is('admin/applications*') ||
-        request()->is('admin/aplikasi-demo*');
+        request()->is('admin/aplikasi*');
 
     $categoriesActive =
         request()->is('admin/categories*');
 
     $materialsActive =
-        request()->is('admin/Materi-demo*');
+        request()->is('admin/materi*');
 @endphp
 
 <aside
@@ -17,7 +17,7 @@
     class="
         fixed inset-y-0 left-0 z-50
         flex w-72 -translate-x-full flex-col
-        overflow-hidden
+        overflow-hidden lg:overflow-visible
         bg-[#071f45]
         text-white
         shadow-2xl
@@ -34,15 +34,16 @@
     {{-- Sidebar Header --}}
     <div
         class="
-            flex h-20 shrink-0 items-center
+            flex h-20 shrink-0 items-center justify-between
             border-b border-white/10
             px-4
+            gap-2
         "
     >
         <a
             href="{{ url('/admin') }}"
             class="
-                flex min-w-0 flex-1 items-center gap-3
+                flex min-w-0 shrink-0 items-center gap-3
                 overflow-hidden
                 no-underline
             "
@@ -83,6 +84,26 @@
                 </p>
             </div>
         </a>
+
+        {{-- Desktop Hamburger Toggle --}}
+        <div data-sidebar-label class="hidden opacity-0 transition-all duration-200 lg:block ml-auto">
+            <button
+                id="sidebar-collapse"
+                type="button"
+                class="
+                    flex h-9 w-9 shrink-0 items-center justify-center
+                    rounded-lg
+                    text-blue-100
+                    transition
+                    hover:bg-white/10
+                    hover:text-white
+                "
+                aria-label="Toggle sidebar"
+                title="Toggle Sidebar"
+            >
+                <i class="bi bi-list text-xl"></i>
+            </button>
+        </div>
 
         {{-- Mobile Close --}}
         <button
@@ -164,7 +185,7 @@
 
             {{-- Applications --}}
             <a
-                href="{{ url('/admin/aplikasi-demo') }}"
+                href="{{ url('/admin/aplikasi') }}"
                 title="Aplikasi"
                 class="
                     group flex min-h-12 items-center gap-3
@@ -199,7 +220,7 @@
 
             {{-- Materials --}}
             <a
-                href="{{ url('/admin/Materi-demo') }}"
+                href="{{ url('/admin/materi') }}"
                 title="Kelola Materi"
                 class="
                     group flex min-h-12 items-center gap-3
@@ -241,12 +262,14 @@
                     overflow-hidden
                     rounded-xl
                     px-3 py-3
-                    text-sm font-medium
-                    text-blue-100
+                    text-sm
                     no-underline
                     transition
-                    hover:bg-white/10
-                    hover:text-white
+
+                    {{ $categoriesActive
+                        ? 'bg-blue-600 font-semibold text-white shadow-sm'
+                        : 'font-medium text-blue-100 hover:bg-white/10 hover:text-white'
+                    }}
                 "
             >
                 <span class="flex h-6 w-6 shrink-0 items-center justify-center">
@@ -352,52 +375,6 @@
     </nav>
 
     {{-- Sidebar Footer --}}
-    <div
-        class="
-            shrink-0
-            border-t border-white/10
-            p-3
-        "
-    >
-        <button
-            id="sidebar-collapse"
-            type="button"
-            class="
-                hidden min-h-12 w-full
-                items-center gap-3
-                overflow-hidden
-                rounded-xl
-                px-3 py-3
-                text-sm font-medium
-                text-blue-100
-                transition
-                hover:bg-white/10
-                hover:text-white
-                lg:flex
-            "
-            aria-pressed="false"
-            title="Kunci sidebar"
-        >
-            <span class="flex h-6 w-6 shrink-0 items-center justify-center">
-                <i
-                    id="sidebar-collapse-icon"
-                    class="bi bi-pin-angle text-lg"
-                ></i>
-            </span>
-
-            <span
-                id="sidebar-collapse-label"
-                data-sidebar-label
-                class="
-                    hidden whitespace-nowrap
-                    opacity-0
-                    transition-all duration-200
-                "
-            >
-                Kunci Sidebar
-            </span>
-        </button>
-    </div>
 </aside>
 
 {{-- Mobile Overlay --}}

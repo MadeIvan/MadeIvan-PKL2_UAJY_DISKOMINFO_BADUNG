@@ -16,7 +16,7 @@ class TutorialContentPageController extends Controller
     {
         $this->ensureMaterialNode($tutorialNode);
 
-        return view('Admin.materi-demo.content', [
+        return view('Admin.materi.content', [
             'tutorialNode' => $tutorialNode->id,
         ]);
     }
@@ -33,7 +33,7 @@ class TutorialContentPageController extends Controller
 
         $this->loadMaterialRelations($tutorialNode);
 
-        return view('Admin.materi-demo.preview', [
+        return view('Admin.materi.preview', [
             'tutorialNode' => $tutorialNode,
         ]);
     }

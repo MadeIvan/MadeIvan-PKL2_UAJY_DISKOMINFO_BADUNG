@@ -1,4 +1,5 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading, showDoubleConfirmModal } from '../utils.js';
 
 const API_BASE_URL = '/api/admin';
 
@@ -6,9 +7,7 @@ const pageParameters = new URLSearchParams(
     window.location.search
 );
 
-const requestedApplicationId = Number(
-    pageParameters.get('application_id')
-);
+const requestedAppIdentifier = pageParameters.get('app') || pageParameters.get('application_id');
 
 document.addEventListener('DOMContentLoaded', () => {
     const state = {
@@ -24,8 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let notificationTimeout = null;
 
     const elements = {
-        notification:
-            document.getElementById('notification'),
+
 
         applicationSearchWrapper:
             document.getElementById(
@@ -532,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.applicationSearch.placeholder =
                 'Gagal memuat aplikasi';
 
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
@@ -540,22 +538,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function applyApplicationFromUrl() {
-        if (
-            !Number.isInteger(requestedApplicationId) ||
-            requestedApplicationId <= 0
-        ) {
+        if (!requestedAppIdentifier) {
             return;
         }
 
         const application =
             state.applications.find(
                 (item) =>
-                    Number(item.id) ===
-                    requestedApplicationId
+                    item.slug === requestedAppIdentifier ||
+                    String(item.id) === requestedAppIdentifier
             );
 
         if (!application) {
-            showNotification(
+            showToast(
                 'Aplikasi yang dipilih tidak ditemukan.',
                 'error'
             );
@@ -889,7 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
         if (!latestVersion) {
-            showNotification(
+            showToast(
                 `Aplikasi "${application.name}" belum memiliki versi.`,
                 'error'
             );
@@ -1118,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchTree() {
         if (!hasCompleteSelection()) {
-            showNotification(
+            showToast(
                 'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
@@ -1402,7 +1397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 'materi'
                                     ? `
                                         <a
-                                            href="/admin/Materi-demo/${node.id}/content"
+                                            href="/admin/materi/${node.id}/content"
                                             class="inline-flex items-center gap-2 border border-violet-200 px-3 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-50"
                                         >
                                             <i class="bi bi-journal-richtext"></i>
@@ -1545,7 +1540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
         if (!siblings) {
-            showNotification(
+            showToast(
                 'Kelompok materi tidak ditemukan.',
                 'error'
             );
@@ -1620,7 +1615,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await fetchTree();
 
-            showNotification(
+            showToast(
                 direction < 0
                     ? 'Materi berhasil dipindahkan ke atas.'
                     : 'Materi berhasil dipindahkan ke bawah.',
@@ -1629,7 +1624,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             await fetchTree();
 
-            showNotification(
+            showToast(
                 `Urutan gagal diperbarui: ${error.message}`,
                 'error'
             );
@@ -1792,7 +1787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openCreateRootNodeModal() {
         if (!hasCompleteSelection()) {
-            showNotification(
+            showToast(
                 'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
@@ -1822,7 +1817,7 @@ document.addEventListener('DOMContentLoaded', () => {
         parentId
     ) {
         if (!hasCompleteSelection()) {
-            showNotification(
+            showToast(
                 'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
@@ -1834,7 +1829,7 @@ document.addEventListener('DOMContentLoaded', () => {
             findNode(parentId);
 
         if (!parent) {
-            showNotification(
+            showToast(
                 'Parent materi tidak ditemukan.',
                 'error'
             );
@@ -1856,7 +1851,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     state.selectedVersionId
                 )
         ) {
-            showNotification(
+            showToast(
                 'Parent tidak berasal dari aplikasi dan versi yang sedang dipilih.',
                 'error'
             );
@@ -1900,7 +1895,7 @@ document.addEventListener('DOMContentLoaded', () => {
             findNode(nodeId);
 
         if (!node) {
-            showNotification(
+            showToast(
                 'Materi tidak ditemukan.',
                 'error'
             );
@@ -2072,7 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         if (!hasCompleteSelection()) {
-            showNotification(
+            showToast(
                 'Pilih aplikasi dan versi aplikasi terlebih dahulu.',
                 'error'
             );
@@ -2090,7 +2085,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.nodeTitle.value.trim();
 
         if (!title) {
-            showNotification(
+            showToast(
                 'Judul materi wajib diisi.',
                 'error'
             );
@@ -2116,7 +2111,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parentId !== null &&
             nodeType === 'kategori'
         ) {
-            showNotification(
+            showToast(
                 'Kategori hanya dapat digunakan sebagai materi utama.',
                 'error'
             );
@@ -2174,7 +2169,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `${API_BASE_URL}/tutorial-nodes/${nodeId}`
                 : `${API_BASE_URL}/tutorial-nodes`;
 
-        setNodeSubmitLoading(true);
+        setButtonLoading(elements.nodeSubmitButton, true);
+        clearValidationErrors(elements.nodeForm);
 
         try {
             const response = await fetch(
@@ -2206,18 +2202,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await fetchTree();
 
-            showNotification(
+            showToast(
                 result.message ||
                 'Materi berhasil disimpan.',
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
+            
+            if (error.validationErrors) {
+                displayValidationErrors(error.validationErrors, elements.nodeForm, 'node-');
+            }
         } finally {
-            setNodeSubmitLoading(false);
+            setButtonLoading(elements.nodeSubmitButton, false);
         }
     }
 
@@ -2226,7 +2226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             findNode(nodeId);
 
         if (!node) {
-            showNotification(
+            showToast(
                 'Materi tidak ditemukan.',
                 'error'
             );
@@ -2237,25 +2237,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const descendantCount =
             countDescendants(node);
 
-        const warningMessage =
-            descendantCount > 0
-                ? [
-                    `Hapus materi "${node.title}" beserta seluruh turunannya?`,
-                    '',
-                    `Sebanyak ${descendantCount} child, grandchild, atau turunan lain akan ikut dihapus.`,
-                    '',
-                    'Tindakan ini tidak dapat dibatalkan.',
-                ].join('\n')
-                : [
-                    `Hapus materi "${node.title}"?`,
-                    '',
-                    'Tindakan ini tidak dapat dibatalkan.',
-                ].join('\n');
-
-        const confirmed =
-            window.confirm(
-                warningMessage
-            );
+        const confirmed = await showDoubleConfirmModal(
+            descendantCount > 0 
+                ? 'Konfirmasi Hapus Materi dan Turunannya' 
+                : 'Konfirmasi Hapus Materi',
+            node.title
+        );
 
         if (!confirmed) {
             return;
@@ -2284,7 +2271,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await fetchTree();
 
-            showNotification(
+            showToast(
                 descendantCount > 0
                     ? result.message ||
                         `Materi beserta ${descendantCount} turunannya berhasil dihapus.`
@@ -2293,7 +2280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
@@ -2437,8 +2424,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'Simpan Materi'
         );
 
-        elements.nodeSubmitButton.disabled =
-            false;
+        setButtonLoading(elements.nodeSubmitButton, false);
+        clearValidationErrors(elements.nodeForm);
     }
 
     function updateContextDisplay() {
@@ -2777,35 +2764,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    function setNodeSubmitLoading(
-        isLoading
-    ) {
-        elements.nodeSubmitButton.disabled =
-            isLoading;
 
-        if (isLoading) {
-            setButtonContent(
-                elements.nodeSubmitButton,
-                'bi-arrow-repeat animate-spin',
-                'Menyimpan...'
-            );
-
-            return;
-        }
-
-        const isEditing =
-            elements.nodeId.value !== '';
-
-        setButtonContent(
-            elements.nodeSubmitButton,
-            isEditing
-                ? 'bi-pencil-square'
-                : 'bi-plus-lg',
-            isEditing
-                ? 'Perbarui Materi'
-                : 'Simpan Materi'
-        );
-    }
 
     async function parseResponse(response) {
         const result =
@@ -2818,13 +2777,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (result.errors) {
-            throw new Error(
-                Object.values(
-                    result.errors
-                )
-                    .flat()
-                    .join(' ')
+            const error = new Error(
+                result.message || 'Terdapat kesalahan pada data yang dimasukkan.'
             );
+            error.validationErrors = result.errors;
+            throw error;
         }
 
         throw new Error(
@@ -2833,39 +2790,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    function showNotification(
-        message,
-        type = 'success'
-    ) {
-        const styles = {
-            success:
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
 
-            error:
-                'border-red-200 bg-red-50 text-red-700',
-        };
-
-        window.clearTimeout(
-            notificationTimeout
-        );
-
-        elements.notification.className =
-            `border px-4 py-3 text-sm ${styles[type]}`;
-
-        elements.notification.textContent =
-            message;
-
-        elements.notification.classList.remove(
-            'hidden'
-        );
-
-        notificationTimeout =
-            window.setTimeout(() => {
-                elements.notification.classList.add(
-                    'hidden'
-                );
-            }, 5000);
-    }
 
     function setButtonContent(
         button,

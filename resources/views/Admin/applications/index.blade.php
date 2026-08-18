@@ -9,12 +9,6 @@
 
 @section('content')
     <div id="application-page" class="space-y-6">
-        {{-- Notifikasi --}}
-        <div
-            id="notification"
-            class="hidden border px-4 py-3 text-sm"
-            role="alert"
-        ></div>
 
         {{-- Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">

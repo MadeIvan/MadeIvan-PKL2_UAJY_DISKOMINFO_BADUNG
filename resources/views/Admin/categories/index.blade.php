@@ -7,7 +7,6 @@
 @endpush
 
 @section('content')
-<div id="notification" class="hidden mb-6 rounded-sm border px-4 py-3 text-sm" role="alert"></div>
 
 <section class="border border-slate-200 bg-white shadow-sm mb-7">
     <div class="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">

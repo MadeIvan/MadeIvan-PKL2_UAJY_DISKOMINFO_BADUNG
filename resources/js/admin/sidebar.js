@@ -101,24 +101,9 @@ function updatePinButton() {
             : 'Kunci sidebar'
     );
 
-    if (pinLabel) {
-        pinLabel.textContent =
-            sidebarPinned
-                ? 'Lepas Kunci'
-                : 'Kunci Sidebar';
-    }
-
-    if (pinIcon) {
-        pinIcon.classList.toggle(
-            'bi-pin-angle',
-            !sidebarPinned
-        );
-
-        pinIcon.classList.toggle(
-            'bi-pin-angle-fill',
-            sidebarPinned
-        );
-    }
+    pinButton.classList.toggle('bg-white/10', sidebarPinned);
+    pinButton.classList.toggle('text-white', sidebarPinned);
+    pinButton.classList.toggle('text-blue-100', !sidebarPinned);
 }
 
 /*
