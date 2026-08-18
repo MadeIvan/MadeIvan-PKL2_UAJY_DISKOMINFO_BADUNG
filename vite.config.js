@@ -9,7 +9,9 @@ export default defineConfig({
             input: [
                 'resources/css/app.css', 
                 'resources/js/app.js', 
-                'resources/js/admin/materi-demo/index.js',
+                'resources/js/admin/materi/index.js',
+                'resources/js/admin/materi/content.js',
+                'resources/js/admin/utils.js',
                 'resources/js/admin/applications/index.js',
                 'resources/js/admin/categories/index.js',
                 'resources/js/public/welcome.js'

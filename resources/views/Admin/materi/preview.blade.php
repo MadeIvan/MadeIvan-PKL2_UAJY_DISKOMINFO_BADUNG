@@ -256,10 +256,7 @@
             </div>
 
             <a
-                href="{{ route(
-                    'admin.materi-demo.content',
-                    ['tutorialNode' => $tutorialNode->id]
-                ) }}"
+                href="{{ route('admin.materi.content', ['tutorialNode' => $tutorialNode->id]) }}"
                 class="inline-flex shrink-0 items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
                 <span aria-hidden="true">←</span>
@@ -524,7 +521,7 @@
 
                     <a
                         href="{{ route(
-                            'admin.materi-demo.content',
+                            'admin.materi.content',
                             ['tutorialNode' => $tutorialNode->id]
                         ) }}"
                         class="mt-6 inline-flex w-full items-center justify-center border border-blue-900 bg-blue-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-900"

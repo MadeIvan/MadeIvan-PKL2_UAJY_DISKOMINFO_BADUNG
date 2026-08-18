@@ -4,7 +4,7 @@
 @section('page-title', 'Kelola Isi Materi')
 
 @push('scripts')
-    @vite('resources/js/admin/materi-demo/content.js')
+    @vite('resources/js/admin/materi/content.js')
 @endpush
 
 @section('content')
@@ -13,19 +13,13 @@
         data-node-id="{{ $tutorialNode }}"
         class="space-y-6"
     >
-        {{-- Notification --}}
-        <div
-            id="notification"
-            class="hidden border px-4 py-3 text-sm"
-            role="alert"
-        ></div>
 
         {{-- Page Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
                 <div class="min-w-0">
                     <a
-                        href="{{ route('admin.materi-demo.index') }}"
+                        href="{{ route('admin.materi.index') }}"
                         class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-950"
                     >
                         <i class="bi bi-arrow-left"></i>
@@ -54,7 +48,7 @@
                 <div class="flex shrink-0 flex-col gap-3 sm:flex-row">
                     <a
                         href="{{ route(
-                            'admin.materi-demo.preview',
+                            'admin.materi.preview',
                             ['tutorialNode' => $tutorialNode]
                         ) }}"
                         target="_blank"

@@ -1,7 +1,8 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading, showDoubleConfirmModal } from '../utils.js';
 
 const API_BASE_URL = '/api/admin';
-const MATERIAL_PAGE_URL = '/admin/Materi-demo';
+const MATERIAL_PAGE_URL = '/admin/materi';
 const DEFAULT_LOGO_URL = '/images/Logo.png';
 
 const page = document.getElementById('application-page');
@@ -28,7 +29,7 @@ function initializeApplicationPage() {
     };
 
     const elements = {
-        notification: document.getElementById('notification'),
+
 
         statTotalApplications: document.getElementById(
             'stat-total-applications'
@@ -650,7 +651,8 @@ function initializeApplicationPage() {
 
         if (deleteButton) {
             deleteVersion(
-                deleteButton.dataset.id
+                deleteButton.dataset.id,
+                deleteButton.dataset.name
             );
         }
     }
@@ -811,7 +813,7 @@ function initializeApplicationPage() {
         ) {
             closeRowMenu();
 
-            showNotification(
+            showToast(
                 'Aplikasi tidak ditemukan.',
                 'error'
             );
@@ -819,8 +821,19 @@ function initializeApplicationPage() {
             return;
         }
 
+        const application = state.applications.find(
+            (app) => app.id === applicationId
+        );
+
+        if (!application) {
+            closeRowMenu();
+            return;
+        }
+
+        const identifier = application.slug || String(application.id);
+
         const parameters = new URLSearchParams({
-            application_id: String(applicationId),
+            app: identifier,
         });
 
         closeRowMenu();
@@ -1088,13 +1101,14 @@ function initializeApplicationPage() {
 
                         <button
                             type="button"
-                            class="application-menu-button flex h-9 w-9 items-center justify-center border border-slate-300 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950"
+                            class="application-menu-button flex h-9 w-9 items-center justify-center border border-slate-300 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed"
                             data-id="${application.id}"
-                            title="Menu lainnya"
+                            title="${versionsCount === 0 ? 'Tidak ada versi untuk melihat materi' : 'Menu lainnya'}"
                             aria-label="Menu lainnya untuk ${escapeAttribute(
                                 application.name
                             )}"
                             aria-haspopup="menu"
+                            ${versionsCount === 0 ? 'disabled' : ''}
                         >
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
@@ -1339,7 +1353,7 @@ function initializeApplicationPage() {
             findApplication(applicationId);
 
         if (!application) {
-            showNotification(
+            showToast(
                 'Data aplikasi tidak ditemukan.',
                 'error'
             );
@@ -1452,7 +1466,8 @@ function initializeApplicationPage() {
             'Simpan Aplikasi'
         );
 
-        setApplicationButtonLoading(false);
+        setButtonLoading(elements.applicationSubmitButton, false);
+        clearValidationErrors(elements.applicationForm);
     }
 
     async function submitApplication(event) {
@@ -1526,7 +1541,8 @@ function initializeApplicationPage() {
             formData.append('_method', 'PUT');
         }
 
-        setApplicationButtonLoading(true);
+        setButtonLoading(elements.applicationSubmitButton, true);
+        clearValidationErrors(elements.applicationForm);
 
         try {
             const response = await fetch(url, {
@@ -1550,7 +1566,7 @@ function initializeApplicationPage() {
                     : 1
             );
 
-            showNotification(
+            showToast(
                 result.message ||
                 (
                     isEditing
@@ -1560,12 +1576,16 @@ function initializeApplicationPage() {
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
+            
+            if (error.validationErrors) {
+                displayValidationErrors(error.validationErrors, elements.applicationForm, 'application-');
+            }
         } finally {
-            setApplicationButtonLoading(false);
+            setButtonLoading(elements.applicationSubmitButton, false);
         }
     }
 
@@ -1574,7 +1594,7 @@ function initializeApplicationPage() {
             findApplication(applicationId);
 
         if (!application) {
-            showNotification(
+            showToast(
                 'Data aplikasi tidak ditemukan.',
                 'error'
             );
@@ -1582,8 +1602,9 @@ function initializeApplicationPage() {
             return;
         }
 
-        const confirmed = window.confirm(
-            `Apakah Anda yakin ingin menghapus aplikasi "${application.name}"?`
+        const confirmed = await showDoubleConfirmModal(
+            'Konfirmasi Hapus Aplikasi',
+            application.name
         );
 
         if (!confirmed) {
@@ -1613,13 +1634,13 @@ function initializeApplicationPage() {
 
             await fetchApplications(targetPage);
 
-            showNotification(
+            showToast(
                 result.message ||
                 'Aplikasi berhasil dihapus.',
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
@@ -1631,7 +1652,7 @@ function initializeApplicationPage() {
             findApplication(applicationId);
 
         if (!application) {
-            showNotification(
+            showToast(
                 'Data aplikasi tidak ditemukan.',
                 'error'
             );
@@ -1826,6 +1847,7 @@ function initializeApplicationPage() {
                             type="button"
                             class="version-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50"
                             data-id="${version.id}"
+                            data-name="${escapeAttribute(version.version_name)}"
                             title="Hapus versi"
                         >
                             <i class="bi bi-trash3"></i>
@@ -2403,7 +2425,7 @@ function initializeApplicationPage() {
                 !Number.isInteger(sourceVersionId) ||
                 sourceVersionId <= 0
             ) {
-                showNotification(
+                showToast(
                     'Pilih versi sumber materi terlebih dahulu.',
                     'error'
                 );
@@ -2417,7 +2439,7 @@ function initializeApplicationPage() {
             ];
 
             if (selectedNodeIds.length === 0) {
-                showNotification(
+                showToast(
                     'Pilih minimal satu materi yang akan disalin.',
                     'error'
                 );
@@ -2568,7 +2590,8 @@ function initializeApplicationPage() {
             ? `${API_BASE_URL}/application-versions/${versionId}`
             : `${API_BASE_URL}/applications/${applicationId}/versions`;
 
-        setVersionButtonLoading(true);
+        setButtonLoading(elements.versionSubmitButton, true);
+        clearValidationErrors(elements.versionForm);
 
         try {
             const response = await fetch(url, {
@@ -2606,7 +2629,7 @@ function initializeApplicationPage() {
                     ? ` ${copySummary.copied_nodes ?? 0} node, ${copySummary.copied_content_blocks ?? 0} blok konten, dan ${copySummary.copied_files ?? 0} file berhasil disalin.`
                     : '';
 
-            showNotification(
+            showToast(
                 (
                     result.message ||
                     (
@@ -2618,12 +2641,16 @@ function initializeApplicationPage() {
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
+            
+            if (error.validationErrors) {
+                displayValidationErrors(error.validationErrors, elements.versionForm, 'version-');
+            }
         } finally {
-            setVersionButtonLoading(false);
+            setButtonLoading(elements.versionSubmitButton, false);
         }
     }
 
@@ -2641,7 +2668,7 @@ function initializeApplicationPage() {
             );
 
         if (!version) {
-            showNotification(
+            showToast(
                 'Data versi tidak ditemukan.',
                 'error'
             );
@@ -2747,12 +2774,14 @@ function initializeApplicationPage() {
             'Simpan Versi'
         );
 
-        setVersionButtonLoading(false);
+        setButtonLoading(elements.versionSubmitButton, false);
+        clearValidationErrors(elements.versionForm);
     }
 
-    async function deleteVersion(versionId) {
-        const confirmed = window.confirm(
-            'Apakah Anda yakin ingin menghapus versi ini?'
+    async function deleteVersion(versionId, versionName) {
+        const confirmed = await showDoubleConfirmModal(
+            'Konfirmasi Hapus Versi',
+            versionName || 'Versi ini'
         );
 
         if (!confirmed) {
@@ -2778,13 +2807,13 @@ function initializeApplicationPage() {
                 state.currentPage
             );
 
-            showNotification(
+            showToast(
                 result.message ||
                 'Versi berhasil dihapus.',
                 'success'
             );
         } catch (error) {
-            showNotification(
+            showToast(
                 error.message,
                 'error'
             );
@@ -2857,61 +2886,9 @@ function initializeApplicationPage() {
             'Data gagal dimuat';
     }
 
-    function setApplicationButtonLoading(isLoading) {
-        elements.applicationSubmitButton.disabled =
-            isLoading;
 
-        if (isLoading) {
-            setButtonContent(
-                elements.applicationSubmitButton,
-                'bi-arrow-repeat animate-spin',
-                'Menyimpan...'
-            );
 
-            return;
-        }
 
-        const isEditing =
-            elements.applicationId.value !== '';
-
-        setButtonContent(
-            elements.applicationSubmitButton,
-            isEditing
-                ? 'bi-pencil-square'
-                : 'bi-plus-lg',
-            isEditing
-                ? 'Perbarui Aplikasi'
-                : 'Simpan Aplikasi'
-        );
-    }
-
-    function setVersionButtonLoading(isLoading) {
-        elements.versionSubmitButton.disabled =
-            isLoading;
-
-        if (isLoading) {
-            setButtonContent(
-                elements.versionSubmitButton,
-                'bi-arrow-repeat animate-spin',
-                'Menyimpan...'
-            );
-
-            return;
-        }
-
-        const isEditing =
-            elements.versionId.value !== '';
-
-        setButtonContent(
-            elements.versionSubmitButton,
-            isEditing
-                ? 'bi-pencil-square'
-                : 'bi-plus-lg',
-            isEditing
-                ? 'Perbarui Versi'
-                : 'Simpan Versi'
-        );
-    }
 
     function previewSelectedImage() {
         const file =
@@ -2994,11 +2971,11 @@ function initializeApplicationPage() {
         }
 
         if (result.errors) {
-            throw new Error(
-                Object.values(result.errors)
-                    .flat()
-                    .join(' ')
+            const error = new Error(
+                result.message || 'Terdapat kesalahan pada data yang dimasukkan.'
             );
+            error.validationErrors = result.errors;
+            throw error;
         }
 
         throw new Error(
@@ -3091,40 +3068,7 @@ function initializeApplicationPage() {
         `;
     }
 
-    function showNotification(
-        message,
-        type = 'success'
-    ) {
-        const styles = {
-            success:
-                'border-emerald-200 bg-emerald-50 text-emerald-700',
 
-            error:
-                'border-red-200 bg-red-50 text-red-700',
-        };
-
-        const selectedStyle =
-            styles[type] ||
-            styles.success;
-
-        window.clearTimeout(notificationTimeout);
-
-        elements.notification.className =
-            `border px-4 py-3 text-sm ${selectedStyle}`;
-
-        elements.notification.textContent =
-            message;
-
-        elements.notification.classList.remove(
-            'hidden'
-        );
-
-        notificationTimeout = window.setTimeout(() => {
-            elements.notification.classList.add(
-                'hidden'
-            );
-        }, 5000);
-    }
 
     function formatDate(value) {
         if (!value) {

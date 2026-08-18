@@ -4,17 +4,11 @@
 @section('page-title', 'Kelola Materi')
 
 @push('scripts')
-    @vite('resources/js/admin/materi-demo/index.js')
+    @vite('resources/js/admin/materi/index.js')
 @endpush
 
 @section('content')
     <div class="space-y-6">
-        {{-- Notification --}}
-        <div
-            id="notification"
-            classA="hidden border px-4 py-3 text-sm"
-            role="alert"
-        ></div>
 
         {{-- Page Header --}}
         <section class="border border-slate-200 bg-white shadow-sm">
