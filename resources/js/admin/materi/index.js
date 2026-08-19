@@ -2685,6 +2685,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function setTreeActionAvailability(
         enabled
     ) {
+        if (!elements.previewAppButton) {
+            elements.previewAppButton = document.getElementById('preview-app-button');
+        }
+
+        const application = getSelectedApplication();
+        const version = getSelectedVersion();
+
+        if (enabled && application && version) {
+            elements.previewAppButton.disabled = false;
+            elements.previewAppButton.style.display = 'inline-flex';
+            elements.previewAppButton.href = `/admin/applications/${application.slug}/${version.id}/preview`;
+        } else {
+            elements.previewAppButton.disabled = true;
+            elements.previewAppButton.style.display = 'none';
+            elements.previewAppButton.removeAttribute('href');
+        }
         elements.expandAllButton.disabled =
             !enabled;
 

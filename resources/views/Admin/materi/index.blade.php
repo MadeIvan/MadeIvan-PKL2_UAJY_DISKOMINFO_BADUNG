@@ -255,6 +255,17 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
+                    <a
+                        id="preview-app-button"
+                        href="#"
+                        target="_blank"
+                        style="display: none;"
+                        class="inline-flex items-center justify-center gap-2 border border-blue-900 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-900 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <i class="bi bi-eye"></i>
+                        Preview Aplikasi
+                    </a>
+
                     <button
                         id="expand-all-button"
                         type="button"

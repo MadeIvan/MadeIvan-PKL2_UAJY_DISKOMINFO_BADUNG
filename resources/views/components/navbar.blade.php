@@ -1,127 +1,168 @@
-    <header class="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">       
-        <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+<header class="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
+        {{-- Logo --}}
+        <a href="/" class="flex shrink-0 items-center gap-3 transition hover:opacity-80">
+            <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="h-12 w-12 object-contain">
+            <div>
+                <p class="text-lg font-bold leading-tight text-slate-900">Pusat Pengetahuan</p>
+                <p class="text-xs text-slate-500">Kabupaten Badung</p>
+            </div>
+        </a>
 
-            {{-- Logo --}}
-            <a href="/" class="flex items-center gap-2">
-                <img
-                        src="{{ asset('images/Logo.png') }}"
-                        alt="Logo Pusat Pengetahuan"
-                        class="h-15 w-15 object-contain"
-                    >
+        {{-- Global Search Bar (Desktop) --}}
+        <div class="hidden lg:block flex-1 max-w-md mx-8">
+            <form action="/applications-demo" method="GET" class="relative group">
+                <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition"></i>
+                <input type="search" name="search" placeholder="Cari aplikasi, panduan, atau layanan..." 
+                    class="w-full rounded-full border border-slate-200 bg-slate-50/50 pl-11 pr-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10">
+            </form>
+        </div>
 
-                <div>
-                    <p class="text-lg font-bold leading-tight">
-                        Pusat Pengetahuan
-                    </p>
+        {{-- Desktop Nav & Actions --}}
+        <div class="hidden md:flex items-center gap-6">
+            <a href="/" class="text-sm font-medium text-slate-600 hover:text-blue-900 transition {{ request()->is('/') ? 'text-blue-900 font-semibold' : '' }}">Beranda</a>
+            <a href="/applications-demo" class="text-sm font-medium text-slate-600 hover:text-blue-900 transition {{ request()->is('applications-demo') ? 'text-blue-900 font-semibold' : '' }}">Katalog</a>
 
-                    <p class="text-xs text-slate-500">
-                        Belajar, berbagi, dan berkembang
-                    </p>
+            <div class="h-6 w-px bg-slate-200"></div>
+
+            {{-- Authentication States --}}
+            <div class="flex items-center gap-3 ml-2">
+                {{-- Badges (Hidden by default, shown via JS) --}}
+                <div id="nav-badges-desktop" class="hidden items-center gap-2">
+                    <span id="badge-pegawai-desktop" class="hidden items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200/60 px-3 py-1 text-xs font-semibold text-amber-700 shadow-sm" title="Anda memiliki akses untuk melihat materi internal">
+                        <i class="bi bi-shield-check text-amber-500"></i> Akses Pegawai
+                    </span>
+                    <a href="/admin/materi" id="badge-admin-desktop" class="hidden items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200/60 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100 hover:border-blue-300">
+                        <i class="bi bi-speedometer2 text-blue-500"></i> Dasbor Admin
+                    </a>
                 </div>
-            </a>
 
-            {{-- Navigasi Desktop --}}
-            <div class="hidden items-center gap-8 md:flex text-decoration-none">
-                <a
-                    href="/"
-                    class="font-medium text-blue-900"
-                >
-                    Beranda
+                {{-- Logged Out State --}}
+                <a href="/admin/login" id="nav-login-desktop" class="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-4 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-blue-700 text-slate-700 group">
+                    <i class="bi bi-person-circle text-slate-400 text-xl leading-none transition group-hover:text-blue-600"></i>
+                    <span class="text-sm font-semibold">Akses sebagai pegawai</span>
                 </a>
 
-                <a
-                    href="/app_list"
-                    class="font-medium text-slate-600 transition hover:text-blue-900 text-decoration-none"
-                >
-                    App List
-                </a>
-
-                <a
-                    href="/admin/materi"
-                    class="font-medium text-slate-600 transition hover:text-blue-900 text-decoration-none"
-                >
-                    Admin View
-                </a>
-            </div>
-
-            {{-- Tombol Aksi --}}
-            <div class="hidden items-center gap-3 md:flex" >
-                <a
-                    href="/app_list"
-                    class="rounded-lg px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
-                >
-                    Masuk
-                </a>
-
-                <a
-                    href="/content"
-                    class="rounded-lg bg-blue-900 px-5 py-2.5 font-semibold text-white transition hover:bg-blue-700"
-                >
-                    Mulai Sekarang
-                </a>
-            </div>
-
-            {{-- Tombol Menu Mobile --}}
-            <button
-                id="mobileMenuButton"
-                type="button"
-                class="rounded-lg border border-slate-200 p-2 text-slate-700 md:hidden"
-                aria-label="Buka menu navigasi"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 6h16M4 12h16M4 18h16"
-                    />
-                </svg>
-            </button>
-        </nav>
-
-        {{-- Navigasi Mobile --}}
-        <div
-            id="mobileMenu"
-            class="hidden border-t border-slate-200 bg-white px-6 py-4 md:hidden"
-        >
-            <div class="flex flex-col gap-4">
-                <a href="#beranda" class="font-medium text-blue-600">
-                    Beranda
-                </a>
-
-                <a href="#kategori" class="font-medium text-slate-600">
-                    Kategori
-                </a>
-
-                <a href="#tutorial" class="font-medium text-slate-600">
-                    Tutorial
-                </a>
-
-                <a href="#tentang" class="font-medium text-slate-600">
-                    Tentang
-                </a>
-
-                <div class="mt-2 flex flex-col gap-3">
-                    <a
-                        href="/app-list"
-                        class="rounded-lg border border-slate-300 px-4 py-2 text-center font-medium"
-                    >
-                        Masuk
-                    </a>
-
-                    <a
-                        href="#"
-                        class="rounded-lg bg-blue-600 px-4 py-2 text-center font-semibold text-white"
-                    >
-                        Mulai Sekarang
-                    </a>
+                {{-- Logged In State (Logout Button) --}}
+                <div id="nav-user-desktop" class="hidden items-center ml-2">
+                    <button type="button" id="public-logout-btn" class="flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50 hover:border-red-300" title="Keluar Akun">
+                        <i class="bi bi-box-arrow-right text-lg leading-none"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </header>
+
+        {{-- Mobile Menu Button --}}
+        <button id="mobileMenuButton" type="button" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2 text-slate-600 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 md:hidden">
+            <i class="bi bi-list text-xl"></i>
+        </button>
+    </nav>
+
+    {{-- Mobile Menu --}}
+    <div id="mobileMenu" class="hidden border-t border-slate-100 bg-white shadow-xl md:hidden">
+        <div class="flex flex-col px-4 py-4 space-y-1">
+            <a href="/" class="rounded-xl px-4 py-3 text-base font-medium transition {{ request()->is('/') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">Beranda</a>
+            <a href="/applications-demo" class="rounded-xl px-4 py-3 text-base font-medium transition {{ request()->is('applications-demo') ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50' }}">Katalog Aplikasi</a>
+        </div>
+
+        <div class="border-t border-slate-100 px-4 py-4">
+            {{-- Mobile Logged Out State --}}
+            <a href="/admin/login" id="nav-login-mobile" class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-200">
+                <i class="bi bi-person-circle text-lg text-slate-500"></i> Akses sebagai pegawai
+            </a>
+
+            {{-- Mobile Logged In State --}}
+            <div id="nav-user-mobile" class="hidden flex-col">
+
+                <div id="badge-pegawai-mobile" class="px-4 mb-4 hidden">
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-semibold text-amber-700">
+                        <i class="bi bi-shield-check"></i> Akses Pegawai
+                    </span>
+                </div>
+                
+                <a href="/admin/materi" id="badge-admin-mobile" class="hidden items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-blue-700 bg-blue-50 transition mb-2">
+                    <i class="bi bi-speedometer2"></i> Dasbor Admin
+                </a>
+
+                <button type="button" id="mobile-logout-btn" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-red-600 transition hover:bg-red-50">
+                    <i class="bi bi-box-arrow-right text-red-500"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle Auth State
+        const token = localStorage.getItem('auth_token');
+        const userStr = localStorage.getItem('user');
+
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                const roles = user.roles || [];
+                
+                // Show logged in elements
+                document.getElementById('nav-login-desktop')?.classList.add('hidden');
+                document.getElementById('nav-login-mobile')?.classList.add('hidden');
+                
+                document.getElementById('nav-user-desktop')?.classList.replace('hidden', 'flex');
+                document.getElementById('nav-user-mobile')?.classList.replace('hidden', 'flex');
+                document.getElementById('nav-badges-desktop')?.classList.replace('hidden', 'flex');
+
+                if (document.getElementById('nav-email-mobile')) {
+                    document.getElementById('nav-email-mobile').textContent = user.email || '';
+                }
+
+                if (roles.includes('Pegawai')) {
+                    document.getElementById('badge-pegawai-desktop')?.classList.replace('hidden', 'inline-flex');
+                    document.getElementById('badge-pegawai-mobile')?.classList.remove('hidden');
+                }
+                
+                if (roles.includes('Admin')) {
+                    document.getElementById('badge-admin-desktop')?.classList.replace('hidden', 'inline-flex');
+                    document.getElementById('badge-admin-mobile')?.classList.replace('hidden', 'flex');
+                }
+            } catch (e) {
+                console.error("Error parsing user data", e);
+            }
+        }
+
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        if(mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Logout Handlers
+        const handleLogout = async () => {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                try {
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Accept': 'application/json'
+                        }
+                    });
+                } catch (e) {
+                    console.error('Logout error', e);
+                }
+            }
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        };
+
+        const logoutBtn = document.getElementById('public-logout-btn');
+        const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+
+        if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+        if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
+    });
+</script>

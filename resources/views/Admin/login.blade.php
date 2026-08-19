@@ -108,9 +108,14 @@
                     btnText.innerText = 'Berhasil!';
                     btnSpinner.classList.add('hidden');
                     
-                    // Redirect to dashboard after brief delay
+                    // Redirect based on role after brief delay
                     setTimeout(() => {
-                        window.location.href = '/admin/materi';
+                        const roles = data.data.user.roles || [];
+                        if (roles.includes('Pegawai')) {
+                            window.location.href = '/';
+                        } else {
+                            window.location.href = '/admin/materi';
+                        }
                     }, 500);
                 } else {
                     // Handle validation or auth errors
@@ -129,8 +134,25 @@
         });
 
         // Auto-redirect if already logged in
-        if(localStorage.getItem('auth_token')) {
-            window.location.href = '/admin/admin-dashboard';
+        if (localStorage.getItem('auth_token')) {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    // If roles are undefined (old session), assume Admin for auto-redirect
+                    // The dashboard layout will clear invalid sessions if needed
+                    const roles = user.roles || ['Admin']; 
+                    if (roles.includes('Pegawai')) {
+                        window.location.href = '/';
+                    } else {
+                        window.location.href = '/admin/materi';
+                    }
+                } catch (e) {
+                    window.location.href = '/admin/materi';
+                }
+            } else {
+                window.location.href = '/admin/materi';
+            }
         }
     </script>
 </body>

@@ -6,14 +6,16 @@ use App\Admin\Controllers\Api\TutorialNodeController;
 use App\Admin\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\PublicApplicationController;
 use App\Admin\Controllers\Api\TutorialContentBlockController;
+use App\Http\Controllers\Api\PublicMateriController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 
 Route::get('/user', fn (Request $request) => $request->user())->middleware('auth:sanctum');
 
-Route::prefix('admin')->name('api.admin.')->group(function (): void {
+Route::prefix('admin')->name('api.admin.')->middleware(['auth:sanctum', 'role:Admin'])->group(function (): void {
     Route::apiResource('categories', CategoryController::class);
+    Route::post('/categories/{category}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
     Route::get('/applications/options', [ApplicationController::class, 'options'])->name('applications.options');
     Route::get('/applications-with-versions', [ApplicationController::class, 'getAllWithVersions'])->name('applications.with-versions');
 
@@ -38,8 +40,7 @@ Route::put('/tutorial-nodes/{tutorialNode}/content-blocks/reorder', [TutorialCon
 });
 
 Route::get('/applications', [PublicApplicationController::class, 'index'])->name('api.applications.index');
-
-
+Route::get('/public/materi', [PublicMateriController::class, 'index'])->name('api.public.materi.index');
 
 Route::post('/auth/login', [AuthController::class, 'login'])->name('api.auth.login');
 Route::middleware('auth:sanctum')->get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');

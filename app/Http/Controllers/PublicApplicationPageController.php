@@ -8,6 +8,7 @@ use App\Models\TutorialNode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublicApplicationPageController extends Controller
@@ -134,9 +135,12 @@ class PublicApplicationPageController extends Controller
     private function ensureApplicationIsPublic(
         Application $application
     ): void {
+        $user = Auth::user();
+        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        
         abort_unless(
             $application->status === 'active' &&
-            (bool) $application->is_public,
+            ($isInternal || (bool) $application->is_public),
             Response::HTTP_NOT_FOUND
         );
     }
@@ -217,7 +221,7 @@ class PublicApplicationPageController extends Controller
         Application $application,
         ApplicationVersion $version
     ): Collection {
-        return TutorialNode::query()
+        $query = TutorialNode::query()
             ->where(
                 'application_id',
                 $application->id
@@ -229,11 +233,14 @@ class PublicApplicationPageController extends Controller
             ->where(
                 'status',
                 'published'
-            )
-            ->where(
-                'is_public',
-                true
-            )
+            );
+            
+        $user = Auth::user();
+        if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
+            $query->where('is_public', true);
+        }
+
+        return $query
             ->orderBy('sort_order')
             ->orderBy('title')
             ->orderBy('id')
@@ -419,7 +426,7 @@ class PublicApplicationPageController extends Controller
             );
         }
 
-        return TutorialNode::query()
+        $query = TutorialNode::query()
             ->whereKey($materialId)
             ->where(
                 'application_id',
@@ -436,11 +443,14 @@ class PublicApplicationPageController extends Controller
             ->where(
                 'status',
                 'published'
-            )
-            ->where(
-                'is_public',
-                true
-            )
+            );
+            
+        $user = Auth::user();
+        if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
+            $query->where('is_public', true);
+        }
+
+        return $query
             ->with([
                 'application:id,name,slug',
 
