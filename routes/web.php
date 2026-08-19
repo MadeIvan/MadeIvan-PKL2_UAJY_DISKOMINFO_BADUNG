@@ -48,6 +48,11 @@ Route::get('/admin/materi/{tutorialNode}/content', [TutorialContentPageControlle
 
 Route::get('/admin/materi/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi.preview');
 
+Route::get('/admin/applications/{application:slug}/{version}/preview/{materi?}', [TutorialContentPageController::class, 'previewApp'])
+    ->whereNumber('version')
+    ->whereNumber('materi')
+    ->name('admin.applications.preview');
+
 /*
 | Development Utilities
 */

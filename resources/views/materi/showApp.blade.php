@@ -23,10 +23,24 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
 
+                {{-- Tabs --}}
+                <div class="mb-6 border-b border-slate-200">
+                    <nav class="-mb-px flex gap-6" aria-label="Tabs">
+                        <button type="button" id="tab-applications" class="inline-flex shrink-0 items-center gap-2 border-b-2 border-blue-600 px-1 pb-4 text-sm font-semibold text-blue-600 transition-colors">
+                            <i class="bi bi-grid"></i>
+                            Aplikasi
+                        </button>
+                        <button type="button" id="tab-materi" class="inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent px-1 pb-4 text-sm font-semibold text-slate-500 hover:border-slate-300 hover:text-slate-700 transition-colors">
+                            <i class="bi bi-journal-text"></i>
+                            Materi
+                        </button>
+                    </nav>
+                </div>
+
                 {{-- Header --}}
                 <div class="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">
+                    <div id="header-applications">
+                        <h1 class="text-2xl font-bold text-slate-900" id="mainTitle">
                             Semua Aplikasi
                         </h1>
 
@@ -38,7 +52,7 @@
                             id="applicationCount"
                             class="mt-2 text-xs font-semibold text-blue-900"
                         >
-                            Memuat aplikasi...
+                            Memuat...
                         </p>
                     </div>
 
@@ -96,13 +110,20 @@
                 >
                     <i class="bi bi-arrow-repeat mr-2 inline-block animate-spin text-xl"></i>
 
-                    Memuat daftar aplikasi...
+                    Memuat data...
                 </div>
 
                 {{-- Application grid --}}
                 <div
                     id="applicationGrid"
                     class="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+                ></div>
+
+                {{-- Materi list --}}
+                <div
+                    id="materiGrid"
+                    class="flex flex-col gap-4"
+                    style="display: none;"
                 ></div>
 
                 {{-- Empty state --}}
@@ -114,8 +135,8 @@
                         <i class="bi bi-search text-2xl"></i>
                     </div>
 
-                    <h2 class="mt-4 text-lg font-semibold text-slate-900">
-                        Aplikasi tidak ditemukan
+                    <h2 id="emptyResultTitle" class="mt-4 text-lg font-semibold text-slate-900">
+                        Data tidak ditemukan
                     </h2>
 
                     <p class="mt-2 text-sm text-slate-500">
@@ -133,7 +154,7 @@
                     </div>
 
                     <h2 class="mt-4 text-lg font-semibold text-slate-900">
-                        Gagal memuat aplikasi
+                        Gagal memuat data
                     </h2>
 
                     <p

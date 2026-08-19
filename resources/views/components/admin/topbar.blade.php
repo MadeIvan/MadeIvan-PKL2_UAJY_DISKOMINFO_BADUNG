@@ -98,6 +98,7 @@
             {{-- Profile --}}
             <button
                 type="button"
+                id="profile-btn"
                 class="
                     flex items-center gap-3
                     rounded-xl
@@ -107,6 +108,7 @@
                 "
             >
                 <div
+                    id="profile-initials"
                     class="
                         flex h-10 w-10 shrink-0 items-center justify-center
                         rounded-xl
@@ -115,26 +117,28 @@
                         text-white
                     "
                 >
-                    AD
+                    --
                 </div>
 
                 <div class="hidden text-left md:block">
                     <p
+                        id="profile-name"
                         class="
                             text-sm font-semibold
                             text-slate-900
                         "
                     >
-                        Administrator
+                        ...
                     </p>
 
                     <p
+                        id="profile-email"
                         class="
                             mt-0.5 text-xs
                             text-slate-500
                         "
                     >
-                        admin@example.com
+                        ...
                     </p>
                 </div>
 
@@ -147,6 +151,78 @@
                     "
                 ></i>
             </button>
+            
+            {{-- Dropdown Menu (Hidden by default) --}}
+            <div id="profile-dropdown" class="absolute right-4 sm:right-6 lg:right-8 top-16 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-50">
+                <button type="button" id="logout-button" class="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition">
+                    <i class="bi bi-box-arrow-right mr-3 text-slate-400"></i>
+                    Keluar
+                </button>
+            </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const profileBtn = document.getElementById('profile-btn');
+            const dropdown = document.getElementById('profile-dropdown');
+            const logoutBtn = document.getElementById('logout-button');
+            const profileInitials = document.getElementById('profile-initials');
+            const profileName = document.getElementById('profile-name');
+            const profileEmail = document.getElementById('profile-email');
+            
+            // Populate user info from localStorage
+            try {
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (profileName) profileName.textContent = user.name || 'User';
+                    if (profileEmail) profileEmail.textContent = user.email || '';
+                    if (profileInitials && user.name) {
+                        profileInitials.textContent = user.name.substring(0, 2).toUpperCase();
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to parse user info', e);
+            }
+            
+            // Toggle dropdown
+            if (profileBtn) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+            }
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (dropdown && !dropdown.classList.contains('hidden') && !profileBtn.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+            
+            // Handle Logout
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('auth_token');
+                    if (token) {
+                        try {
+                            await fetch('/api/auth/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Accept': 'application/json'
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Logout error', e);
+                        }
+                    }
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/admin/login';
+                });
+            }
+        });
+    </script>
 </header>

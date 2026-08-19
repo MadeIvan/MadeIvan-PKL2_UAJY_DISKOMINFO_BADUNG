@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class TutorialNode extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use Searchable;
 
     public const TYPE_KATEGORI = 'kategori';
     public const TYPE_BAGIAN = 'bagian';
@@ -149,5 +151,19 @@ class TutorialNode extends Model
     {
         return $this->node_type ===
             self::TYPE_MATERI;
+    }
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'title' => $this->title,
+            'description' => $this->description,
+        ];
     }
 }

@@ -125,11 +125,34 @@ function renderTable() {
     const startIndex = (state.currentPage - 1) * 10;
 
     state.data.forEach((cat, index) => {
+        const isDeleted = cat.deleted_at !== null && cat.deleted_at !== undefined;
+        const rowClass = isDeleted ? 'bg-slate-50 opacity-75' : 'hover:bg-slate-50 transition-colors';
+        const nameClass = isDeleted ? 'font-semibold text-slate-500 line-through' : 'font-semibold text-slate-900';
+        
+        let actionsHtml = '';
+        if (isDeleted) {
+            actionsHtml = `
+                <button type="button" onclick="restoreCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="flex h-9 min-w-9 px-3 items-center justify-center gap-2 rounded-sm border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition-colors" title="Pulihkan">
+                    <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
+                </button>
+            `;
+        } else {
+            actionsHtml = `
+                <button type="button" onclick="editCategory(${cat.id})" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-700 transition-colors" title="Edit">
+                    <i class="bi bi-pencil-square"></i>
+                </button>
+                <button type="button" onclick="deleteCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors" title="Hapus">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            `;
+        }
+
         html += `
-            <tr class="hover:bg-slate-50 transition-colors">
+            <tr class="${rowClass}">
                 <td class="px-5 py-4 text-sm text-slate-500">${startIndex + index + 1}</td>
                 <td class="px-5 py-4">
-                    <p class="font-semibold text-slate-900">${cat.name}</p>
+                    <p class="${nameClass}">${cat.name}</p>
+                    ${isDeleted ? '<span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">Dihapus</span>' : ''}
                 </td>
                 <td class="px-5 py-4 text-sm text-slate-600">${cat.slug}</td>
                 <td class="px-5 py-4 text-sm text-slate-500 truncate max-w-[200px]">${cat.description || '-'}</td>
@@ -140,12 +163,7 @@ function renderTable() {
                 </td>
                 <td class="px-5 py-4">
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="editCategory(${cat.id})" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-700 transition-colors" title="Edit">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button type="button" onclick="deleteCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors" title="Hapus">
-                            <i class="bi bi-trash3"></i>
-                        </button>
+                        ${actionsHtml}
                     </div>
                 </td>
             </tr>
@@ -301,14 +319,39 @@ async function deleteCategory(id, name) {
         const data = await res.json();
 
         if(res.ok) {
-            // Check if deleting last item on page
-            if (state.data.length === 1 && state.currentPage > 1) {
+            // Check if deleting last item on page (and it was a hard delete)
+            if (state.data.length === 1 && state.currentPage > 1 && data.message.includes('permanen')) {
                 state.currentPage--;
             }
             loadCategories(state.currentPage);
-            showNotification('Kategori berhasil dihapus.', 'success');
+            showNotification(data.message || 'Kategori berhasil dihapus.', 'success');
         } else {
             alert(data.message || 'Gagal menghapus kategori.');
+        }
+    } catch(e) {
+        alert('Koneksi gagal.');
+    }
+}
+
+// Restore Category
+async function restoreCategory(id, name) {
+    if (!confirm(`Apakah Anda yakin ingin memulihkan kategori "${name}"?`)) return;
+    
+    try {
+        const res = await fetch(`/api/admin/categories/${id}/restore`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+
+        if(res.ok) {
+            loadCategories(state.currentPage);
+            showNotification(data.message || 'Kategori berhasil dipulihkan.', 'success');
+        } else {
+            alert(data.message || 'Gagal memulihkan kategori.');
         }
     } catch(e) {
         alert('Koneksi gagal.');
@@ -333,6 +376,7 @@ window.openModal = openModal;
 window.closeModal = closeModal;
 window.saveCategory = saveCategory;
 window.deleteCategory = deleteCategory;
+window.restoreCategory = restoreCategory;
 window.editCategory = openModal;
 
 // Initial load

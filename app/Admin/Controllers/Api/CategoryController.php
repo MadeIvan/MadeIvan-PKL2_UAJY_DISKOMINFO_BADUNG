@@ -24,7 +24,9 @@ class CategoryController extends Controller
             return response()->json($query->get());
         }
 
-        $categories = $query->paginate(10);
+        // Include soft-deleted categories in the paginated table view
+        $paginatedQuery = clone $query;
+        $categories = $paginatedQuery->withTrashed()->paginate(10);
 
         return response()->json([
             'data' => $categories->items(),
@@ -81,17 +83,36 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): JsonResponse
     {
-        // Prevent deletion if there are applications attached
         if ($category->applications()->exists()) {
+            // Soft delete
+            $category->delete();
             return response()->json([
-                'message' => 'Tidak dapat menghapus kategori yang masih digunakan oleh aplikasi.',
-            ], 422);
+                'message' => 'Kategori disembunyikan (soft delete) karena masih digunakan oleh aplikasi.',
+            ]);
         }
 
-        $category->delete();
+        // Hard delete
+        $category->forceDelete();
+        return response()->json([
+            'message' => 'Kategori berhasil dihapus permanen.',
+        ]);
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+        $category = Category::withTrashed()->findOrFail($id);
+        
+        if (!$category->trashed()) {
+            return response()->json([
+                'message' => 'Kategori tidak dalam status terhapus.',
+            ], 400);
+        }
+
+        $category->restore();
 
         return response()->json([
-            'message' => 'Kategori berhasil dihapus.',
+            'message' => 'Kategori berhasil dipulihkan.',
+            'data' => $category,
         ]);
     }
 }
