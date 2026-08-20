@@ -9,8 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
+use App\Repositories\TutorialContentBlockRepository;
+
 class TutorialContentBlockService
 {
+    public function __construct(
+        protected TutorialContentBlockRepository $tutorialContentBlockRepository
+    ) {
+    }
+
     public function create(
         TutorialNode $tutorialNode,
         array $data,
@@ -53,7 +60,7 @@ class TutorialContentBlockService
                     $data
                 );
 
-                return TutorialContentBlock::create(
+                return $this->tutorialContentBlockRepository->create(
                     $data
                 )->refresh();
             }
@@ -236,18 +243,11 @@ class TutorialContentBlockService
                     $orderedBlocks
                     as $index => $item
                 ) {
-                    TutorialContentBlock::query()
-                        ->whereKey(
-                            (int) $item['id']
-                        )
-                        ->where(
-                            'tutorial_node_id',
-                            $tutorialNode->id
-                        )
-                        ->update([
-                            'sort_order' =>
-                                $index,
-                        ]);
+                    $this->tutorialContentBlockRepository->updateSortOrder(
+                        (int) $item['id'],
+                        $tutorialNode->id,
+                        $index
+                    );
                 }
             }
         );
@@ -272,9 +272,7 @@ class TutorialContentBlockService
         TutorialNode $tutorialNode
     ): int {
         $maximumOrder =
-            $tutorialNode
-                ->contentBlocks()
-                ->max('sort_order');
+            $this->tutorialContentBlockRepository->getMaxSortOrder($tutorialNode->id);
 
         if ($maximumOrder === null) {
             return 0;
@@ -286,15 +284,7 @@ class TutorialContentBlockService
     private function normalizeSortOrder(
         int $tutorialNodeId
     ): void {
-        $blocks =
-            TutorialContentBlock::query()
-                ->where(
-                    'tutorial_node_id',
-                    $tutorialNodeId
-                )
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->get();
+        $blocks = $this->tutorialContentBlockRepository->getBlocksForNode($tutorialNodeId);
 
         foreach (
             $blocks

@@ -108,18 +108,41 @@ class TutorialNode extends Model
         );
     }
 
-    public function scopePublished(
-        Builder $query
-    ): Builder {
-        return $query
-            ->where(
-                'status',
-                'published'
-            )
-            ->where(
-                'is_public',
-                true
-            );
+    public function scopeVisibleToInternal(Builder $query): Builder
+    {
+        return $query->where('status', 'published')
+            ->where(function (Builder $q) {
+                $q->whereNull('parent_id')
+                  ->orWhereHas('parent', function (Builder $parentQ) {
+                      $parentQ->where('status', 'published')
+                              ->where(function (Builder $q2) {
+                                  $q2->whereNull('parent_id')
+                                     ->orWhereHas('parent', function (Builder $grandparentQ) {
+                                         $grandparentQ->where('status', 'published');
+                                     });
+                              });
+                  });
+            });
+    }
+
+    public function scopeVisibleToPublic(Builder $query): Builder
+    {
+        return $query->where('status', 'published')
+            ->where('is_public', true)
+            ->where(function (Builder $q) {
+                $q->whereNull('parent_id')
+                  ->orWhereHas('parent', function (Builder $parentQ) {
+                      $parentQ->where('status', 'published')
+                              ->where('is_public', true)
+                              ->where(function (Builder $q2) {
+                                  $q2->whereNull('parent_id')
+                                     ->orWhereHas('parent', function (Builder $grandparentQ) {
+                                         $grandparentQ->where('status', 'published')
+                                                      ->where('is_public', true);
+                                     });
+                              });
+                  });
+            });
     }
 
     public function scopeOrdered(

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
 Route::view('/', 'welcome')->name('home');
 Route::view('/content', 'content_page')->name('content');
 Route::view('/app-list', 'app_index')->name('applications.list');
-Route::view('/applications-demo', 'materi.showApp')->name('applications.index');
+Route::view('/applications-demo', 'materi.show_app')->name('applications.index');
 
 /*
 | Public Application Documentation

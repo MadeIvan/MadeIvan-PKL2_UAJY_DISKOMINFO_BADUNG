@@ -3,6 +3,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Application;
+use App\Repositories\ApplicationRepository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -10,6 +11,11 @@ use Illuminate\Support\Str;
 
 class ApplicationService
 {
+    public function __construct(
+        protected ApplicationRepository $applicationRepository
+    ) {
+    }
+
     public function create(array $data): Application
     {
         return DB::transaction(function () use ($data): Application {
@@ -45,7 +51,7 @@ class ApplicationService
                 );
             }
 
-            return Application::create($data);
+            return $this->applicationRepository->create($data);
         });
     }
 
@@ -116,7 +122,7 @@ class ApplicationService
                     );
                 }
 
-                $application->update($data);
+                $this->applicationRepository->update($application, $data);
 
                 return $application->fresh([
                     'versions',
@@ -129,7 +135,7 @@ class ApplicationService
     public function delete(Application $application): void
     {
         DB::transaction(function () use ($application): void {
-            $application->delete();
+            $this->applicationRepository->delete($application);
         });
     }
 
@@ -157,17 +163,7 @@ class ApplicationService
         $counter = 2;
 
         while (
-            Application::query()
-                ->when(
-                    $ignoredApplicationId !== null,
-                    fn ($query) => $query->where(
-                        'id',
-                        '!=',
-                        $ignoredApplicationId
-                    )
-                )
-                ->where('slug', $slug)
-                ->exists()
+            $this->applicationRepository->existsWithSlug($slug, $ignoredApplicationId)
         ) {
             $slug = "{$baseSlug}-{$counter}";
             $counter++;

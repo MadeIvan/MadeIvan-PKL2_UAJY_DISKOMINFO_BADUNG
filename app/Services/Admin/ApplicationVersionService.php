@@ -6,6 +6,8 @@ use App\Models\Application;
 use App\Models\ApplicationVersion;
 use App\Models\TutorialContentBlock;
 use App\Models\TutorialNode;
+use App\Repositories\ApplicationVersionRepository;
+use App\Repositories\TutorialNodeRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +17,12 @@ use Throwable;
 
 class ApplicationVersionService
 {
+    public function __construct(
+        protected ApplicationVersionRepository $applicationVersionRepository,
+        protected TutorialNodeRepository $tutorialNodeRepository
+    ) {
+    }
+
     public function create(
         Application $application,
         array $data
@@ -33,7 +41,7 @@ class ApplicationVersionService
                     );
 
                     if ($isCurrent) {
-                        $this->clearCurrentVersion(
+                        $this->applicationVersionRepository->clearCurrentVersion(
                             $application->id
                         );
                     }
@@ -123,7 +131,7 @@ class ApplicationVersionService
                     (bool) $data['is_current'];
 
                 if ($willBecomeCurrent) {
-                    $this->clearCurrentVersion(
+                    $this->applicationVersionRepository->clearCurrentVersion(
                         $applicationVersion->application_id,
                         $applicationVersion->id
                     );
@@ -160,13 +168,10 @@ class ApplicationVersionService
         array &$copiedFilePaths
     ): array {
         $sourceVersion =
-            ApplicationVersion::query()
-                ->whereKey($sourceVersionId)
-                ->where(
-                    'application_id',
-                    $application->id
-                )
-                ->first();
+            $this->applicationVersionRepository->getByIdAndApplication(
+                $sourceVersionId,
+                $application->id
+            );
 
         if (!$sourceVersion) {
             throw ValidationException::withMessages([
@@ -197,20 +202,10 @@ class ApplicationVersionService
         }
 
         $sourceNodes =
-            TutorialNode::query()
-                ->where(
-                    'application_id',
-                    $application->id
-                )
-                ->where(
-                    'application_version_id',
-                    $sourceVersion->id
-                )
-                ->with('contentBlocks')
-                ->orderBy('parent_id')
-                ->orderBy('sort_order')
-                ->orderBy('id')
-                ->get();
+            $this->tutorialNodeRepository->getNodesForVersion(
+                $application->id,
+                $sourceVersion->id
+            );
 
         $sourceNodesById =
             $sourceNodes->keyBy('id');
@@ -591,31 +586,5 @@ class ApplicationVersionService
         }
 
         return $targetPath;
-    }
-
-    private function clearCurrentVersion(
-        int $applicationId,
-        ?int $ignoredVersionId = null
-    ): void {
-        ApplicationVersion::query()
-            ->where(
-                'application_id',
-                $applicationId
-            )
-            ->when(
-                $ignoredVersionId !== null,
-                fn ($query) => $query->where(
-                    'id',
-                    '!=',
-                    $ignoredVersionId
-                )
-            )
-            ->where(
-                'is_current',
-                true
-            )
-            ->update([
-                'is_current' => false,
-            ]);
     }
 }

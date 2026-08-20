@@ -20,7 +20,6 @@ class PublicMateriController extends Controller
 
         $query = TutorialNode::search($search)->query(function (Builder $builder) use ($canSeeNonPublic) {
             $builder->where('node_type', TutorialNode::TYPE_MATERI)
-                ->where('status', 'published')
                 ->whereHas('application', function (Builder $q) use ($canSeeNonPublic) {
                     $q->where('status', 'active');
                     if (!$canSeeNonPublic) {
@@ -32,8 +31,10 @@ class PublicMateriController extends Controller
                     $q->whereNotNull('id');
                 });
 
-            if (!$canSeeNonPublic) {
-                $builder->where('is_public', true);
+            if ($canSeeNonPublic) {
+                $builder->visibleToInternal();
+            } else {
+                $builder->visibleToPublic();
             }
 
             $builder->with([

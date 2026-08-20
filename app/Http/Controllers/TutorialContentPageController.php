@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\ApplicationVersion;
 use App\Models\TutorialNode;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,9 +59,18 @@ class TutorialContentPageController extends Controller
         $user = Auth::user();
         $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
 
+        // Check if the node is visible by checking if it exists with the appropriate scope
+        $isVisible = TutorialNode::query()
+            ->whereKey($tutorialNode->id)
+            ->when($isInternal, function (Builder $query) {
+                $query->visibleToInternal();
+            }, function (Builder $query) {
+                $query->visibleToPublic();
+            })
+            ->exists();
+
         abort_unless(
-            $tutorialNode->status === 'published' &&
-            ($isInternal || (bool) $tutorialNode->is_public),
+            $isVisible,
             Response::HTTP_NOT_FOUND
         );
 
@@ -150,7 +160,7 @@ class TutorialContentPageController extends Controller
             }
         }
 
-        return view('Admin.materi.previewApp', [
+        return view('Admin.materi.preview_app', [
             'application' => $application,
             'selectedVersion' => $version,
             'tutorialTree' => $tutorialTree,

@@ -51,9 +51,11 @@
             $isActive ||
             $hasActiveDescendant;
 
+        $routeName = $routeName ?? 'applications.show';
+
         $materialUrl =
             $isMateri
-                ? route('admin.applications.preview', [
+                ? route($routeName, [
                     'application' => $application->slug,
                     'version' => $selectedVersion->id,
                     'materi' => $node['id'],
@@ -114,11 +116,12 @@
                     data-tree-children
                     class="{{ $shouldOpen ? '' : 'hidden' }} ml-5 border-l border-slate-200 pl-2"
                 >
-                    @include('Admin.partials.tutorial-tree', [
+                    @include('Public.partials.tutorial_tree', [
                         'nodes' => $children,
                         'application' => $application,
                         'selectedVersion' => $selectedVersion,
                         'selectedMaterial' => $selectedMaterial,
+                        'routeName' => $routeName,
                     ])
                 </div>
             @endif
@@ -165,11 +168,12 @@
                     data-tree-children
                     class="{{ $shouldOpen ? '' : 'hidden' }} ml-5 border-l border-slate-200 pl-2"
                 >
-                    @include('Admin.partials.tutorial-tree', [
+                    @include('Public.partials.tutorial_tree', [
                         'nodes' => $children,
                         'application' => $application,
                         'selectedVersion' => $selectedVersion,
                         'selectedMaterial' => $selectedMaterial,
+                        'routeName' => $routeName,
                     ])
                 </div>
             @endif

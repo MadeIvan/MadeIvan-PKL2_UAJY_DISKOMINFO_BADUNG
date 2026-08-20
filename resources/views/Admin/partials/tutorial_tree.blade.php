@@ -53,7 +53,7 @@
 
         $materialUrl =
             $isMateri
-                ? route('applications.show', [
+                ? route('admin.applications.preview', [
                     'application' => $application->slug,
                     'version' => $selectedVersion->id,
                     'materi' => $node['id'],
@@ -114,7 +114,7 @@
                     data-tree-children
                     class="{{ $shouldOpen ? '' : 'hidden' }} ml-5 border-l border-slate-200 pl-2"
                 >
-                    @include('Public.partials.tutorial-tree', [
+                    @include('Admin.partials.tutorial_tree', [
                         'nodes' => $children,
                         'application' => $application,
                         'selectedVersion' => $selectedVersion,
@@ -165,7 +165,7 @@
                     data-tree-children
                     class="{{ $shouldOpen ? '' : 'hidden' }} ml-5 border-l border-slate-200 pl-2"
                 >
-                    @include('Public.partials.tutorial-tree', [
+                    @include('Admin.partials.tutorial_tree', [
                         'nodes' => $children,
                         'application' => $application,
                         'selectedVersion' => $selectedVersion,

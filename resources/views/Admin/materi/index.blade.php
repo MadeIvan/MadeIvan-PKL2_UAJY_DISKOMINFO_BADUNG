@@ -629,15 +629,96 @@
                     </span>
                 </label>
 
-                {{-- Modal Footer --}}
-                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+                {{-- Copy from Another Version Section (Only visible when creating/editing, depending on logic) --}}
+                <div id="node-copy-section" class="border border-slate-200 bg-slate-50 p-5 sm:p-6 mt-6">
+                    <h3 class="text-sm font-bold text-slate-950 mb-4">
+                        Salin dari Versi Lain
+                    </h3>
+
+                    <div class="grid gap-5 md:grid-cols-2 mb-4">
+                        <div>
+                            <label
+                                for="copy-source-version"
+                                class="mb-2 block text-sm font-semibold text-slate-700"
+                            >
+                                Versi Sumber
+                            </label>
+
+                            <select
+                                id="copy-source-version"
+                                class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900"
+                            >
+                                <option value="">Pilih versi sumber...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label
+                                for="copy-source-node"
+                                class="mb-2 block text-sm font-semibold text-slate-700"
+                            >
+                                Materi Sumber
+                            </label>
+
+                            <select
+                                id="copy-source-node"
+                                disabled
+                                class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                            >
+                                <option value="">Pilih materi sumber...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label
+                            for="copy-new-title"
+                            class="mb-2 block text-sm font-semibold text-slate-700"
+                        >
+                            Nama Materi Baru
+                        </label>
+                        <input
+                            id="copy-new-title"
+                            type="text"
+                            disabled
+                            class="w-full border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-blue-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                            placeholder="Ketik nama untuk materi yang disalin..."
+                        >
+                    </div>
+
                     <button
-                        id="node-cancel-button"
+                        id="node-copy-button"
                         type="button"
-                        class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        disabled
+                        class="inline-flex w-full items-center justify-center gap-2 border border-blue-900 px-5 py-3 text-sm font-semibold text-blue-900 hover:bg-blue-50 disabled:opacity-50 md:w-auto"
                     >
-                        Batal
+                        <i class="bi bi-files"></i>
+                        Salin Materi
                     </button>
+                    <p class="mt-2 text-xs text-slate-500">
+                        Menyalin akan menduplikasi materi sumber beserta isinya ke dalam versi saat ini.
+                    </p>
+                </div>
+
+                {{-- Modal Footer --}}
+                <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-between">
+                    <button
+                        id="node-delete-modal-button"
+                        type="button"
+                        class="hidden items-center justify-center gap-2 border border-red-200 bg-white px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
+                    >
+                        <i class="bi bi-trash3"></i>
+                        Hapus Materi
+                    </button>
+
+                    <div class="flex flex-col-reverse gap-3 sm:flex-row">
+                        <button
+                            id="node-cancel-button"
+                            type="button"
+                            class="border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        >
+                            Batal
+                        </button>
 
                     <button
                         id="node-submit-button"
