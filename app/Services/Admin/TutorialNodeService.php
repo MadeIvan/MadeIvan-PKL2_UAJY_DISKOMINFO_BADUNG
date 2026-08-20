@@ -9,8 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+use App\Repositories\TutorialNodeRepository;
+
 class TutorialNodeService
 {
+    public function __construct(
+        protected TutorialNodeRepository $tutorialNodeRepository
+    ) {
+    }
+
     public function getAll(
         ?int $applicationId = null,
         ?int $applicationVersionId = null
@@ -25,32 +32,7 @@ class TutorialNodeService
             );
         }
 
-        return TutorialNode::query()
-            ->with([
-                'application:id,name,slug',
-                'applicationVersion:id,application_id,version_number',
-                'parent:id,title',
-            ])
-            ->when(
-                $applicationId !== null,
-                fn ($query) => $query->where(
-                    'application_id',
-                    $applicationId
-                )
-            )
-            ->when(
-                $applicationVersionId !== null,
-                fn ($query) => $query->where(
-                    'application_version_id',
-                    $applicationVersionId
-                )
-            )
-            ->orderBy('application_id')
-            ->orderBy('application_version_id')
-            ->orderBy('parent_id')
-            ->orderBy('sort_order')
-            ->orderBy('title')
-            ->get();
+        return $this->tutorialNodeRepository->getAll($applicationId, $applicationVersionId);
     }
 
     public function getTree(
@@ -62,23 +44,7 @@ class TutorialNodeService
             $applicationVersionId
         );
 
-        return TutorialNode::query()
-            ->roots()
-            ->where(
-                'application_id',
-                $applicationId
-            )
-            ->where(
-                'application_version_id',
-                $applicationVersionId
-            )
-            ->with([
-                'application:id,name,slug',
-                'applicationVersion:id,application_id,version_number',
-                'childrenRecursive',
-            ])
-            ->ordered()
-            ->get();
+        return $this->tutorialNodeRepository->getTree($applicationId, $applicationVersionId);
     }
 
     public function find(
@@ -111,7 +77,7 @@ class TutorialNodeService
                     $data['sort_order'] ?? 0;
 
                 $tutorialNode =
-                    TutorialNode::create(
+                    $this->tutorialNodeRepository->create(
                         $data
                     );
 
@@ -230,9 +196,23 @@ class TutorialNodeService
                         );
                 }
 
+                $originalStatus = $tutorialNode->status;
+                $originalIsPublic = $tutorialNode->is_public;
+
                 $tutorialNode->update(
                     $data
                 );
+
+                $statusChanged = array_key_exists('status', $data) && $data['status'] !== $originalStatus;
+                $isPublicChanged = array_key_exists('is_public', $data) && $data['is_public'] !== $originalIsPublic;
+
+                if ($statusChanged || $isPublicChanged) {
+                    $this->updateDescendantsVisibility(
+                        $tutorialNode,
+                        $tutorialNode->status,
+                        (bool) $tutorialNode->is_public
+                    );
+                }
 
                 return $this->find(
                     $tutorialNode->refresh()
@@ -253,6 +233,76 @@ class TutorialNodeService
                 );
             }
         );
+    }
+
+    public function copy(
+        int $sourceNodeId,
+        int $destinationVersionId,
+        ?int $destinationParentId = null,
+        ?string $newTitle = null
+    ): TutorialNode {
+        $sourceNode = TutorialNode::query()
+            ->with(['contentBlocks', 'childrenRecursive'])
+            ->findOrFail($sourceNodeId);
+
+        $destinationVersion = ApplicationVersion::query()
+            ->findOrFail($destinationVersionId);
+
+        return DB::transaction(
+            function () use (
+                $sourceNode,
+                $destinationVersion,
+                $destinationParentId,
+                $newTitle
+            ): TutorialNode {
+                return $this->copyNodeRecursively(
+                    $sourceNode,
+                    $destinationVersion,
+                    $destinationParentId,
+                    $newTitle
+                );
+            }
+        );
+    }
+
+    private function copyNodeRecursively(
+        TutorialNode $sourceNode,
+        ApplicationVersion $destinationVersion,
+        ?int $parentId,
+        ?string $newTitle = null
+    ): TutorialNode {
+        $data = $sourceNode->toArray();
+        $data['application_id'] = $destinationVersion->application_id;
+        $data['application_version_id'] = $destinationVersion->id;
+        $data['parent_id'] = $parentId;
+        if ($newTitle !== null) {
+            $data['title'] = $newTitle;
+        }
+        $data['slug'] = $this->makeSlug($data['title'], null);
+
+        $newNode = TutorialNode::create($data);
+
+        foreach ($sourceNode->contentBlocks as $block) {
+            $blockData = $block->toArray();
+            unset(
+                $blockData['id'],
+                $blockData['tutorial_node_id'],
+                $blockData['created_at'],
+                $blockData['updated_at'],
+                $blockData['deleted_at']
+            );
+            $newNode->contentBlocks()->create($blockData);
+        }
+
+        foreach ($sourceNode->children as $child) {
+            $this->copyNodeRecursively(
+                $child,
+                $destinationVersion,
+                $newNode->id
+            );
+        }
+
+        return $newNode;
     }
 
     private function deleteNodeRecursively(
@@ -301,8 +351,7 @@ class TutorialNodeService
             return;
         }
 
-        $parent = TutorialNode::query()
-            ->find($parentId);
+        $parent = $this->tutorialNodeRepository->find($parentId);
 
         if (!$parent) {
             throw ValidationException::withMessages([
@@ -506,10 +555,9 @@ class TutorialNodeService
                 return true;
             }
 
-            $node = TutorialNode::query()
-                ->find(
-                    $node->parent_id
-                );
+            $node = $this->tutorialNodeRepository->find(
+                $node->parent_id
+            );
 
             if (!$node) {
                 break;
@@ -523,8 +571,30 @@ class TutorialNodeService
         string $title,
         ?string $slug
     ): string {
-        return Str::slug(
-            $slug ?: $title
-        );
+        if ($slug) {
+            return Str::slug($slug);
+        }
+        return Str::slug($title);
+    }
+
+    private function updateDescendantsVisibility(
+        TutorialNode $node,
+        string $status,
+        bool $isPublic
+    ): void {
+        $node->load('children');
+        
+        foreach ($node->children as $child) {
+            $child->update([
+                'status' => $status,
+                'is_public' => $isPublic,
+            ]);
+            
+            $this->updateDescendantsVisibility(
+                $child,
+                $status,
+                $isPublic
+            );
+        }
     }
 }

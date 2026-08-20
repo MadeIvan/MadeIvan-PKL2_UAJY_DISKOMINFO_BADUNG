@@ -1,5 +1,5 @@
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading, showDoubleConfirmModal } from '../utils.js';
+import { showToast, displayValidationErrors, clearValidationErrors, setButtonLoading, showDoubleConfirmModal, showConfirmModal } from '../utils.js';
 
 const API_BASE_URL = '/api/admin';
 
@@ -275,6 +275,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 'node-cancel-button'
             ),
 
+        nodeCopySection:
+            document.getElementById(
+                'node-copy-section'
+            ),
+
+        copySourceVersion:
+            document.getElementById(
+                'copy-source-version'
+            ),
+
+        copySourceNode:
+            document.getElementById(
+                'copy-source-node'
+            ),
+
+        copyNewTitle:
+            document.getElementById(
+                'copy-new-title'
+            ),
+
+        nodeCopyButton:
+            document.getElementById(
+                'node-copy-button'
+            ),
+
+        nodeDeleteModalButton:
+            document.getElementById(
+                'node-delete-modal-button'
+            ),
+
         parentInformation:
             document.getElementById(
                 'parent-information'
@@ -447,6 +477,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     )
                 ) {
                     closeNodeModal();
+                }
+            }
+        );
+
+        elements.copySourceVersion.addEventListener(
+            'change',
+            handleCopySourceVersionChange
+        );
+
+        elements.nodeCopyButton.addEventListener(
+            'click',
+            submitCopyNode
+        );
+
+        elements.nodeDeleteModalButton.addEventListener(
+            'click',
+            () => {
+                const nodeId = elements.nodeId.value;
+                if (nodeId) {
+                    closeNodeModal();
+                    deleteNode(Number(nodeId));
                 }
             }
         );
@@ -1409,26 +1460,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             <button
                                 type="button"
-                                class="node-edit-button flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 hover:bg-blue-50"
+                                class="node-manage-button inline-flex items-center gap-2 border border-blue-200 px-3 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-50"
                                 data-id="${node.id}"
-                                aria-label="Ubah materi"
-                                title="Ubah materi"
+                                aria-label="Kelola materi"
+                                title="Kelola materi"
                             >
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-
-                            <button
-                                type="button"
-                                class="node-delete-button flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                data-id="${node.id}"
-                                aria-label="Hapus materi"
-                                title="${
-                                    descendantCount > 0
-                                        ? `Hapus bersama ${descendantCount} turunannya`
-                                        : 'Hapus materi'
-                                }"
-                            >
-                                <i class="bi bi-trash3"></i>
+                                <i class="bi bi-gear"></i>
+                                Kelola
                             </button>
                         </div>
                     </div>
@@ -1460,14 +1498,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 '.node-add-child-button'
             );
 
-        const editButton =
+        const manageButton =
             event.target.closest(
-                '.node-edit-button'
-            );
-
-        const deleteButton =
-            event.target.closest(
-                '.node-delete-button'
+                '.node-manage-button'
             );
 
         if (toggleButton) {
@@ -1508,20 +1541,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (editButton) {
+        if (manageButton) {
             openEditNodeModal(
-                editButton.dataset.id
+                manageButton.dataset.id
             );
 
             return;
-        }
-
-        if (deleteButton) {
-            deleteNode(
-                Number(
-                    deleteButton.dataset.id
-                )
-            );
         }
     }
 
@@ -2021,6 +2046,12 @@ document.addEventListener('DOMContentLoaded', () => {
             'Perbarui Materi'
         );
 
+        elements.nodeDeleteModalButton.classList.remove('hidden');
+        elements.nodeDeleteModalButton.classList.add('inline-flex');
+
+        elements.nodeCopySection.classList.remove('hidden');
+        populateCopySourceVersions();
+
         openNodeModal();
     }
 
@@ -2061,6 +2092,154 @@ document.addEventListener('DOMContentLoaded', () => {
             version
                 ? getVersionLabel(version)
                 : 'Versi tidak diketahui';
+    }
+
+    async function populateCopySourceVersions() {
+        const application = getSelectedApplication();
+        if (!application) return;
+
+        const currentVersionId = state.selectedVersionId;
+        const versions = application.versions || getApplicationVersions(application);
+
+        elements.copySourceVersion.innerHTML = '<option value="">Pilih versi sumber...</option>';
+        
+        versions.forEach(version => {
+            if (Number(version.id) !== Number(currentVersionId)) {
+                const option = document.createElement('option');
+                option.value = version.id;
+                option.textContent = getVersionLabel(version);
+                elements.copySourceVersion.appendChild(option);
+            }
+        });
+    }
+
+    async function handleCopySourceVersionChange() {
+        const sourceVersionId = elements.copySourceVersion.value;
+        const applicationId = state.selectedApplicationId;
+
+        elements.copySourceNode.innerHTML = '<option value="">Memuat materi...</option>';
+        elements.copySourceNode.disabled = true;
+        elements.nodeCopyButton.disabled = true;
+
+        if (!sourceVersionId) {
+            elements.copySourceNode.innerHTML = '<option value="">Pilih materi sumber...</option>';
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/tutorial-nodes/tree?application_id=${applicationId}&application_version_id=${sourceVersionId}`,
+                {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                }
+            );
+
+            const result = await parseResponse(response);
+            const sourceTree = Array.isArray(result?.data) ? result.data : [];
+
+            elements.copySourceNode.innerHTML = '<option value="">Pilih materi sumber...</option>';
+            
+            if (sourceTree.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Versi sumber tidak memiliki materi";
+                option.disabled = true;
+                elements.copySourceNode.appendChild(option);
+            } else {
+                buildSourceNodeOptions(sourceTree, 0);
+                elements.copySourceNode.disabled = false;
+            }
+            
+            elements.copySourceNode.addEventListener('change', () => {
+                const selectedOption = elements.copySourceNode.options[elements.copySourceNode.selectedIndex];
+                elements.nodeCopyButton.disabled = !elements.copySourceNode.value;
+                
+                if (elements.copySourceNode.value) {
+                    // Extract title without depth prefix and type label
+                    const rawText = selectedOption.textContent;
+                    const cleanTitle = rawText.replace(/^[—\s]+/, '').replace(/\s\([^)]+\)$/, '');
+                    elements.copyNewTitle.value = cleanTitle;
+                    elements.copyNewTitle.disabled = false;
+                } else {
+                    elements.copyNewTitle.value = '';
+                    elements.copyNewTitle.disabled = true;
+                }
+            });
+            
+        } catch (error) {
+            elements.copySourceNode.innerHTML = '<option value="">Gagal memuat materi</option>';
+            showToast(error.message, 'error');
+        }
+    }
+
+    function buildSourceNodeOptions(nodes, depth) {
+        nodes.forEach(node => {
+            const prefix = '—'.repeat(depth) + (depth > 0 ? ' ' : '');
+            const option = document.createElement('option');
+            option.value = node.id;
+            option.textContent = `${prefix}${node.title} (${getNodeTypeLabel(node.node_type)})`;
+            elements.copySourceNode.appendChild(option);
+
+            if (node.children_recursive && node.children_recursive.length > 0) {
+                buildSourceNodeOptions(node.children_recursive, depth + 1);
+            }
+        });
+    }
+
+    async function submitCopyNode() {
+        const sourceNodeId = elements.copySourceNode.value;
+        const destinationVersionId = state.selectedVersionId;
+        const destinationParentId = elements.nodeId.value; // The currently edited node
+
+        if (!sourceNodeId || !destinationVersionId) {
+            return;
+        }
+
+        const confirmed = await showConfirmModal(
+            'Salin Materi',
+            'Anda yakin ingin menyalin materi ini beserta isinya? Aksi ini akan membuat salinan baru di bawah materi yang sedang dikelola.',
+            { actionText: 'Salin', actionTheme: 'primary' }
+        );
+
+        if (!confirmed) return;
+
+        setButtonLoading(elements.nodeCopyButton, true);
+
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/tutorial-nodes/copy`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        source_node_id: sourceNodeId,
+                        destination_version_id: destinationVersionId,
+                        destination_parent_id: destinationParentId,
+                        new_title: elements.copyNewTitle.value.trim(),
+                    }),
+                }
+            );
+
+            const result = await parseResponse(response);
+
+            showToast(
+                result?.message || 'Berhasil menyalin materi.',
+                'success'
+            );
+
+            closeNodeModal();
+            await fetchTree();
+        } catch (error) {
+            showToast(error.message, 'error');
+        } finally {
+            setButtonLoading(elements.nodeCopyButton, false);
+        }
     }
 
     async function submitNode(event) {
@@ -2424,7 +2603,19 @@ document.addEventListener('DOMContentLoaded', () => {
             'Simpan Materi'
         );
 
+        elements.nodeDeleteModalButton.classList.add('hidden');
+        elements.nodeDeleteModalButton.classList.remove('inline-flex');
+        
+        elements.nodeCopySection.classList.add('hidden');
+        elements.copySourceVersion.innerHTML = '<option value="">Pilih versi sumber...</option>';
+        elements.copySourceNode.innerHTML = '<option value="">Pilih materi sumber...</option>';
+        elements.copySourceNode.disabled = true;
+        elements.copyNewTitle.value = '';
+        elements.copyNewTitle.disabled = true;
+        elements.nodeCopyButton.disabled = true;
+
         setButtonLoading(elements.nodeSubmitButton, false);
+        setButtonLoading(elements.nodeCopyButton, false);
         clearValidationErrors(elements.nodeForm);
     }
 

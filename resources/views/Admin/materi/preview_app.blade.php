@@ -22,7 +22,27 @@
 </head>
 
 <body class="min-h-screen bg-slate-50 text-slate-900">
-    @include('components.navbar')
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div class="mx-auto flex w-full items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
+                    Preview Admin
+                </p>
+
+                <p class="mt-1 truncate text-sm text-slate-500">
+                    Tampilan penuh aplikasi seperti yang akan dibaca pengguna.
+                </p>
+            </div>
+
+            <a
+                href="{{ route('admin.materi.index') }}"
+                class="inline-flex shrink-0 items-center justify-center gap-2 border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+                <span aria-hidden="true">←</span>
+                Kembali ke Editor
+            </a>
+        </div>
+    </header>
 
     @php
         $blocks = $selectedMaterial
@@ -135,69 +155,7 @@
 
 
 
-        @if ($versions->isEmpty())
 
-            {{-- No Version --}}
-            <div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-                <section class="rounded-2xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
-                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                        <i class="bi bi-journals text-2xl"></i>
-                    </div>
-
-                    <h2 class="mt-5 text-xl font-bold text-slate-950">
-                        Dokumentasi belum tersedia
-                    </h2>
-
-                    <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                        Aplikasi ini belum memiliki versi dokumentasi.
-                    </p>
-
-                    <a
-                        href="{{ route('applications.index') }}"
-                        class="mt-6 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 no-underline transition hover:bg-slate-50"
-                    >
-                        <i class="bi bi-arrow-left"></i>
-                        Kembali ke Daftar Aplikasi
-                    </a>
-                </section>
-            </div>
-
-        @else
-
-            {{-- Older Version Warning Toast --}}
-            @if ($isOlderVersion && $preferredVersion)
-                <div id="version-warning-toast" class="fixed bottom-6 right-6 z-100 w-full max-w-sm animate-fade-in-up">
-                    <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-2xl">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex items-start gap-3">
-                                <i class="bi bi-exclamation-triangle mt-0.5 text-xl text-amber-700"></i>
-                                <div>
-                                    <p class="font-bold text-amber-950">
-                                        Versi Lama
-                                    </p>
-                                    <p class="mt-1 text-sm leading-5 text-amber-800">
-                                        Anda sedang melihat dokumentasi versi lama. Versi terbaru (v{{ $preferredVersion->version_number }}) telah tersedia.
-                                    </p>
-                                </div>
-                            </div>
-                            <button type="button" onclick="document.getElementById('version-warning-toast').style.display='none'" class="shrink-0 text-amber-700 transition hover:text-amber-900" aria-label="Tutup peringatan">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                        <div class="mt-4 flex">
-                            <a
-                                href="{{ route('applications.show', [
-                                    'application' => $application->slug,
-                                    'version' => $preferredVersion->id,
-                                ]) }}"
-                                class="w-full inline-flex items-center justify-center rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-amber-950"
-                            >
-                                Lihat Versi Terbaru
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             {{-- Full Width Documentation Layout --}}
             <div
@@ -272,35 +230,8 @@
                                     Versi Aplikasi
                                 </label>
 
-                                <div class="relative">
-                                    <select
-                                        id="applicationVersion"
-                                        data-application-slug="{{ $application->slug }}"
-                                        class="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-3 pr-10 text-sm font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
-                                    >
-                                        @foreach ($versions as $version)
-                                            <option
-                                                value="{{ $version->id }}"
-                                                @selected(
-                                                    $selectedVersion &&
-                                                    (int) $selectedVersion->id ===
-                                                    (int) $version->id
-                                                )
-                                            >
-                                                v{{ $version->version_number }}
-
-                                                @if (
-                                                    $preferredVersion &&
-                                                    (int) $preferredVersion->id ===
-                                                    (int) $version->id
-                                                )
-                                                    — Terbaru
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
-
-                                    <i class="bi bi-chevron-expand pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"></i>
+                                <div class="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-3 pr-4 text-sm font-semibold text-slate-700">
+                                    v{{ $selectedVersion->version_number }}
                                 </div>
                             </div>
 
@@ -312,11 +243,12 @@
                                     id="tutorialNavigation"
                                     class="space-y-1"
                                 >
-                                    @include('Public.partials.tutorial-tree', [
+                                    @include('Public.partials.tutorial_tree', [
                                         'nodes' => $tutorialTree,
                                         'application' => $application,
                                         'selectedVersion' => $selectedVersion,
                                         'selectedMaterial' => $selectedMaterial,
+                                        'routeName' => 'admin.applications.preview',
                                     ])
                                 </nav>
                             @else
@@ -357,25 +289,8 @@
                             Daftar Materi
                         </button>
 
-                        {{-- No Public Nodes --}}
-                        @if (!$hasPublicNodes)
-                            <section class="rounded-2xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
-                                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
-                                    <i class="bi bi-journal-x text-2xl"></i>
-                                </div>
-
-                                <h2 class="mt-5 text-xl font-bold text-slate-950">
-                                    Dokumentasi belum tersedia
-                                </h2>
-
-                                <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">
-                                    Belum ada dokumentasi publik untuk versi
-                                    {{ $selectedVersion?->version_number }}.
-                                </p>
-                            </section>
-
                         {{-- No Material --}}
-                        @elseif (!$hasMaterials)
+                        @if (!$hasMaterials)
                             <section class="rounded-2xl border border-slate-200 bg-white px-6 py-20 text-center shadow-sm">
                                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-900">
                                     <i class="bi bi-journal-text text-2xl"></i>
@@ -421,7 +336,7 @@
                                 class="mb-5 flex flex-wrap items-center gap-2 text-sm text-slate-500"
                             >
                                 <a
-                                    href="{{ route('applications.index') }}"
+                                    href="{{ route('admin.materi.index') }}"
                                     class="no-underline transition hover:text-blue-900"
                                 >
                                     Pengetahuan
@@ -430,7 +345,7 @@
                                 <i class="bi bi-chevron-right text-xs text-slate-300"></i>
 
                                 <a
-                                    href="{{ route('applications.show', [
+                                    href="{{ route('admin.applications.preview', [
                                         'application' => $application->slug,
                                         'version' => $selectedVersion->id,
                                     ]) }}"
@@ -622,7 +537,7 @@
                                                                             )
                                                                         ) }}"
                                                                         alt="{{ $block->alt_text ?: ($block->caption ?: 'Gambar materi') }}"
-                                                                        class="max-h-[720px] w-full object-contain"
+                                                                        class="max-h-180 w-full object-contain"
                                                                     >
                                                                 </div>
 
@@ -737,7 +652,7 @@
                                                                     <iframe
                                                                         src="{{ $pdfUrl }}"
                                                                         title="{{ $block->original_file_name ?: 'Dokumen PDF' }}"
-                                                                        class="h-[680px] w-full"
+                                                                        class="h-170 w-full"
                                                                     ></iframe>
                                                                 </div>
                                                             </div>
@@ -756,7 +671,7 @@
                                         <div>
                                             @if ($previousMaterial)
                                                 <a
-                                                    href="{{ route('applications.show', [
+                                                    href="{{ route('admin.applications.preview', [
                                                         'application' => $application->slug,
                                                         'version' => $selectedVersion->id,
                                                         'materi' => $previousMaterial->id,
@@ -778,7 +693,7 @@
                                         <div>
                                             @if ($nextMaterial)
                                                 <a
-                                                    href="{{ route('applications.show', [
+                                                    href="{{ route('admin.applications.preview', [
                                                         'application' => $application->slug,
                                                         'version' => $selectedVersion->id,
                                                         'materi' => $nextMaterial->id,
@@ -803,7 +718,6 @@
                     </div>
                 </section>
             </div>
-        @endif
     </main>
 
     <footer class="border-t border-slate-200 bg-white">

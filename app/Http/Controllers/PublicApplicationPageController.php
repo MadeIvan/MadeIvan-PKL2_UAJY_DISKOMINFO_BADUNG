@@ -94,7 +94,7 @@ class PublicApplicationPageController extends Controller
                 (int) $preferredVersion->id;
 
         return view(
-            'Public.application-show',
+            'Public.application_show',
             [
                 'application' =>
                     $application,
@@ -229,15 +229,15 @@ class PublicApplicationPageController extends Controller
             ->where(
                 'application_version_id',
                 $version->id
-            )
-            ->where(
-                'status',
-                'published'
             );
             
         $user = Auth::user();
-        if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
-            $query->where('is_public', true);
+        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        
+        if ($isInternal) {
+            $query->visibleToInternal();
+        } else {
+            $query->visibleToPublic();
         }
 
         return $query
@@ -439,15 +439,15 @@ class PublicApplicationPageController extends Controller
             ->where(
                 'node_type',
                 TutorialNode::TYPE_MATERI
-            )
-            ->where(
-                'status',
-                'published'
             );
             
         $user = Auth::user();
-        if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
-            $query->where('is_public', true);
+        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        
+        if ($isInternal) {
+            $query->visibleToInternal();
+        } else {
+            $query->visibleToPublic();
         }
 
         return $query

@@ -29,6 +29,7 @@ Route::prefix('admin')->name('api.admin.')->middleware(['auth:sanctum', 'role:Ad
     Route::get('/tutorial-nodes/tree', [TutorialNodeController::class, 'tree'])->name('tutorial-nodes.tree');
 
     Route::apiResource('applications', ApplicationController::class)->whereNumber('application');
+    Route::post('/tutorial-nodes/copy', [TutorialNodeController::class, 'copy'])->name('tutorial-nodes.copy');
     Route::apiResource('tutorial-nodes', TutorialNodeController::class)->whereNumber('tutorial_node');
 
     Route::get('/tutorial-nodes/{tutorialNode}/content-blocks', [TutorialContentBlockController::class, 'index'])->whereNumber('tutorialNode')->name('tutorial-nodes.content-blocks.index');

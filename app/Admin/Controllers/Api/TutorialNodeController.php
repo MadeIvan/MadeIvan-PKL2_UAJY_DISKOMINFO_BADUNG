@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TutorialNode\CopyTutorialNodeRequest;
 use App\Http\Requests\Admin\TutorialNode\StoreTutorialNodeRequest;
 use App\Http\Requests\Admin\TutorialNode\UpdateTutorialNodeRequest;
 use App\Models\TutorialNode;
@@ -135,5 +136,23 @@ class TutorialNodeController extends Controller
         return response()->json([
             'message' => 'Tutorial node berhasil dihapus.',
         ]);
+    }
+
+    public function copy(
+        CopyTutorialNodeRequest $request
+    ): JsonResponse {
+        $validated = $request->validated();
+        
+        $tutorialNode = $this->service->copy(
+            (int) $validated['source_node_id'],
+            (int) $validated['destination_version_id'],
+            isset($validated['destination_parent_id']) ? (int) $validated['destination_parent_id'] : null,
+            $validated['new_title'] ?? null
+        );
+
+        return response()->json([
+            'message' => 'Tutorial node berhasil disalin.',
+            'data' => $tutorialNode,
+        ], 201);
     }
 }

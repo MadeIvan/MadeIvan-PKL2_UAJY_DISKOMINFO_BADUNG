@@ -180,11 +180,11 @@ export function showDoubleConfirmModal(title, itemName) {
 
         const cleanup = () => {
             modal.classList.add('hidden');
-            input.removeEventListener('input', checkInput);
-            input.removeEventListener('keydown', enterHandler);
             submitBtn.removeEventListener('click', confirmHandler);
             closeBtn.removeEventListener('click', cancelHandler);
             cancelBtn.removeEventListener('click', cancelHandler);
+            input.removeEventListener('input', checkInput);
+            input.removeEventListener('keydown', enterHandler);
         };
 
         const confirmHandler = () => {
@@ -199,6 +199,81 @@ export function showDoubleConfirmModal(title, itemName) {
 
         input.addEventListener('input', checkInput);
         input.addEventListener('keydown', enterHandler);
+        submitBtn.addEventListener('click', confirmHandler);
+        closeBtn.addEventListener('click', cancelHandler);
+        cancelBtn.addEventListener('click', cancelHandler);
+    });
+}
+
+export function showConfirmModal(title, message, options = {}) {
+    const config = {
+        actionText: 'Konfirmasi',
+        actionTheme: 'primary', // 'primary' (blue) or 'danger' (red)
+        ...options
+    };
+
+    let modal = document.getElementById('simple-confirm-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'simple-confirm-modal';
+        modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 hidden';
+        modal.innerHTML = `
+            <div class="w-full max-w-md rounded-md bg-white shadow-lg">
+                <div class="flex items-center justify-between border-b px-5 py-4">
+                    <h3 class="text-base font-semibold text-slate-800" id="simple-confirm-title">Konfirmasi</h3>
+                    <button type="button" class="text-slate-400 hover:text-slate-600 focus:outline-none" id="simple-confirm-close">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="p-5">
+                    <p class="text-sm text-slate-600" id="simple-confirm-message"></p>
+                </div>
+                <div class="flex items-center justify-end gap-3 border-t bg-slate-50 px-5 py-4">
+                    <button type="button" id="simple-confirm-cancel" class="rounded-sm border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-200">Batal</button>
+                    <button type="button" id="simple-confirm-submit" class="rounded-sm px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    document.getElementById('simple-confirm-title').textContent = title;
+    document.getElementById('simple-confirm-message').textContent = message;
+    
+    const submitBtn = document.getElementById('simple-confirm-submit');
+    const closeBtn = document.getElementById('simple-confirm-close');
+    const cancelBtn = document.getElementById('simple-confirm-cancel');
+
+    submitBtn.textContent = config.actionText;
+    
+    // Apply theme
+    if (config.actionTheme === 'danger') {
+        submitBtn.className = 'rounded-sm px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 bg-red-600 hover:bg-red-700 focus:ring-red-500';
+    } else {
+        submitBtn.className = 'rounded-sm px-4 py-2 text-sm font-medium text-white focus:outline-none focus:ring-2 bg-blue-900 hover:bg-blue-800 focus:ring-blue-900';
+    }
+
+    modal.classList.remove('hidden');
+
+    return new Promise((resolve) => {
+        const confirmHandler = () => {
+            cleanup();
+            modal.classList.add('hidden');
+            resolve(true);
+        };
+
+        const cancelHandler = () => {
+            cleanup();
+            modal.classList.add('hidden');
+            resolve(false);
+        };
+
+        const cleanup = () => {
+            submitBtn.removeEventListener('click', confirmHandler);
+            closeBtn.removeEventListener('click', cancelHandler);
+            cancelBtn.removeEventListener('click', cancelHandler);
+        };
+
         submitBtn.addEventListener('click', confirmHandler);
         closeBtn.addEventListener('click', cancelHandler);
         cancelBtn.addEventListener('click', cancelHandler);
