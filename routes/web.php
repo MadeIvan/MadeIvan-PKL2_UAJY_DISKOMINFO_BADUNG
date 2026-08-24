@@ -39,6 +39,7 @@ Route::view('/admin/add-app', 'Admin.add_app')->name('admin.applications.create'
 Route::view('/admin/categories', 'Admin.categories.index')->name('admin.categories.index');
 Route::view('/admin/materi', 'Admin.materi.index')->name('admin.materi.index');
 Route::view('/admin/aplikasi', 'Admin.applications.index')->name('admin.applications.index');
+Route::view('/admin/pengguna', 'Admin.pengguna.index')->name('admin.pengguna.index');
 
 /*
 | Admin Material Content

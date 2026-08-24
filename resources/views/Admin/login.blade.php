@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-slate-50 flex font-sans">
     
     <!-- Left Side: Login Form -->
-    <div class="w-full lg:w-5/12 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 xl:px-32 relative z-20 bg-white lg:bg-transparent lg:shadow-none shadow-xl">
+    <div class="w-full lg:w-4/12 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-24 xl:px-32 relative z-20 bg-white lg:bg-transparent lg:shadow-none shadow-xl">
         <!-- Logo for mobile view -->
         <div class="lg:hidden text-center mb-10">
             <img src="{{ asset('images/Logo.png') }}" alt="Logo Pusat Pengetahuan" class="mx-auto h-16 w-16 object-contain mb-4">
@@ -19,7 +19,7 @@
             </h2>
         </div>
 
-        <div class="mx-auto w-full max-w-sm">
+        <div class="mx-auto w-full max-w-xs">
             <div class="mb-10 text-center lg:text-left">
                 <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="hidden lg:block h-12 w-12 object-contain mb-6">
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 mb-2">Selamat Datang</h2>
@@ -81,7 +81,7 @@
     </div>
 
     <!-- Right Side: Image Panel -->
-    <div class="hidden lg:flex lg:w-7/12 relative bg-slate-900 overflow-hidden shadow-2xl z-10">
+    <div class="hidden lg:flex lg:w-8/12 relative bg-slate-900 overflow-hidden shadow-2xl z-10">
         <div class="absolute inset-0 bg-blue-900/30 mix-blend-multiply z-10"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent z-10"></div>
         
