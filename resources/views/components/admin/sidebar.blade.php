@@ -10,6 +10,9 @@
 
     $materialsActive =
         request()->is('admin/materi*');
+
+    $usersActive =
+        request()->is('admin/pengguna*');
 @endphp
 
 <aside
@@ -290,19 +293,21 @@
 
             {{-- Users --}}
             <a
-                href="#"
+                href="{{ url('/admin/pengguna') }}"
                 title="Pengguna"
                 class="
                     group flex min-h-12 items-center gap-3
                     overflow-hidden
                     rounded-xl
                     px-3 py-3
-                    text-sm font-medium
-                    text-blue-100
+                    text-sm
                     no-underline
                     transition
-                    hover:bg-white/10
-                    hover:text-white
+
+                    {{ $usersActive
+                        ? 'bg-blue-600 font-semibold text-white shadow-sm'
+                        : 'font-medium text-blue-100 hover:bg-white/10 hover:text-white'
+                    }}
                 "
             >
                 <span class="flex h-6 w-6 shrink-0 items-center justify-center">

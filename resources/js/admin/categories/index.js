@@ -138,10 +138,10 @@ function renderTable() {
             `;
         } else {
             actionsHtml = `
-                <button type="button" onclick="editCategory(${cat.id})" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-700 transition-colors" title="Edit">
+                <button type="button" onclick="editCategory(${cat.id})" class="flex h-9 w-9 items-center justify-center border border-blue-200 text-blue-800 transition hover:bg-blue-50" title="Edit">
                     <i class="bi bi-pencil-square"></i>
                 </button>
-                <button type="button" onclick="deleteCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors" title="Hapus">
+                <button type="button" onclick="deleteCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')" class="flex h-9 w-9 items-center justify-center border border-red-200 text-red-600 transition hover:bg-red-50" title="Hapus">
                     <i class="bi bi-trash3"></i>
                 </button>
             `;

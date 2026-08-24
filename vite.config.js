@@ -14,6 +14,7 @@ export default defineConfig({
                 'resources/js/admin/utils.js',
                 'resources/js/admin/applications/index.js',
                 'resources/js/admin/categories/index.js',
+                'resources/js/admin/pengguna/index.js',
                 'resources/js/public/welcome.js'
             ],
             refresh: true,
