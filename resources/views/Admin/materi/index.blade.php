@@ -65,8 +65,17 @@
                                 type="text"
                                 autocomplete="off"
                                 placeholder="Ketik nama aplikasi..."
-                                class="w-full border border-slate-300 bg-white py-3 pl-11 pr-11 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
+                                class="w-full border border-slate-300 bg-white py-3 pl-11 pr-[88px] text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                             >
+
+                            <button
+                                id="application-search-clear"
+                                type="button"
+                                class="hidden absolute right-11 top-0 flex h-full w-11 items-center justify-center text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                                aria-label="Bersihkan pencarian"
+                            >
+                                <i class="bi bi-x-lg"></i>
+                            </button>
 
                             <button
                                 id="application-dropdown-button"
@@ -179,6 +188,16 @@
                 <p
                     id="selected-context-text"
                     class="mt-1 text-sm font-semibold text-blue-950"
+                ></p>
+
+                <p
+                    id="selected-context-desc"
+                    class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500"
+                ></p>
+
+                <p
+                    id="selected-context-slug"
+                    class="mt-1 text-xs text-slate-400"
                 ></p>
             </div>
         </section>

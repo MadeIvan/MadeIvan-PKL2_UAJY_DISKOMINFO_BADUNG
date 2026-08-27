@@ -2,9 +2,8 @@
 
 use App\Http\Controllers\PublicApplicationPageController;
 use App\Http\Controllers\TutorialContentPageController;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\View\View;
 
 /*
 | Public Pages
@@ -28,41 +27,31 @@ Route::get('/applications/{application:slug}', [PublicApplicationPageController:
 Route::get('/materi/{tutorialNode:slug}', [TutorialContentPageController::class, 'publicShow'])->name('materi.Materi');
 
 /*
-| Admin Pages
+| Admin Pages — most require web session auth
 */
 
-Route::view('/admin/login', 'Admin.login')->name('admin.login');
-Route::view('/admin/input', 'Admin.input_content')->name('admin.input');
-Route::view('/admin/content-index', 'Admin.content_index')->name('admin.content-index');
-Route::get('/admin', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
-Route::view('/admin/add-app', 'Admin.add_app')->name('admin.applications.create');
-Route::view('/admin/categories', 'Admin.categories.index')->name('admin.categories.index');
-Route::view('/admin/materi', 'Admin.materi.index')->name('admin.materi.index');
-Route::view('/admin/aplikasi', 'Admin.applications.index')->name('admin.applications.index');
-Route::view('/admin/pengguna', 'Admin.pengguna.index')->name('admin.pengguna.index');
+Route::get('/admin/login', function (): View {
+    return view('Admin.login');
+})->name('admin.login');
 
-/*
-| Admin Material Content
-*/
+Route::middleware('auth')->group(function (): void {
+    Route::view('/admin', 'Admin.dashboard.index')->name('admin.dashboard');
+    Route::view('/admin/input', 'Admin.input_content')->name('admin.input');
+    Route::view('/admin/content-index', 'Admin.content_index')->name('admin.content-index');
+    Route::view('/admin/add-app', 'Admin.add_app')->name('admin.applications.create');
+    Route::view('/admin/categories', 'Admin.categories.index')->name('admin.categories.index');
+    Route::view('/admin/materi', 'Admin.materi.index')->name('admin.materi.index');
+    Route::view('/admin/aplikasi', 'Admin.applications.index')->name('admin.applications.index');
+    Route::view('/admin/pengguna', 'Admin.pengguna.index')->name('admin.pengguna.index');
 
-Route::get('/admin/materi/{tutorialNode}/content', [TutorialContentPageController::class, 'edit'])->whereNumber('tutorialNode')->name('admin.materi.content');
+    /*
+    | Admin Material Content
+    */
 
-Route::get('/admin/materi/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi.preview');
-
-Route::get('/admin/applications/{application:slug}/{version}/preview/{materi?}', [TutorialContentPageController::class, 'previewApp'])
-    ->whereNumber('version')
-    ->whereNumber('materi')
-    ->name('admin.applications.preview');
-
-/*
-| Development Utilities
-*/
-
-Route::get('/db-check', function (): array {
-    return [
-        'host' => DB::selectOne('SELECT @@hostname AS host')->host,
-        'database' => DB::connection()->getDatabaseName(),
-        'sessions_exists' => Schema::hasTable('sessions'),
-        'tables' => Schema::getTableListing(),
-    ];
-})->name('development.db-check');
+    Route::get('/admin/materi/{tutorialNode}/content', [TutorialContentPageController::class, 'edit'])->whereNumber('tutorialNode')->name('admin.materi.content');
+    Route::get('/admin/materi/{tutorialNode}/preview', [TutorialContentPageController::class, 'preview'])->whereNumber('tutorialNode')->name('admin.materi.preview');
+    Route::get('/admin/applications/{application:slug}/{version}/preview/{materi?}', [TutorialContentPageController::class, 'previewApp'])
+        ->whereNumber('version')
+        ->whereNumber('materi')
+        ->name('admin.applications.preview');
+});

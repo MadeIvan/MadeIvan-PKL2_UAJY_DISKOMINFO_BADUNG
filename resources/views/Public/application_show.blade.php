@@ -476,9 +476,21 @@
                                         @endif
                                     </div>
 
-                                    <h1 class="mt-5 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-                                        {{ $selectedMaterial->title }}
-                                    </h1>
+                                    <div class="mt-5 flex flex-wrap items-start justify-between gap-4">
+                                        <h1 class="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                                            {{ $selectedMaterial->title }}
+                                        </h1>
+
+                                        @if (auth()->check() && auth()->user()->hasRole('Admin'))
+                                            <a
+                                                href="{{ route('admin.materi.content', $selectedMaterial->id) }}"
+                                                class="inline-flex shrink-0 items-center gap-2 border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                            >
+                                                <i class="bi bi-pencil-square"></i>
+                                                Edit Materi
+                                            </a>
+                                        @endif
+                                    </div>
 
                                     @if ($selectedMaterial->description)
                                         <p class="mt-4 max-w-3xl text-base leading-8 text-slate-600">

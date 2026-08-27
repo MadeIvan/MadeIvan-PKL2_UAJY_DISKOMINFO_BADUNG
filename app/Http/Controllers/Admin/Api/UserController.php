@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -36,20 +37,41 @@ class UserController extends Controller
             'role' => 'required|string|in:Admin,Pegawai',
         ]);
 
+        // Only SuperAdmin or Admin can create users, but Admins can only
+        // assign Pegawai role (defense-in-depth against privilege escalation).
+        $user = $request->user();
+        $allowedRoles = $user->hasRole('SuperAdmin')
+            ? ['Admin', 'Pegawai']
+            : ['Pegawai'];
+
+        if (!in_array($request->role, $allowedRoles, true)) {
+            return response()->json([
+                'message' => 'Anda tidak memiliki izin untuk menunjuk role tersebut.',
+            ], 403);
+        }
+
         $email = $request->email;
         // Generate name from email (before the @ symbol)
         $name = Str::before($email, '@');
 
-        // Create the user with a default password
+        // Generate a secure temporary password and send a reset link
+        $tempPassword = Str::random(24);
+
         $user = User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make('password'),
+            'name'     => $name,
+            'email'    => $email,
+            'password' => Hash::make($tempPassword),
         ]);
 
         $user->assignRole($request->role);
 
-        return response()->json(['message' => 'User created successfully', 'data' => $user->load('roles')]);
+        // Send password reset email so user can set their own password
+        Password::sendResetLink(['email' => $email]);
+
+        return response()->json([
+            'message' => 'User created successfully. A password reset link has been sent to the user.',
+            'data'    => $user->load('roles'),
+        ]);
     }
 
     public function update(Request $request, User $user)
