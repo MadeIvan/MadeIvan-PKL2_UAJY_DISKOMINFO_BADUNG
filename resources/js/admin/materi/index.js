@@ -35,6 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 'application-search'
             ),
 
+        applicationSearchClear:
+            document.getElementById(
+                'application-search-clear'
+            ),
+
         applicationId:
             document.getElementById(
                 'application-id'
@@ -88,6 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedContextText:
             document.getElementById(
                 'selected-context-text'
+            ),
+
+        selectedContextDesc:
+            document.getElementById(
+                'selected-context-desc'
+            ),
+
+        selectedContextSlug:
+            document.getElementById(
+                'selected-context-slug'
             ),
 
         refreshTreeButton:
@@ -375,6 +390,15 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.applicationDropdownButton.addEventListener(
             'click',
             toggleApplicationDropdown
+        );
+
+        elements.applicationSearchClear.addEventListener(
+            'click',
+            () => {
+                elements.applicationSearch.value = '';
+                elements.applicationSearchClear.classList.add('hidden');
+                handleApplicationInput({ target: elements.applicationSearch });
+            }
         );
 
         elements.applicationOptions.addEventListener(
@@ -722,6 +746,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleApplicationInput(event) {
+        if (event.target.value.trim() === '') {
+            elements.applicationSearchClear.classList.add('hidden');
+        } else {
+            elements.applicationSearchClear.classList.remove('hidden');
+        }
+
         elements.applicationSearchError.classList.add(
             'hidden'
         );
@@ -850,6 +880,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.applicationSearch.value =
             application.name;
+
+        elements.applicationSearchClear.classList.remove('hidden');
 
         elements.applicationSearchError.classList.add(
             'hidden'
@@ -1091,6 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (clearInput) {
             elements.applicationSearch.value =
                 '';
+            elements.applicationSearchClear.classList.add('hidden');
         }
 
         elements.applicationVersionSelect.disabled =
@@ -2642,6 +2675,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.selectedContextText.textContent =
             `${application.name} — Versi ${getVersionLabel(version)}`;
+
+        elements.selectedContextDesc.textContent =
+            application.description || 'Belum ada deskripsi aplikasi.';
+
+        elements.selectedContextSlug.textContent =
+            application.slug ? `/${application.slug}` : '';
 
         elements.selectedContext.classList.remove(
             'hidden'

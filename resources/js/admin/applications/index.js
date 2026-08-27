@@ -958,10 +958,6 @@ function initializeApplicationPage() {
             application.category?.name ||
             'Tanpa Kategori';
 
-        const description =
-            application.description ||
-            'Belum ada deskripsi aplikasi.';
-
         const currentVersion =
             application.current_version?.version_number ||
             null;
@@ -1008,20 +1004,6 @@ function initializeApplicationPage() {
                         <p class="font-semibold text-slate-950">
                             ${escapeHtml(application.name)}
                         </p>
-
-                        <p class="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
-                            ${escapeHtml(description)}
-                        </p>
-
-                        ${
-                            application.slug
-                                ? `
-                                    <p class="mt-1 text-xs text-slate-400">
-                                        /${escapeHtml(application.slug)}
-                                    </p>
-                                `
-                                : ''
-                        }
                     </div>
                 </td>
 

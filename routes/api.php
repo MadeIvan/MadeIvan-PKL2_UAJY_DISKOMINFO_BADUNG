@@ -45,6 +45,8 @@ Route::put('/tutorial-nodes/{tutorialNode}/content-blocks/reorder', [TutorialCon
 Route::get('/applications', [PublicApplicationController::class, 'index'])->name('api.applications.index');
 Route::get('/public/materi', [PublicMateriController::class, 'index'])->name('api.public.materi.index');
 
-Route::post('/auth/login', [AuthController::class, 'login'])->name('api.auth.login');
+Route::post('/auth/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('api.auth.login');
 Route::middleware('auth:sanctum')->get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
 Route::middleware('auth:sanctum')->post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');

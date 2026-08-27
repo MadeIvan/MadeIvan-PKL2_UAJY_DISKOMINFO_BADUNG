@@ -92,6 +92,53 @@
     </div>
 </header>
 
+{{-- Logout Confirmation Modal --}}
+<div
+    id="logout-confirm-modal"
+    class="fixed inset-0 z-[9999] hidden items-center justify-center"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="logout-modal-title"
+>
+    {{-- Backdrop --}}
+    <div id="logout-modal-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+    {{-- Dialog --}}
+    <div class="relative z-10 w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl mx-4">
+        <div class="flex flex-col items-center text-center">
+            <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
+                <i class="bi bi-box-arrow-right text-2xl text-red-500"></i>
+            </div>
+
+            <h2 id="logout-modal-title" class="text-lg font-bold text-slate-900">
+                Keluar dari Akun?
+            </h2>
+
+            <p class="mt-2 text-sm text-slate-500">
+                Apakah Anda yakin ingin keluar? Sesi Anda akan diakhiri.
+            </p>
+
+            <div class="mt-6 flex w-full gap-3">
+                <button
+                    id="logout-cancel-btn"
+                    type="button"
+                    class="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                    Batal
+                </button>
+
+                <button
+                    id="logout-confirm-btn"
+                    type="button"
+                    class="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+                >
+                    Ya, Keluar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Handle Auth State
@@ -138,8 +185,27 @@
             });
         }
 
+        // Logout Confirmation Modal
+        const logoutModal = document.getElementById('logout-confirm-modal');
+        const logoutCancelBtn = document.getElementById('logout-cancel-btn');
+        const logoutConfirmBtn = document.getElementById('logout-confirm-btn');
+        const logoutModalBackdrop = document.getElementById('logout-modal-backdrop');
+
+        const showLogoutModal = () => {
+            logoutModal.classList.remove('hidden');
+            logoutModal.classList.add('flex');
+        };
+
+        const hideLogoutModal = () => {
+            logoutModal.classList.add('hidden');
+            logoutModal.classList.remove('flex');
+        };
+
+        logoutCancelBtn?.addEventListener('click', hideLogoutModal);
+        logoutModalBackdrop?.addEventListener('click', hideLogoutModal);
+
         // Logout Handlers
-        const handleLogout = async () => {
+        const doLogout = async () => {
             const token = localStorage.getItem('auth_token');
             if (token) {
                 try {
@@ -159,10 +225,12 @@
             window.location.href = '/';
         };
 
+        logoutConfirmBtn?.addEventListener('click', doLogout);
+
         const logoutBtn = document.getElementById('public-logout-btn');
         const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
 
-        if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
-        if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
+        if(logoutBtn) logoutBtn.addEventListener('click', showLogoutModal);
+        if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', showLogoutModal);
     });
-</script>
+</script>
