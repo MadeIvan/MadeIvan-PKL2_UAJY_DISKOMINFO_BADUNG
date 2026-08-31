@@ -36,12 +36,12 @@
             <div class="relative mx-auto max-w-6xl px-6 py-24 text-center lg:px-8 lg:py-36 z-10">
                 <div class="animate-fade-in-up">
                     <span class="inline-flex rounded-full bg-blue-50 border border-blue-100 px-4 py-2 text-sm font-semibold text-blue-800 shadow-sm mb-6">
-                        <i class="bi bi-stars mr-2 text-amber-500"></i> Pusat Pengetahuan & Informasi
+                        <i class="mr-2 text-amber-500"></i> Pusat Pengetahuan & Informasi
                     </span>
                 </div>
 
                 <h1 class="mx-auto mt-2 max-w-4xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-tight">
-                    Platform Sistem Informasi
+                    Pengetahuan Sistem Informasi
                     <br class="hidden md:block" />
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-cyan-500">
                         Kabupaten Badung

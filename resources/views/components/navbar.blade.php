@@ -21,7 +21,7 @@
         {{-- Desktop Nav & Actions --}}
         <div class="hidden md:flex items-center gap-6">
             <a href="/" class="text-sm font-medium text-slate-600 hover:text-blue-900 transition {{ request()->is('/') ? 'text-blue-900 font-semibold' : '' }}">Beranda</a>
-            <a href="/applications-demo" class="text-sm font-medium text-slate-600 hover:text-blue-900 transition {{ request()->is('applications-demo') ? 'text-blue-900 font-semibold' : '' }}">Katalog</a>
+            <a href="/applications-demo" class="text-sm font-medium text-slate-600 hover:text-blue-900 transition {{ request()->is('applications-demo') ? 'text-blue-900 font-semibold' : '' }}">Aplikasi Badung</a>
 
             <div class="h-6 w-px bg-slate-200"></div>
 
@@ -233,4 +233,4 @@
         if(logoutBtn) logoutBtn.addEventListener('click', showLogoutModal);
         if(mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', showLogoutModal);
     });
-</script>
+</script>

@@ -1,7 +1,11 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', '403 Akses Ditolak')
-@section('page-title', 'Akses Ditolak')
+@section('title')
+403 Akses Ditolak
+@endsection
+@section('page-title')
+Akses Ditolak
+@endsection
 
 @section('content')
 <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">

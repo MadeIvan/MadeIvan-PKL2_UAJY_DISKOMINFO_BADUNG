@@ -239,70 +239,122 @@ class TutorialNodeService
         int $sourceNodeId,
         int $destinationVersionId,
         ?int $destinationParentId = null,
-        ?string $newTitle = null
+        ?string $newTitle = null,
+        bool $includeChildren = false
     ): TutorialNode {
-        $sourceNode = TutorialNode::query()
-            ->with(['contentBlocks', 'childrenRecursive'])
-            ->findOrFail($sourceNodeId);
+        try {
+            $destinationVersion = ApplicationVersion::query()
+                ->findOrFail($destinationVersionId);
 
-        $destinationVersion = ApplicationVersion::query()
-            ->findOrFail($destinationVersionId);
+            $sourceNode = TutorialNode::with(
+                'childrenRecursive'
+            )->findOrFail($sourceNodeId);
 
-        return DB::transaction(
-            function () use (
-                $sourceNode,
-                $destinationVersion,
-                $destinationParentId,
-                $newTitle
-            ): TutorialNode {
-                return $this->copyNodeRecursively(
-                    $sourceNode,
-                    $destinationVersion,
-                    $destinationParentId,
-                    $newTitle
+            $parent = null;
+
+            if ($destinationParentId !== null) {
+                $parent = TutorialNode::findOrFail(
+                    $destinationParentId
                 );
             }
-        );
+
+            $newNode = TutorialNode::create([
+                'application_id'           => $destinationVersion->application_id,
+                'application_version_id'   => $destinationVersionId,
+                'parent_id'                => $parent?->id,
+                'title'                    => $newTitle ?? $sourceNode->title,
+                'slug'                     => Str::slug($newTitle ?? $sourceNode->title),
+                'description'              => $sourceNode->description,
+                'node_type'                => $sourceNode->node_type,
+                'sort_order'               => $parent
+                    ? $this->getNextSortOrderForParent(
+                        $parent->id,
+                        $destinationVersionId
+                    )
+                    : $this->getNextRootSortOrder(
+                        $destinationVersion->application_id,
+                        $destinationVersionId
+                    ),
+                'status'                   => 'draft',
+                'is_public'                => false,
+            ]);
+
+            if ($includeChildren && $sourceNode->childrenRecursive->isNotEmpty()) {
+                $childCount = $sourceNode->childrenRecursive->count();
+                \Log::info("Copying {$childCount} children for node {$sourceNodeId}", [
+                    'parent_id' => $newNode->id,
+                    'child_ids' => $sourceNode->childrenRecursive->pluck('id')->toArray(),
+                ]);
+                $this->copyChildrenRecursive(
+                    $sourceNode->childrenRecursive,
+                    $newNode->id,
+                    $destinationVersionId,
+                    $destinationVersion->application_id
+                );
+
+                // Reload children to include in response
+                $newNode->load('childrenRecursive');
+            }
+
+            return $this->find($newNode->load([
+                'application:id,name,slug',
+                'applicationVersion:id,application_id,version_number',
+                'parent:id,title',
+                'childrenRecursive',
+            ]));
+        } catch (\Exception $e) {
+            \Log::error('TutorialNode copy failed', [
+                'source_node_id' => $sourceNodeId,
+                'destination_version_id' => $destinationVersionId,
+                'destination_parent_id' => $destinationParentId,
+                'new_title' => $newTitle,
+                'include_children' => $includeChildren,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 
-    private function copyNodeRecursively(
-        TutorialNode $sourceNode,
-        ApplicationVersion $destinationVersion,
-        ?int $parentId,
-        ?string $newTitle = null
-    ): TutorialNode {
-        $data = $sourceNode->toArray();
-        $data['application_id'] = $destinationVersion->application_id;
-        $data['application_version_id'] = $destinationVersion->id;
-        $data['parent_id'] = $parentId;
-        if ($newTitle !== null) {
-            $data['title'] = $newTitle;
+    /**
+     * Recursively copy children of a node to the new parent.
+     */
+    private function copyChildrenRecursive(
+        \Illuminate\Database\Eloquent\Collection $children,
+        int $newParentId,
+        int $destinationVersionId,
+        int $destinationApplicationId
+    ): void {
+        $currentSortOrder = $this->getNextSortOrderForParent(
+            $newParentId,
+            $destinationVersionId
+        );
+
+        foreach ($children as $child) {
+            $newChild = TutorialNode::create([
+                'application_id'           => $destinationApplicationId,
+                'application_version_id'   => $destinationVersionId,
+                'parent_id'                => $newParentId,
+                'title'                    => $child->title,
+                'slug'                     => $child->slug,
+                'description'              => $child->description,
+                'node_type'                => $child->node_type,
+                'sort_order'               => $currentSortOrder++,
+                'status'                   => 'draft',
+                'is_public'                => false,
+            ]);
+
+            // Recursively copy this child's children
+            if ($child->childrenRecursive->isNotEmpty()) {
+                $this->copyChildrenRecursive(
+                    $child->childrenRecursive,
+                    $newChild->id,
+                    $destinationVersionId,
+                    $destinationApplicationId
+                );
+            }
         }
-        $data['slug'] = $this->makeSlug($data['title'], null);
-
-        $newNode = TutorialNode::create($data);
-
-        foreach ($sourceNode->contentBlocks as $block) {
-            $blockData = $block->toArray();
-            unset(
-                $blockData['id'],
-                $blockData['tutorial_node_id'],
-                $blockData['created_at'],
-                $blockData['updated_at'],
-                $blockData['deleted_at']
-            );
-            $newNode->contentBlocks()->create($blockData);
-        }
-
-        foreach ($sourceNode->children as $child) {
-            $this->copyNodeRecursively(
-                $child,
-                $destinationVersion,
-                $newNode->id
-            );
-        }
-
-        return $newNode;
     }
 
     private function deleteNodeRecursively(
@@ -596,5 +648,26 @@ class TutorialNodeService
                 $isPublic
             );
         }
+    }
+
+    private function getNextSortOrderForParent(
+        int $parentId,
+        int $applicationVersionId
+    ): int {
+        return (int) TutorialNode::query()
+            ->where('parent_id', $parentId)
+            ->where('application_version_id', $applicationVersionId)
+            ->max('sort_order') + 1;
+    }
+
+    private function getNextRootSortOrder(
+        int $applicationId,
+        int $applicationVersionId
+    ): int {
+        return (int) TutorialNode::query()
+            ->roots()
+            ->where('application_id', $applicationId)
+            ->where('application_version_id', $applicationVersionId)
+            ->max('sort_order') + 1;
     }
 }

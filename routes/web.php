@@ -35,7 +35,7 @@ Route::get('/admin/login', function (): View {
 })->name('admin.login');
 
 Route::middleware('auth')->group(function (): void {
-    Route::view('/admin', 'Admin.dashboard.index')->name('admin.dashboard');
+    Route::get('/admin', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
     Route::view('/admin/input', 'Admin.input_content')->name('admin.input');
     Route::view('/admin/content-index', 'Admin.content_index')->name('admin.content-index');
     Route::view('/admin/add-app', 'Admin.add_app')->name('admin.applications.create');

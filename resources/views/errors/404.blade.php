@@ -1,7 +1,11 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', '404 Tidak Ditemukan')
-@section('page-title', 'Halaman Tidak Ditemukan')
+@section('title')
+404 Tidak Ditemukan
+@endsection
+@section('page-title')
+Halaman Tidak Ditemukan
+@endsection
 
 @section('content')
 <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">

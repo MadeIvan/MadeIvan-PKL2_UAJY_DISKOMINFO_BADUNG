@@ -1,7 +1,12 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', 'Kelola Aplikasi')
-@section('page-title', 'Kelola Aplikasi')
+@section('title')
+Kelola Aplikasi
+@endsection
+
+@section('page-title')
+Kelola Aplikasi
+@endsection
 
 @push('scripts')
     @vite('resources/js/admin/applications/index.js')
@@ -126,7 +131,7 @@
             </article>
         </section>
 
-        {{-- Data aplikasi --}}
+        {{-- Data Aplikasi --}}
         <section class="border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 p-5 sm:p-6">
                 <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -144,6 +149,7 @@
                     </div>
 
                     <div class="flex w-full flex-col gap-3 sm:flex-row md:w-auto">
+                        {{-- Sorting --}}
                         <div class="relative w-full sm:w-52">
                             <i class="bi bi-sort-down pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
 
@@ -161,6 +167,7 @@
                             <i class="bi bi-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
                         </div>
 
+                        {{-- Search --}}
                         <div class="relative w-full md:w-80">
                             <i class="bi bi-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
 
@@ -231,7 +238,7 @@
                 </button>
             </div>
 
-            {{-- Tabel --}}
+            {{-- Table --}}
             <div
                 id="application-table-wrapper"
                 class="hidden overflow-x-auto"
@@ -298,7 +305,7 @@
         </section>
     </div>
 
-    {{-- Menu aksi baris --}}
+    {{-- Row Action Menu --}}
     <div
         id="application-row-menu"
         class="fixed z-[90] hidden w-44 border border-slate-200 bg-white py-1 shadow-xl"
@@ -315,13 +322,17 @@
         </button>
     </div>
 
-    {{-- Modal aplikasi --}}
+    {{-- =========================================================
+        APPLICATION FORM MODAL
+    ========================================================== --}}
     <div
         id="application-form-modal"
         class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-950/60 p-4"
         aria-hidden="true"
     >
         <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+
+            {{-- Modal Header --}}
             <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-900">
@@ -350,14 +361,20 @@
                 </button>
             </div>
 
+            {{-- Application Form --}}
             <form
                 id="application-form"
                 class="space-y-6 p-5 sm:p-6"
                 enctype="multipart/form-data"
             >
-                <input id="application-id" type="hidden">
+                <input
+                    id="application-id"
+                    type="hidden"
+                >
 
+                {{-- Main Information --}}
                 <div class="grid gap-5 md:grid-cols-2">
+                    {{-- Name --}}
                     <div>
                         <label
                             for="application-name"
@@ -377,6 +394,7 @@
                         >
                     </div>
 
+                    {{-- Slug --}}
                     <div>
                         <label
                             for="application-slug"
@@ -398,6 +416,7 @@
                         </p>
                     </div>
 
+                    {{-- Category --}}
                     <div>
                         <label
                             for="application-category"
@@ -410,11 +429,13 @@
                             id="application-category"
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="">Tidak ada kategori</option>
-                            <!-- JS will populate categories here -->
+                            <option value="">
+                                Tidak ada kategori
+                            </option>
                         </select>
                     </div>
 
+                    {{-- Status --}}
                     <div>
                         <label
                             for="application-status"
@@ -429,13 +450,65 @@
                             required
                             class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 focus:ring-2 focus:ring-blue-900/10"
                         >
-                            <option value="active">Aktif</option>
-                            <option value="inactive">Tidak Aktif</option>
-                            <option value="archived">Diarsipkan</option>
+                            <option value="active">
+                                Aktif
+                            </option>
+
+                            <option value="inactive">
+                                Tidak Aktif
+                            </option>
+
+                            <option value="archived">
+                                Diarsipkan
+                            </option>
                         </select>
                     </div>
                 </div>
 
+                {{-- =================================================
+                    STATUS INFORMATION
+                ================================================== --}}
+                <div class="border border-blue-200 bg-blue-50 p-4">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="flex h-9 w-9 shrink-0 items-center justify-center bg-blue-100 text-blue-800"
+                        >
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-blue-950">
+                                Informasi Status Aplikasi
+                            </p>
+
+                            <div class="mt-3 space-y-2.5 text-xs leading-5 text-slate-600 sm:text-sm">
+                                <p>
+                                    <strong class="font-bold text-slate-900">
+                                        Aktif
+                                    </strong>
+                                    — aplikasi sedang digunakan pada Pemerintah Kabupaten Badung.
+                                </p>
+
+                                <p>
+                                    <strong class="font-bold text-slate-900">
+                                        Tidak Aktif
+                                    </strong>
+                                    — aplikasi sedang tidak digunakan untuk sementara waktu.
+                                </p>
+
+                                <p>
+                                    <strong class="font-bold text-slate-900">
+                                        Diarsipkan
+                                    </strong>
+                                    — aplikasi dan seluruh materi terkait tidak akan
+                                    ditampilkan pada Learning Management System.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Description --}}
                 <div>
                     <label
                         for="application-description"
@@ -452,6 +525,9 @@
                     ></textarea>
                 </div>
 
+                {{-- =================================================
+                    APPLICATION LOGO
+                ================================================== --}}
                 <div class="border border-slate-200 bg-slate-50 p-5">
                     <div class="mb-4">
                         <h3 class="font-bold text-slate-950">
@@ -497,24 +573,67 @@
                     </div>
                 </div>
 
-                <label class="flex cursor-pointer items-center gap-3 border border-slate-200 p-4">
-                    <input
-                        id="application-is-public"
-                        type="checkbox"
-                        class="h-5 w-5 border-slate-300 text-blue-900 focus:ring-blue-900"
+                {{-- =================================================
+                    PUBLIC VISIBILITY
+                ================================================== --}}
+                <div class="border border-slate-200 bg-white">
+                    <label
+                        for="application-is-public"
+                        class="flex cursor-pointer items-start gap-3 p-4 sm:p-5"
                     >
+                        <input
+                            id="application-is-public"
+                            type="checkbox"
+                            class="mt-0.5 h-5 w-5 shrink-0 border-slate-300 text-blue-900 focus:ring-blue-900"
+                        >
 
-                    <span>
-                        <span class="block text-sm font-semibold text-slate-800">
-                            Tampilkan pada halaman publik
+                        <span class="min-w-0">
+                            <span class="block text-sm font-semibold text-slate-800">
+                                Tampilkan pada halaman publik
+                            </span>
+
+                            <span class="mt-1 block text-xs leading-5 text-slate-500">
+                                Aktifkan pilihan ini apabila aplikasi dan materi
+                                diperbolehkan untuk dilihat tanpa harus login.
+                            </span>
                         </span>
+                    </label>
 
-                        <span class="mt-1 block text-xs text-slate-500">
-                            Aplikasi aktif dan publik akan tampil pada halaman daftar aplikasi.
-                        </span>
-                    </span>
-                </label>
+                    {{-- Public Information --}}
+                    <div class="border-t border-amber-200 bg-amber-50 px-4 py-4 sm:px-5">
+                        <div class="flex items-start gap-3">
+                            <div
+                                class="flex h-8 w-8 shrink-0 items-center justify-center bg-amber-100 text-amber-700"
+                            >
+                                <i class="bi bi-exclamation-circle"></i>
+                            </div>
 
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-amber-950">
+                                    Informasi Visibilitas
+                                </p>
+
+                                <p class="mt-2 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+                                    <strong class="font-bold text-slate-900">
+                                        Jika kotak ini tidak dicentang,
+                                    </strong>
+                                    aplikasi dan materi tidak akan ditampilkan kepada
+                                    pengguna publik.
+                                </p>
+
+                                <p class="mt-2 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">
+                                    <strong class="font-bold text-slate-900">
+                                        Pegawai yang sudah login
+                                    </strong>
+                                    tetap dapat melihat materi yang tersedia sesuai
+                                    dengan hak akses yang diberikan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
                 <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
                     <button
                         id="application-cancel-button"
@@ -538,13 +657,17 @@
         </div>
     </div>
 
-    {{-- Modal versi --}}
+    {{-- =========================================================
+        VERSION MODAL
+    ========================================================== --}}
     <div
         id="version-modal"
         class="fixed inset-0 z-[70] hidden items-center justify-center bg-slate-950/60 p-4"
         aria-hidden="true"
     >
         <div class="max-h-[92vh] w-full max-w-5xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+
+            {{-- Header --}}
             <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.18em] text-violet-700">
@@ -572,12 +695,21 @@
             </div>
 
             <div class="grid gap-6 p-5 sm:p-6 lg:grid-cols-[360px_1fr]">
+
+                {{-- Version Form --}}
                 <form
                     id="version-form"
                     class="h-fit space-y-4 border border-slate-200 bg-slate-50 p-5"
                 >
-                    <input id="version-id" type="hidden">
-                    <input id="version-application-id" type="hidden">
+                    <input
+                        id="version-id"
+                        type="hidden"
+                    >
+
+                    <input
+                        id="version-application-id"
+                        type="hidden"
+                    >
 
                     <div>
                         <h3
@@ -592,6 +724,7 @@
                         </p>
                     </div>
 
+                    {{-- Version Number --}}
                     <div>
                         <label
                             for="version-number"
@@ -611,6 +744,7 @@
                         >
                     </div>
 
+                    {{-- Release Date --}}
                     <div>
                         <label
                             for="version-release-date"
@@ -626,6 +760,7 @@
                         >
                     </div>
 
+                    {{-- Version Status --}}
                     <div>
                         <label
                             for="version-status"
@@ -645,6 +780,7 @@
                         </select>
                     </div>
 
+                    {{-- Release Notes --}}
                     <div>
                         <label
                             for="version-release-notes"
@@ -661,6 +797,7 @@
                         ></textarea>
                     </div>
 
+                    {{-- Current Version --}}
                     <label class="flex cursor-pointer items-center gap-3">
                         <input
                             id="version-is-current"
@@ -673,7 +810,7 @@
                         </span>
                     </label>
 
-                    {{-- Copy material from another version --}}
+                    {{-- Copy Material --}}
                     <div
                         id="version-copy-section"
                         class="border border-slate-200 bg-white p-4"
@@ -700,6 +837,7 @@
                             id="version-copy-options"
                             class="mt-4 hidden space-y-4 border-t border-slate-200 pt-4"
                         >
+                            {{-- Source Version --}}
                             <div>
                                 <label
                                     for="version-source-select"
@@ -718,6 +856,7 @@
                                 </select>
                             </div>
 
+                            {{-- Selected Materials --}}
                             <div>
                                 <div class="flex flex-wrap items-center justify-between gap-3">
                                     <div>
@@ -737,8 +876,8 @@
                                         <button
                                             id="version-copy-select-all"
                                             type="button"
-                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                                             disabled
+                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             Pilih Semua
                                         </button>
@@ -746,14 +885,15 @@
                                         <button
                                             id="version-copy-clear-all"
                                             type="button"
-                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                                             disabled
+                                            class="border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             Hapus Pilihan
                                         </button>
                                     </div>
                                 </div>
 
+                                {{-- Loading --}}
                                 <div
                                     id="version-copy-tree-loading"
                                     class="mt-3 hidden border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500"
@@ -762,6 +902,7 @@
                                     Memuat materi versi sumber...
                                 </div>
 
+                                {{-- Empty --}}
                                 <div
                                     id="version-copy-tree-empty"
                                     class="mt-3 hidden border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500"
@@ -769,23 +910,28 @@
                                     Versi sumber belum memiliki materi.
                                 </div>
 
+                                {{-- Error --}}
                                 <div
                                     id="version-copy-tree-error"
                                     class="mt-3 hidden border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-700"
                                 ></div>
 
+                                {{-- Tree --}}
                                 <div
                                     id="version-copy-tree"
                                     class="mt-3 hidden max-h-80 space-y-2 overflow-y-auto border border-slate-200 bg-slate-50 p-3"
                                 ></div>
 
                                 <p class="mt-2 text-xs leading-5 text-slate-500">
-                                    Memilih parent akan memilih seluruh child. Parent yang diperlukan akan tetap disalin agar struktur tidak rusak.
+                                    Memilih parent akan memilih seluruh child.
+                                    Parent yang diperlukan akan tetap disalin agar
+                                    struktur tidak rusak.
                                 </p>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Version Form Actions --}}
                     <div class="flex gap-3">
                         <button
                             id="version-submit-button"
@@ -806,6 +952,7 @@
                     </div>
                 </form>
 
+                {{-- Version List --}}
                 <div>
                     <div
                         id="version-empty"
@@ -827,7 +974,9 @@
         </div>
     </div>
 
-    {{-- Confirmation modal for copying materials --}}
+    {{-- =========================================================
+        COPY MATERIAL CONFIRMATION MODAL
+    ========================================================== --}}
     <div
         id="version-copy-confirmation-modal"
         class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-950/60 p-4"
@@ -856,7 +1005,8 @@
                     </p>
 
                     <p class="mt-1 text-xs leading-5 text-blue-700">
-                        Sistem akan membuat node, content block, serta salinan fisik file gambar dan PDF sebagai data baru.
+                        Sistem akan membuat node, content block, serta salinan
+                        fisik file gambar dan PDF sebagai data baru.
                     </p>
                 </div>
             </div>
@@ -876,7 +1026,10 @@
                     class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     <i class="bi bi-files"></i>
-                    <span>Ya, Salin Materi dan Buat Versi</span>
+
+                    <span>
+                        Ya, Salin Materi dan Buat Versi
+                    </span>
                 </button>
             </div>
         </div>

@@ -1,7 +1,11 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', 'Dasbor Admin')
-@section('page-title', 'Dasbor')
+@section('title')
+Dasbor Admin
+@endsection
+@section('page-title')
+Dasbor
+@endsection
 
 @section('content')
 <div class="space-y-6">
