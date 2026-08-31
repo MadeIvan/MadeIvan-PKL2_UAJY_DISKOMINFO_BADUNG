@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let notificationTimeout = null;
 
+    let copySourceNodeChangeHandler = null;
+
     const elements = {
 
 
@@ -2153,6 +2155,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.copySourceNode.innerHTML = '<option value="">Memuat materi...</option>';
         elements.copySourceNode.disabled = true;
         elements.nodeCopyButton.disabled = true;
+        elements.copyNewTitle.value = '';
+        elements.copyNewTitle.disabled = true;
+
+        if (copySourceNodeChangeHandler) {
+            elements.copySourceNode.removeEventListener('change', copySourceNodeChangeHandler);
+            copySourceNodeChangeHandler = null;
+        }
 
         if (!sourceVersionId) {
             elements.copySourceNode.innerHTML = '<option value="">Pilih materi sumber...</option>';
@@ -2185,12 +2194,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.copySourceNode.disabled = false;
             }
             
-            elements.copySourceNode.addEventListener('change', () => {
+            copySourceNodeChangeHandler = () => {
                 const selectedOption = elements.copySourceNode.options[elements.copySourceNode.selectedIndex];
                 elements.nodeCopyButton.disabled = !elements.copySourceNode.value;
                 
                 if (elements.copySourceNode.value) {
-                    // Extract title without depth prefix and type label
                     const rawText = selectedOption.textContent;
                     const cleanTitle = rawText.replace(/^[—\s]+/, '').replace(/\s\([^)]+\)$/, '');
                     elements.copyNewTitle.value = cleanTitle;
@@ -2199,7 +2207,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.copyNewTitle.value = '';
                     elements.copyNewTitle.disabled = true;
                 }
-            });
+            };
+
+            elements.copySourceNode.addEventListener('change', copySourceNodeChangeHandler);
             
         } catch (error) {
             elements.copySourceNode.innerHTML = '<option value="">Gagal memuat materi</option>';
@@ -2222,25 +2232,83 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function submitCopyNode() {
-        const sourceNodeId = elements.copySourceNode.value;
+        console.log('[DEBUG] submitCopyNode called!' );
+        const sourceNodeId = Number(elements.copySourceNode.value);
         const destinationVersionId = state.selectedVersionId;
-        const destinationParentId = elements.nodeId.value; // The currently edited node
+        const destinationParentId = elements.nodeId.value ? Number(elements.nodeId.value) : null;
+        const newTitle = elements.copyNewTitle.value.trim();
 
         if (!sourceNodeId || !destinationVersionId) {
             return;
         }
 
-        const confirmed = await showConfirmModal(
+        if (!newTitle) {
+            showToast('Nama materi baru wajib diisi.', 'error');
+            elements.copyNewTitle.focus();
+            return;
+        }
+
+        // Find the selected source node from the tree to check for children
+        const sourceVersionId = elements.copySourceVersion.value;
+        const sourceTreeResponse = await fetch(
+            `${API_BASE_URL}/tutorial-nodes/tree?application_id=${state.selectedApplicationId}&application_version_id=${sourceVersionId}`,
+            { headers: { Accept: 'application/json' } }
+        );
+        const sourceTreeResult = await parseResponse(sourceTreeResponse);
+        const sourceTree = Array.isArray(sourceTreeResult?.data) ? sourceTreeResult.data : [];
+        let sourceNodeWithChildren = null;
+
+        function findNodeWithChildren(nodes, id) {
+            for (const node of nodes) {
+                if (Number(node.id) === Number(id)) {
+                    return node;
+                }
+                if (node.children_recursive && node.children_recursive.length > 0) {
+                    const found = findNodeWithChildren(node.children_recursive, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        sourceNodeWithChildren = findNodeWithChildren(sourceTree, sourceNodeId);
+        const hasChildren = sourceNodeWithChildren && sourceNodeWithChildren.children_recursive && sourceNodeWithChildren.children_recursive.length > 0;
+
+        // First confirmation: copy the node itself
+        console.log('[DEBUG] sourceNodeWithChildren:', sourceNodeWithChildren, 'hasChildren:', hasChildren);
+        const confirmed1 = await showConfirmModal(
             'Salin Materi',
-            'Anda yakin ingin menyalin materi ini beserta isinya? Aksi ini akan membuat salinan baru di bawah materi yang sedang dikelola.',
-            { actionText: 'Salin', actionTheme: 'primary' }
+            'Anda yakin ingin menyalin materi ini?',
+            { actionText: 'Lanjut', actionTheme: 'primary' }
         );
 
-        if (!confirmed) return;
+        if (!confirmed1) return;
+
+        // Second confirmation: ask about children if the source has any
+        let includeChildren = false;
+        if (hasChildren) {
+            const childCount = sourceNodeWithChildren.children_recursive.length;
+            console.log('[DEBUG] hasChildren =', hasChildren, 'sourceNodeWithChildren:', sourceNodeWithChildren);
+            const confirmed2 = await showConfirmModal(
+                'Salin Materi dan Anak',
+                `Materi sumber memiliki ${childCount} materi turunan. Apakah ingin menyalin materi turunan juga?`,
+                { actionText: 'Ya, Salin Semua', actionTheme: 'primary' }
+            );
+            includeChildren = confirmed2;
+        }
 
         setButtonLoading(elements.nodeCopyButton, true);
 
         try {
+            const payload = {
+                source_node_id: sourceNodeId,
+                destination_version_id: destinationVersionId,
+                destination_parent_id: destinationParentId,
+                new_title: newTitle || null,
+                include_children: includeChildren,
+            };
+            console.log('[Copy] Payload:', JSON.stringify(payload));
+
             const response = await fetch(
                 `${API_BASE_URL}/tutorial-nodes/copy`,
                 {
@@ -2250,16 +2318,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         Accept: 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                     },
-                    body: JSON.stringify({
-                        source_node_id: sourceNodeId,
-                        destination_version_id: destinationVersionId,
-                        destination_parent_id: destinationParentId,
-                        new_title: elements.copyNewTitle.value.trim(),
-                    }),
+                    body: JSON.stringify(payload),
                 }
             );
 
-            const result = await parseResponse(response);
+            const text = await response.text();
+            console.log('[Copy] Response status:', response.status, 'body:', text);
+
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch {
+                throw new Error('Server mengembalikan respons yang tidak valid.');
+            }
+
+            console.log('[Copy] Parsed result:', result);
+
+            if (!response.ok) {
+                const errorMsg = result?.message || result?.errors || `Gagal (${response.status})`;
+                throw new Error(typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg);
+            }
 
             showToast(
                 result?.message || 'Berhasil menyalin materi.',
@@ -2269,7 +2347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeNodeModal();
             await fetchTree();
         } catch (error) {
-            showToast(error.message, 'error');
+            showToast(error.message || 'Terjadi kesalahan.', 'error');
         } finally {
             setButtonLoading(elements.nodeCopyButton, false);
         }
@@ -2646,6 +2724,11 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.copyNewTitle.value = '';
         elements.copyNewTitle.disabled = true;
         elements.nodeCopyButton.disabled = true;
+
+        if (copySourceNodeChangeHandler) {
+            elements.copySourceNode.removeEventListener('change', copySourceNodeChangeHandler);
+            copySourceNodeChangeHandler = null;
+        }
 
         setButtonLoading(elements.nodeSubmitButton, false);
         setButtonLoading(elements.nodeCopyButton, false);

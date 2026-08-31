@@ -327,56 +327,6 @@
             </a>
         </div>
 
-        <div class="my-5 border-t border-white/10"></div>
-
-        <p
-            data-sidebar-label
-            class="
-                mb-3 hidden px-3
-                text-[11px] font-bold uppercase tracking-[0.18em]
-                text-blue-300
-                opacity-0
-                transition-all duration-200
-            "
-        >
-            Sistem
-        </p>
-
-        <div class="space-y-1.5">
-
-            {{-- Settings --}}
-            <a
-                href="#"
-                title="Pengaturan"
-                class="
-                    group flex min-h-12 items-center gap-3
-                    overflow-hidden
-                    rounded-xl
-                    px-3 py-3
-                    text-sm font-medium
-                    text-blue-100
-                    no-underline
-                    transition
-                    hover:bg-white/10
-                    hover:text-white
-                "
-            >
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center">
-                    <i class="bi bi-gear text-lg"></i>
-                </span>
-
-                <span
-                    data-sidebar-label
-                    class="
-                        hidden whitespace-nowrap
-                        opacity-0
-                        transition-all duration-200
-                    "
-                >
-                    Pengaturan
-                </span>
-            </a>
-        </div>
     </nav>
 
     {{-- Sidebar Footer --}}

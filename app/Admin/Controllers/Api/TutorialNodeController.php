@@ -142,13 +142,28 @@ class TutorialNodeController extends Controller
         CopyTutorialNodeRequest $request
     ): JsonResponse {
         $validated = $request->validated();
-        
+
+        \Log::info('Copy tutorial node request', [
+            'source_node_id' => $validated['source_node_id'],
+            'destination_version_id' => $validated['destination_version_id'],
+            'destination_parent_id' => $validated['destination_parent_id'] ?? null,
+            'new_title' => $validated['new_title'] ?? null,
+            'include_children' => (bool) ($validated['include_children'] ?? false),
+        ]);
+
         $tutorialNode = $this->service->copy(
             (int) $validated['source_node_id'],
             (int) $validated['destination_version_id'],
             isset($validated['destination_parent_id']) ? (int) $validated['destination_parent_id'] : null,
-            $validated['new_title'] ?? null
+            $validated['new_title'] ?? null,
+            (bool) ($validated['include_children'] ?? false)
         );
+
+        \Log::info('Copy tutorial node success', [
+            'new_node_id' => $tutorialNode->id,
+            'parent_id' => $tutorialNode->parent_id,
+            'application_version_id' => $tutorialNode->application_version_id,
+        ]);
 
         return response()->json([
             'message' => 'Tutorial node berhasil disalin.',

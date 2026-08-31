@@ -1,7 +1,11 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', 'Daftar Kategori - Panel Administrator')
-@section('page-title', 'Kelola Kategori')
+@section('title')
+Daftar Kategori - Panel Administrator
+@endsection
+@section('page-title')
+Kelola Kategori
+@endsection
 @push('scripts')
     @vite('resources/js/admin/categories/index.js')
 @endpush

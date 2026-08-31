@@ -1,7 +1,11 @@
 @extends('components.admin.layouts.admin')
 
-@section('title', 'Kelola Isi Materi')
-@section('page-title', 'Kelola Isi Materi')
+@section('title')
+Kelola Isi Materi
+@endsection
+@section('page-title')
+Kelola Isi Materi
+@endsection
 
 @push('scripts')
     @vite('resources/js/admin/materi/content.js')

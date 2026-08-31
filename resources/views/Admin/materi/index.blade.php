@@ -44,6 +44,7 @@
         {{-- Application and Version Filter --}}
         <section class="border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.65fr)_auto] xl:items-start">
+
                 {{-- Application Search --}}
                 <div>
                     <label
@@ -71,7 +72,7 @@
                             <button
                                 id="application-search-clear"
                                 type="button"
-                                class="hidden absolute right-11 top-0 flex h-full w-11 items-center justify-center text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
+                                class="absolute right-11 top-0 hidden h-full w-11 items-center justify-center text-slate-400 transition hover:bg-slate-50 hover:text-slate-700"
                                 aria-label="Bersihkan pencarian"
                             >
                                 <i class="bi bi-x-lg"></i>
@@ -398,6 +399,7 @@
         aria-hidden="true"
     >
         <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto border border-slate-200 bg-white shadow-2xl">
+
             {{-- Modal Header --}}
             <div class="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white p-5 sm:p-6">
                 <div>
@@ -487,6 +489,8 @@
 
                 {{-- Main Fields --}}
                 <div class="grid gap-5 md:grid-cols-2">
+
+                    {{-- Title --}}
                     <div>
                         <label
                             for="node-title"
@@ -504,6 +508,7 @@
                         >
                     </div>
 
+                    {{-- Slug --}}
                     <div>
                         <label
                             for="node-slug"
@@ -521,6 +526,7 @@
                         >
                     </div>
 
+                    {{-- Node Type --}}
                     <div>
                         <label
                             for="node-type"
@@ -575,6 +581,7 @@
                         </div>
                     </div>
 
+                    {{-- Order Information --}}
                     <div class="border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-semibold text-slate-700">
                             Pengaturan Urutan
@@ -586,7 +593,8 @@
                         </p>
                     </div>
 
-                    <div>
+                    {{-- Status --}}
+                    <div class="md:col-span-2">
                         <label
                             for="node-status"
                             class="mb-2 block text-sm font-semibold text-slate-700"
@@ -610,6 +618,48 @@
                                 Diarsipkan
                             </option>
                         </select>
+
+                        {{-- Status Information --}}
+                        <div
+                            class="mt-3 border border-blue-200 bg-blue-50 p-4"
+                        >
+                            <div class="flex items-start gap-3">
+                                <div
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center bg-blue-100 text-blue-800"
+                                >
+                                    <i class="bi bi-info-circle"></i>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-blue-950">
+                                        Informasi Status Materi
+                                    </p>
+
+                                    <div class="mt-3 space-y-2.5 text-xs leading-5 text-slate-600 sm:text-sm">
+                                        <p>
+                                            <strong class="font-bold text-slate-900">
+                                                Draf
+                                            </strong>
+                                            materi belum ditampilkan ke publik maupun pegawai.
+                                        </p>
+
+                                        <p>
+                                            <strong class="font-bold text-slate-900">
+                                                Publikasi
+                                            </strong>
+                                            materi akan terlihat untuk ASN Badung.
+                                        </p>
+
+                                        <p>
+                                            <strong class="font-bold text-slate-900">
+                                                Diarsipkan
+                                            </strong>
+                                            materi tidak lagi digunakan.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -643,18 +693,24 @@
                         </span>
 
                         <span class="mt-1 block text-xs text-slate-500">
-                            Materi juga harus berstatus dipublikasikan.
-                        </span>
+                            Materi juga harus berstatus dipublikasikan, 
+                            <strong class="font-bold text-slate-900">
+                                Pengguna dapat mengakses materi ini tanpa login.
+                            </strong>
+
                     </span>
                 </label>
 
-                {{-- Copy from Another Version Section (Only visible when creating/editing, depending on logic) --}}
-                <div id="node-copy-section" class="border border-slate-200 bg-slate-50 p-5 sm:p-6 mt-6">
-                    <h3 class="text-sm font-bold text-slate-950 mb-4">
+                {{-- Copy from Another Version Section --}}
+                <div
+                    id="node-copy-section"
+                    class="mt-6 border border-slate-200 bg-slate-50 p-5 sm:p-6"
+                >
+                    <h3 class="mb-4 text-sm font-bold text-slate-950">
                         Salin dari Versi Lain
                     </h3>
 
-                    <div class="grid gap-5 md:grid-cols-2 mb-4">
+                    <div class="mb-4 grid gap-5 md:grid-cols-2">
                         <div>
                             <label
                                 for="copy-source-version"
@@ -667,7 +723,9 @@
                                 id="copy-source-version"
                                 class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none focus:border-blue-900"
                             >
-                                <option value="">Pilih versi sumber...</option>
+                                <option value="">
+                                    Pilih versi sumber...
+                                </option>
                             </select>
                         </div>
 
@@ -684,11 +742,13 @@
                                 disabled
                                 class="w-full border border-slate-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                             >
-                                <option value="">Pilih materi sumber...</option>
+                                <option value="">
+                                    Pilih materi sumber...
+                                </option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="mb-4">
                         <label
                             for="copy-new-title"
@@ -696,6 +756,7 @@
                         >
                             Nama Materi Baru
                         </label>
+
                         <input
                             id="copy-new-title"
                             type="text"
@@ -714,8 +775,10 @@
                         <i class="bi bi-files"></i>
                         Salin Materi
                     </button>
+
                     <p class="mt-2 text-xs text-slate-500">
-                        Menyalin akan menduplikasi materi sumber beserta isinya ke dalam versi saat ini.
+                        Menyalin akan menduplikasi materi sumber beserta isinya
+                        ke dalam versi saat ini.
                     </p>
                 </div>
 
@@ -739,14 +802,15 @@
                             Batal
                         </button>
 
-                    <button
-                        id="node-submit-button"
-                        type="submit"
-                        class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-900 disabled:opacity-60"
-                    >
-                        <i class="bi bi-plus-lg"></i>
-                        <span>Simpan Materi</span>
-                    </button>
+                        <button
+                            id="node-submit-button"
+                            type="submit"
+                            class="inline-flex items-center justify-center gap-2 bg-blue-950 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-900 disabled:opacity-60"
+                        >
+                            <i class="bi bi-plus-lg"></i>
+                            <span>Simpan Materi</span>
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
