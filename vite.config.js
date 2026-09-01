@@ -9,6 +9,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css', 
                 'resources/js/app.js', 
+                'resources/js/admin/sidebar.js',
                 'resources/js/admin/materi/index.js',
                 'resources/js/admin/materi/content.js',
                 'resources/js/admin/utils.js',

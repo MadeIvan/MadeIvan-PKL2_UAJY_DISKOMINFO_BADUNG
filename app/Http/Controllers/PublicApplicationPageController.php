@@ -148,12 +148,20 @@ class PublicApplicationPageController extends Controller
     private function getApplicationVersions(
         Application $application
     ): Collection {
-        return $application
+        $user = Auth::user();
+        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+
+        $query = $application
             ->versions()
             ->orderByDesc('is_current')
             ->orderByDesc('release_date')
-            ->orderByDesc('id')
-            ->get();
+            ->orderByDesc('id');
+
+        if (!$isInternal) {
+            $query->visibleToPublic();
+        }
+
+        return $query->get();
     }
 
     private function getPreferredVersion(

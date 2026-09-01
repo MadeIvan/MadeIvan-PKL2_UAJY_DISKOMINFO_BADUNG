@@ -33,10 +33,14 @@ class PublicApplicationController extends Controller
 
             $builder->with([
                 'category',
-                'versions' => function ($versionQuery): void {
+                'versions' => function ($versionQuery) use ($user): void {
                     $versionQuery->orderByDesc('is_current')
                         ->orderByDesc('release_date')
                         ->orderByDesc('id');
+
+                    if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
+                        $versionQuery->whereIn('status', ['beta', 'stable', 'deprecated']);
+                    }
                 },
             ]);
         });

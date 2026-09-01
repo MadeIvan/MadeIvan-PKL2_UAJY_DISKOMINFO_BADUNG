@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -35,5 +36,23 @@ class ApplicationVersion extends Model
             ->hasMany(TutorialNode::class)
             ->orderBy('sort_order')
             ->orderBy('title');
+    }
+
+    /**
+     * Versions that may be shown on the public side.
+     *
+     * Draft versions are excluded; beta, stable, and deprecated
+     * versions are still considered publicly visible.
+     */
+    public function scopeVisibleToPublic(Builder $query): Builder
+    {
+        return $query->whereIn(
+            'status',
+            [
+                'beta',
+                'stable',
+                'deprecated',
+            ]
+        );
     }
 }

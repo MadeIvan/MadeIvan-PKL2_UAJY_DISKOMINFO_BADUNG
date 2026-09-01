@@ -76,7 +76,7 @@ class TutorialContentPageController extends Controller
 
         $tutorialNode->load([
             'application:id,name,slug,status,is_public',
-            'applicationVersion:id,application_id,version_number',
+            'applicationVersion:id,application_id,version_number,status',
         ]);
 
         abort_unless(
@@ -87,7 +87,8 @@ class TutorialContentPageController extends Controller
         );
 
         abort_unless(
-            $tutorialNode->applicationVersion,
+            $tutorialNode->applicationVersion &&
+            ($isInternal || $tutorialNode->applicationVersion->status !== 'draft'),
             Response::HTTP_NOT_FOUND
         );
 

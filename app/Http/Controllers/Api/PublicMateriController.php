@@ -26,9 +26,13 @@ class PublicMateriController extends Controller
                         $q->where('is_public', true);
                     }
                 })
-                ->whereHas('applicationVersion', function (Builder $q) {
-                    // Ensure the version exists
+                ->whereHas('applicationVersion', function (Builder $q) use ($canSeeNonPublic) {
+                    // Ensure the version exists and is not a draft for public users
                     $q->whereNotNull('id');
+
+                    if (!$canSeeNonPublic) {
+                        $q->whereIn('status', ['beta', 'stable', 'deprecated']);
+                    }
                 });
 
             if ($canSeeNonPublic) {

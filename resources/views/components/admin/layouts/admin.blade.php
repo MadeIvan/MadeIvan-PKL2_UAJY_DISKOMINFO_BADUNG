@@ -18,7 +18,7 @@
     ])
 
     @stack('scripts')
-
+    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
     <script>
         (function() {
             const token = localStorage.getItem('auth_token');
