@@ -508,7 +508,7 @@
                     class="
                         text-[10px] font-bold
                         uppercase tracking-[0.17em]
-                        text-blue-700
+                        text-blue-900
 
                         sm:text-[11px]
                     "
@@ -861,7 +861,7 @@
 
                         rounded-xl
 
-                        bg-blue-700
+                        bg-blue-950
 
                         px-4 py-3
 

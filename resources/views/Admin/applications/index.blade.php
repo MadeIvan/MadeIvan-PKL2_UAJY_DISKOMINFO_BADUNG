@@ -780,6 +780,40 @@ Kelola Aplikasi
                         </select>
                     </div>
 
+                    <div class="border border-blue-200 bg-blue-50 p-4">
+    <div class="flex items-start gap-3">
+        <div class="flex h-8 w-8 shrink-0 items-center justify-center bg-blue-100 text-blue-800">
+            <i class="bi bi-info-circle"></i>
+        </div>
+
+        <div>
+            <p class="text-sm font-semibold text-blue-950">Informasi Status Versi</p>
+
+            <div class="mt-2 space-y-2 text-xs leading-5 text-slate-600">
+                <p>
+                    <strong class="text-slate-900">Draf</strong>
+                    — versi masih dalam tahap penyusunan dan belum siap digunakan.
+                </p>
+
+                <p>
+                    <strong class="text-slate-900">Beta</strong>
+                    — versi sedang dalam tahap pengujian dan masih dapat mengalami perubahan.
+                </p>
+
+                <p>
+                    <strong class="text-slate-900">Stabil</strong>
+                    — versi sudah siap digunakan dan menjadi versi yang direkomendasikan.
+                </p>
+
+                <p>
+                    <strong class="text-slate-900">Tidak Digunakan</strong>
+                    — versi sudah tidak direkomendasikan untuk digunakan dan dipertahankan hanya sebagai riwayat versi.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
                     {{-- Release Notes --}}
                     <div>
                         <label
