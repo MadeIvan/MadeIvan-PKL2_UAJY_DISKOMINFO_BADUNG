@@ -30,6 +30,7 @@ return new class extends Migration
                     'beta',
                     'stable',
                     'deprecated',
+                    'privat',
                 ])->default('draft');
 
                 $table->boolean('is_current')

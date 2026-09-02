@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\ApplicationVersion;
 
+use App\Models\ApplicationVersion;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -53,12 +54,7 @@ class UpdateApplicationVersionRequest extends FormRequest
             'status' => [
                 'sometimes',
                 'required',
-                Rule::in([
-                    'draft',
-                    'beta',
-                    'stable',
-                    'deprecated',
-                ]),
+                Rule::in(ApplicationVersion::STATUSES),
             ],
 
             'is_current' => [

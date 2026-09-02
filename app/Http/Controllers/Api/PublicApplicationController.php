@@ -27,7 +27,7 @@ class PublicApplicationController extends Controller
                 $builder->where('category_id', $categoryId);
             }
 
-            if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
+            if (!$user || !$user->isInternal()) {
                 $builder->where('is_public', true);
             }
 
@@ -38,8 +38,12 @@ class PublicApplicationController extends Controller
                         ->orderByDesc('release_date')
                         ->orderByDesc('id');
 
-                    if (!$user || !($user->hasRole('Admin') || $user->hasRole('Pegawai'))) {
-                        $versionQuery->whereIn('status', ['beta', 'stable', 'deprecated']);
+                    if ($user && $user->isAdmin()) {
+                        // Admin dapat melihat seluruh versi, termasuk draf.
+                    } elseif ($user && $user->isInternal()) {
+                        $versionQuery->visibleToInternal();
+                    } else {
+                        $versionQuery->visibleToPublic();
                     }
                 },
             ]);
