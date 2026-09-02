@@ -199,6 +199,30 @@
                 </div>
             @endif
 
+            {{-- Non-Stable Version Warning Toast --}}
+            @if ($isNonStableVersion && !$isOlderVersion)
+                <div id="non-stable-warning-toast" class="fixed bottom-6 right-6 z-100 w-full max-w-sm animate-fade-in-up">
+                    <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-2xl">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3">
+                                <i class="bi bi-exclamation-triangle mt-0.5 text-xl text-amber-700"></i>
+                                <div>
+                                    <p class="font-bold text-amber-950">
+                                        Bukan Versi Stabil
+                                    </p>
+                                    <p class="mt-1 text-sm leading-5 text-amber-800">
+                                        Anda sedang melihat dokumentasi pada versi yang belum stabil. Versi stabil direkomendasikan untuk penggunaan resmi.
+                                    </p>
+                                </div>
+                            </div>
+                            <button type="button" onclick="document.getElementById('non-stable-warning-toast').style.display='none'" class="shrink-0 text-amber-700 transition hover:text-amber-900" aria-label="Tutup peringatan">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Full Width Documentation Layout --}}
             <div
                 id="documentationLayout"

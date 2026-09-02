@@ -3024,6 +3024,9 @@ function initializeApplicationPage() {
 
             deprecated:
                 'border-red-200 bg-red-50 text-red-600',
+
+            privat:
+                'border-blue-200 bg-blue-50 text-blue-700',
         }[status] ||
             'border-slate-200 bg-slate-100 text-slate-600';
     }
@@ -3034,6 +3037,7 @@ function initializeApplicationPage() {
             beta: 'Beta',
             stable: 'Stabil',
             deprecated: 'Tidak Digunakan',
+            privat: 'Privat',
         }[status] ||
             status ||
             'Tidak diketahui';

@@ -57,7 +57,8 @@ class TutorialContentPageController extends Controller
         $this->ensureMaterialNode($tutorialNode);
 
         $user = Auth::user();
-        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        $isAdmin = $user && $user->isAdmin();
+        $isInternal = $user && $user->isInternal();
 
         // Check if the node is visible by checking if it exists with the appropriate scope
         $isVisible = TutorialNode::query()
@@ -86,15 +87,23 @@ class TutorialContentPageController extends Controller
             Response::HTTP_NOT_FOUND
         );
 
+        $version = $tutorialNode->applicationVersion;
+
         abort_unless(
-            $tutorialNode->applicationVersion &&
-            ($isInternal || $tutorialNode->applicationVersion->status !== 'draft'),
+            $version &&
+            (
+                $isAdmin ||
+                $version->status === ApplicationVersion::STATUS_STABLE ||
+                $version->status === ApplicationVersion::STATUS_BETA ||
+                $version->status === ApplicationVersion::STATUS_DEPRECATED ||
+                ($isInternal && $version->status === ApplicationVersion::STATUS_PRIVAT)
+            ),
             Response::HTTP_NOT_FOUND
         );
 
         return redirect()->route('applications.show', [
             'application' => $tutorialNode->application->slug,
-            'version' => $tutorialNode->applicationVersion->id,
+            'version' => $version->id,
             'materi' => $tutorialNode->id,
         ]);
     }

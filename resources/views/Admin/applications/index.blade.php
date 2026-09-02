@@ -777,6 +777,7 @@ Kelola Aplikasi
                             <option value="beta">Beta</option>
                             <option value="stable">Stabil</option>
                             <option value="deprecated">Tidak Digunakan</option>
+                            <option value="privat">Privat</option>
                         </select>
                     </div>
 
@@ -808,6 +809,11 @@ Kelola Aplikasi
                 <p>
                     <strong class="text-slate-900">Tidak Digunakan</strong>
                     — versi sudah tidak direkomendasikan untuk digunakan dan dipertahankan hanya sebagai riwayat versi.
+                </p>
+
+                <p>
+                    <strong class="text-slate-900">Privat</strong>
+                    — versi hanya terlihat oleh Admin dan Pegawai, tidak ditampilkan kepada pengunjung anonim.
                 </p>
             </div>
         </div>

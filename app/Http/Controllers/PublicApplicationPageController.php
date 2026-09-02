@@ -93,6 +93,11 @@ class PublicApplicationPageController extends Controller
             (int) $selectedVersion->id !==
                 (int) $preferredVersion->id;
 
+        $isNonStableVersion =
+            $selectedVersion &&
+            $selectedVersion->status !==
+                ApplicationVersion::STATUS_STABLE;
+
         return view(
             'Public.application_show',
             [
@@ -128,6 +133,9 @@ class PublicApplicationPageController extends Controller
 
                 'isOlderVersion' =>
                     $isOlderVersion,
+
+                'isNonStableVersion' =>
+                    $isNonStableVersion,
             ]
         );
     }
@@ -136,8 +144,8 @@ class PublicApplicationPageController extends Controller
         Application $application
     ): void {
         $user = Auth::user();
-        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
-        
+        $isInternal = $user && $user->isInternal();
+
         abort_unless(
             $application->status === 'active' &&
             ($isInternal || (bool) $application->is_public),
@@ -149,7 +157,6 @@ class PublicApplicationPageController extends Controller
         Application $application
     ): Collection {
         $user = Auth::user();
-        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
 
         $query = $application
             ->versions()
@@ -157,7 +164,11 @@ class PublicApplicationPageController extends Controller
             ->orderByDesc('release_date')
             ->orderByDesc('id');
 
-        if (!$isInternal) {
+        if ($user && $user->isAdmin()) {
+            // Admin dapat melihat seluruh versi, termasuk draf.
+        } elseif ($user && $user->isInternal()) {
+            $query->visibleToInternal();
+        } else {
             $query->visibleToPublic();
         }
 
@@ -240,8 +251,8 @@ class PublicApplicationPageController extends Controller
             );
             
         $user = Auth::user();
-        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
-        
+        $isInternal = $user && $user->isInternal();
+
         if ($isInternal) {
             $query->visibleToInternal();
         } else {
@@ -450,7 +461,7 @@ class PublicApplicationPageController extends Controller
             );
             
         $user = Auth::user();
-        $isInternal = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        $isInternal = $user && $user->isInternal();
         
         if ($isInternal) {
             $query->visibleToInternal();

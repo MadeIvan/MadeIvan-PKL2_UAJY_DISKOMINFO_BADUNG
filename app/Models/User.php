@@ -30,4 +30,23 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('Admin');
+    }
+
+    public function isPegawai(): bool
+    {
+        return $this->hasRole('Pegawai');
+    }
+
+    /**
+     * Pengguna internal (Admin/Pegawai) dapat melihat konten yang
+     * disembunyikan dari pengunjung anonim, misalnya versi "privat".
+     */
+    public function isInternal(): bool
+    {
+        return $this->isAdmin() || $this->isPegawai();
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApplicationVersion;
 use App\Models\TutorialNode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -16,9 +17,10 @@ class PublicMateriController extends Controller
         $sort = $request->query('sort', 'latest');
         
         $user = auth('sanctum')->user();
-        $canSeeNonPublic = $user && ($user->hasRole('Admin') || $user->hasRole('Pegawai'));
+        $isAdmin = $user && $user->isAdmin();
+        $canSeeNonPublic = $user && $user->isInternal();
 
-        $query = TutorialNode::search($search)->query(function (Builder $builder) use ($canSeeNonPublic) {
+        $query = TutorialNode::search($search)->query(function (Builder $builder) use ($canSeeNonPublic, $isAdmin) {
             $builder->where('node_type', TutorialNode::TYPE_MATERI)
                 ->whereHas('application', function (Builder $q) use ($canSeeNonPublic) {
                     $q->where('status', 'active');
@@ -26,12 +28,16 @@ class PublicMateriController extends Controller
                         $q->where('is_public', true);
                     }
                 })
-                ->whereHas('applicationVersion', function (Builder $q) use ($canSeeNonPublic) {
+                ->whereHas('applicationVersion', function (Builder $q) use ($canSeeNonPublic, $isAdmin) {
                     // Ensure the version exists and is not a draft for public users
                     $q->whereNotNull('id');
 
-                    if (!$canSeeNonPublic) {
-                        $q->whereIn('status', ['beta', 'stable', 'deprecated']);
+                    if ($isAdmin) {
+                        // Admin dapat melihat seluruh versi, termasuk draf.
+                    } elseif ($canSeeNonPublic) {
+                        $q->whereIn('status', ApplicationVersion::INTERNAL_STATUSES);
+                    } else {
+                        $q->whereIn('status', ApplicationVersion::PUBLIC_STATUSES);
                     }
                 });
 

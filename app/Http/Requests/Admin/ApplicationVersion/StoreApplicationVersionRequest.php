@@ -47,12 +47,7 @@ class StoreApplicationVersionRequest extends FormRequest
 
             'status' => [
                 'required',
-                Rule::in([
-                    'draft',
-                    'beta',
-                    'stable',
-                    'deprecated',
-                ]),
+                Rule::in(ApplicationVersion::STATUSES),
             ],
 
             'is_current' => [
